@@ -8,6 +8,8 @@ module DynamoDb.SQL.Parser
 open FParsec
 open DynamoDb.SQL.Ast
 
+exception InvalidQuery  of string
+
 type Parser<'t> = Parser<'t, unit>
 
 // abbreviations
@@ -97,25 +99,20 @@ let filterCondition     =
         <|> inCondition
     .>> ws
 
-let where =
+let pwhere =
     ws
     >>. skipStringCI_ws "where"
     >>. (sepBy1 filterCondition (ws >>. and')
         |>> (fun filterLst -> filterLst |> Where))
     .>> ws
 
-let limit = ws >>. skipStringCI_ws "limit" >>. pint32_ws |>> Limit
+let plimit = ws >>. skipStringCI_ws "limit" >>. pint32_ws |>> Limit
 
-let query = tuple4 attributeNames tableName (opt where) (opt limit)
-            |>> (fun (select, from, where, limit) -> 
+// parser for a query
+let pquery = tuple4 attributeNames tableName (opt pwhere) (opt plimit)
+             |>> (fun (select, from, where, limit) -> 
                     { Select = select; From = from; Where = where; Limit = limit })
 
-let parse = run query
-
-// helper active patterns
-let (|IsSuccess|)   = function | Success(_) -> true | _ -> false
-let (|IsFailure|_|) = function | Failure(errMsg, _, _) -> Some(errMsg) | _ -> None
-let (|GetSelect|_|) = function | Success({ Select = Select(attrLst) }, _, _) -> Some(attrLst) | _ -> None
-let (|GetFrom|_|)   = function | Success({ From = From(table) }, _, _) -> Some(table) | _ -> None
-let (|GetWhere|_|)  = function | Success({ Where = Some(Where(filters)) }, _, _) -> Some(filters) | _ -> None
-let (|GetLimit|_|)  = function | Success({ Limit = Some(Limit(n)) }, _, _) -> Some(n) | _ -> None
+let parseDynamoQuery str = match run pquery str with
+                           | Success(result, _, _) -> result
+                           | Failure(errStr, _, _) -> raise <| InvalidQuery errStr

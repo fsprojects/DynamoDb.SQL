@@ -13,6 +13,14 @@ open DynamoDb.SQL.Parser
 
 let equal = FsUnit.equal
 
+// helper active patterns
+let (|IsSuccess|)   = function | Success(_) -> true | _ -> false
+let (|IsFailure|_|) = function | Failure(errMsg, _, _) -> Some(errMsg) | _ -> None
+let (|GetSelect|_|) = function | Success({ Select = Select(attrLst) }, _, _) -> Some(attrLst) | _ -> None
+let (|GetFrom|_|)   = function | Success({ From = From(table) }, _, _) -> Some(table) | _ -> None
+let (|GetWhere|_|)  = function | Success({ Where = Some(Where(filters)) }, _, _) -> Some(filters) | _ -> None
+let (|GetLimit|_|)  = function | Success({ Limit = Some(Limit(n)) }, _, _) -> Some(n) | _ -> None
+
 [<TestFixture>]
 type ``Given a select query`` () =
     [<Test>]
