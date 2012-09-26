@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Yan Cui 2012
 
+// Email : theburningmonk@gmail.com
+// Blog  : http://theburningmonk.com
+
 module DynamoDb.SQL.Parser
 
 open FParsec
@@ -18,10 +21,7 @@ let skipStringCI_ws s       = skipStringCI s .>> ws
 let stringReturn_ws s r     = stringReturn s r .>> ws
 let stringCIReturn_ws s r   = stringCIReturn s r .>> ws
 let pfloat_ws               = pfloat
-let pint64_ws               = pint64
 let pint32_ws               = pint32
-let pint16_ws               = pint16
-let pint8_ws                = pint8
 
 let (<&&>) f g x = (f x) && (g x)
 let (<||>) f g x = (f x) || (g x)
@@ -61,7 +61,7 @@ let stringLiteral =
             (stringsSepBy normalCharSnippet escapedChar)
 
 // parser for the operant (string or numeric value)
-let operant = choiceL [ (stringLiteral |>> S); (pfloat |>> N) ] "String or Numeric value" .>> ws
+let operant = ws >>. choiceL [ (stringLiteral |>> S); (pfloat |>> N) ] "String or Numeric value" .>> ws
 
 // parsers for binary/unary/between conditions
 let binaryOperators     = choice [ stringReturn_ws "=" Equal;           
@@ -83,9 +83,19 @@ let between             = stringCIReturn_ws "between" Between
 let and'                = skipStringCI_ws "and"
 let betweenCondition    = pipe5 identifier between operant and' operant (fun id op v1 _ v2 -> id, op(v1, v2))
 
-// TODO - add support for 'IN'
+let in'                 = stringCIReturn_ws "in" In
+let openBracket         = skipString_ws "("
+let closeBracket        = skipString_ws ")"
+let operantLst          = sepBy1 operant (ws >>. skipString_ws ",")
+let inCondition         = pipe5 identifier in' openBracket operantLst closeBracket (fun id op _ lst _ -> id, op(lst))
 
-let filterCondition     = ws >>. choiceL [ binaryCondition; unaryCondition; betweenCondition ] "Invalid condition" .>> ws
+let filterCondition     = 
+    ws 
+    >>. attempt unaryCondition 
+        <|> attempt binaryCondition 
+        <|> attempt betweenCondition 
+        <|> inCondition
+    .>> ws
 
 let where =
     ws

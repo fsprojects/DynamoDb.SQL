@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Yan Cui 2012
 
+// Email : theburningmonk@gmail.com
+// Blog  : http://theburningmonk.com
+
 module DynamoDb.SQL.Ast
 
 [<StructuredFormatDisplay("{StructuredFormatDisplay}")>]
