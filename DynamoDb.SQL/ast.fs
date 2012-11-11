@@ -3,18 +3,23 @@
 // Email : theburningmonk@gmail.com
 // Blog  : http://theburningmonk.com
 
-module DynamoDb.SQL.Ast
+namespace DynamoDb.SQL.Ast
+
+open System.Collections.Generic
+open Amazon.DynamoDB.Model
 
 [<StructuredFormatDisplay("{StructuredFormatDisplay}")>]
 type Identifier = 
     | HashKey
     | RangeKey
+    | Asterisk
     | Attribute of string
     with
         override this.ToString () =
             match this with
             | HashKey        -> "@HashKey"
             | RangeKey       -> "@RangeKey"
+            | Asterisk       -> "*"
             | Attribute(str) -> str
 
         member private this.StructuredFormatDisplay = this.ToString()
@@ -29,10 +34,15 @@ type Operant =
             | S(str)    -> str
             | N(n)      -> n.ToString()
 
+        member this.ToAttributeValue() =
+            match this with
+            | S(str) -> new AttributeValue(S = str)
+            | N(n)   -> new AttributeValue(N = string n)
+
         member private this.StructuredFormatDisplay = this.ToString()
 
 [<StructuredFormatDisplay("{StructuredFormatDisplay}")>]
-type Condition = 
+type FilterCondition = 
     | Equal                 of Operant
     | NotEqual              of Operant
     | GreaterThan           of Operant
@@ -74,6 +84,26 @@ type Condition =
                 -> true
             | _ -> false
 
+        /// returns a corresponding Condition (from the Amazon SDK)
+        member this.ToCondition() =
+            let operator, attrVals = 
+                match this with
+                | Equal(op)              -> "EQ",           seq { yield op.ToAttributeValue() }
+                | NotEqual(op)           -> "NE",           seq { yield op.ToAttributeValue() }
+                | GreaterThan(op)        -> "GT",           seq { yield op.ToAttributeValue() }
+                | GreaterThanOrEqual(op) -> "GE",           seq { yield op.ToAttributeValue() }
+                | LessThan(op)           -> "LT",           seq { yield op.ToAttributeValue() }
+                | LessThanOrEqual(op)    -> "LE",           seq { yield op.ToAttributeValue() }
+                | NotNull                -> "NOT_NULL",     Seq.empty
+                | Null                   -> "NULL",         Seq.empty
+                | Contains(op)           -> "CONTAINS",     seq { yield op.ToAttributeValue() }
+                | NotContains(op)        -> "NOT_CONTAINS", seq { yield op.ToAttributeValue() }
+                | BeginsWith(op)         -> "BEGINS_WITH",  seq { yield op.ToAttributeValue() }
+                | Between(op1, op2)      -> "BETWEEN",      seq { yield op1.ToAttributeValue(); yield op2.ToAttributeValue() }
+                | In(opLst)              -> "IN",           opLst |> Seq.map (fun op -> op.ToAttributeValue())
+
+            new Condition(ComparisonOperator = operator, AttributeValueList = new List<AttributeValue>(attrVals))
+
 [<StructuredFormatDisplay("{StructuredFormatDisplay}")>]
 type Select = 
     Select of Identifier list
@@ -94,9 +124,11 @@ type From =
 
         member private this.StructuredFormatDisplay = this.ToString()
 
+type Filter = Identifier * FilterCondition
+
 [<StructuredFormatDisplay("{StructuredFormatDisplay}")>]
 type Where = 
-    Where of (Identifier * Condition) list
+    Where of Filter list
     with 
         override this.ToString () = 
             match this with 
@@ -125,5 +157,4 @@ type DynamoQuery =
         Limit           : Limit option
     }
 
-    override this.ToString () =
-        sprintf "%A %A" this.Select this.From
+    override this.ToString () = sprintf "%A %A" this.Select this.From

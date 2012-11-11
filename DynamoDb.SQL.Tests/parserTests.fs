@@ -5,21 +5,12 @@
 
 module DynamoDb.SQL.ParserTests
 
-open FParsec
 open FsUnit
 open NUnit.Framework
 open DynamoDb.SQL.Ast
 open DynamoDb.SQL.Parser
 
 let equal = FsUnit.equal
-
-// helper active patterns
-let (|IsSuccess|)   = function | Success(_) -> true | _ -> false
-let (|IsFailure|_|) = function | Failure(errMsg, _, _) -> Some(errMsg) | _ -> None
-let (|GetSelect|_|) = function | Success({ Select = Select(attrLst) }, _, _) -> Some(attrLst) | _ -> None
-let (|GetFrom|_|)   = function | Success({ From = From(table) }, _, _) -> Some(table) | _ -> None
-let (|GetWhere|_|)  = function | Success({ Where = Some(Where(filters)) }, _, _) -> Some(filters) | _ -> None
-let (|GetLimit|_|)  = function | Success({ Limit = Some(Limit(n)) }, _, _) -> Some(n) | _ -> None
 
 [<TestFixture>]
 type ``Given a select query`` () =
@@ -29,10 +20,9 @@ type ``Given a select query`` () =
                              Salary
                       FROM   Employees "
 
-        match run query select with
-        | IsSuccess true & 
-          GetSelect [Attribute "Name"; Attribute "Age"; Attribute "Salary" ] &
-          GetFrom "Employees"
+        match parseDynamoQuery select with
+        | { Select = Select [ Attribute "Name"; Attribute "Age"; Attribute "Salary" ];
+            From = From "Employees" }
             -> true
         | _ -> false
         |> should equal true
@@ -42,10 +32,9 @@ type ``Given a select query`` () =
         let select = "sELeCT Name, Age, Salary
                       FrOm Employees"
 
-        match run query select with
-        | IsSuccess true &
-          GetSelect [Attribute "Name"; Attribute "Age"; Attribute "Salary"] &
-          GetFrom "Employees"
+        match parseDynamoQuery select with
+        | { Select = Select [ Attribute "Name"; Attribute "Age"; Attribute "Salary" ];
+            From = From "Employees" }
             -> true
         | _ -> false
         |> should equal true
@@ -54,11 +43,9 @@ type ``Given a select query`` () =
     member this.``when a hash key filter is included in a filter condition it should be parsed`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\""
 
-        match run query select with
-        | IsSuccess true &
-          GetSelect [Attribute "*"] &
-          GetFrom "Employees" &
-          GetWhere [ (HashKey, Equal(S "Yan")) ]
+        match parseDynamoQuery select with
+        | { Select = Select [ Asterisk ]; From = From "Employees";
+            Where = Some(Where [ (HashKey, Equal(S "Yan")) ]) }
             -> true
         | _ -> false
         |> should equal true
@@ -67,11 +54,9 @@ type ``Given a select query`` () =
     member this.``when a range key is included in a filter condition it should be parsed`` () =
         let select = "SELECT * FROM Employees WHERE @rangekey = \"Yan\""
 
-        match run query select with
-        | IsSuccess true &
-          GetSelect [Attribute "*"] &
-          GetFrom "Employees" &
-          GetWhere [ (RangeKey, Equal(S "Yan")) ]
+        match parseDynamoQuery select with
+        | { Select = Select [ Asterisk ]; From = From "Employees";
+            Where = Some(Where [ (RangeKey, Equal(S "Yan")) ]) }
             -> true
         | _ -> false
         |> should equal true
@@ -80,11 +65,9 @@ type ``Given a select query`` () =
     member this.``when an attribute name is included in a filter condition it should be parsed`` () =
         let select = "SELECT * FROM Employees WHERE Age = 30"
 
-        match run query select with
-        | IsSuccess true &
-          GetSelect [Attribute "*"] &
-          GetFrom "Employees" &
-          GetWhere [ (Attribute("Age"), Equal(N 30.0)) ]
+        match parseDynamoQuery select with
+        | { Select = Select [ Asterisk ]; From = From "Employees";
+            Where = Some(Where [ (Attribute("Age"), Equal(N 30.0)) ]) }
             -> true
         | _ -> false
         |> should equal true
@@ -93,11 +76,9 @@ type ``Given a select query`` () =
     member this.``when the != operator is used it should be parsed as correctly`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey != \"Yan\""
 
-        match run query select with
-        | IsSuccess true &
-          GetSelect [Attribute "*"] &
-          GetFrom "Employees" &
-          GetWhere [ (HashKey, NotEqual(S "Yan")) ]
+        match parseDynamoQuery select with
+        | { Select = Select [ Asterisk ]; From = From "Employees";
+            Where = Some(Where [ (HashKey, NotEqual(S "Yan")) ]) }
             -> true
         | _ -> false
         |> should equal true
@@ -110,14 +91,12 @@ type ``Given a select query`` () =
                       AND   Age > 10
                       AND   Age >= 30 "
 
-        match run query select with
-        | IsSuccess true &
-          GetSelect [Attribute "*"] &
-          GetFrom "Employees" &
-          GetWhere [ (Attribute("Age"), LessThan(N 99.0));
-                     (Attribute("Age"), LessThanOrEqual(N 90.0));
-                     (Attribute("Age"), GreaterThan(N 10.0));
-                     (Attribute("Age"), GreaterThanOrEqual(N 30.0)) ]
+        match parseDynamoQuery select with
+        | { Select = Select [ Asterisk ]; From = From "Employees";
+            Where = Some(Where ([ (Attribute("Age"), LessThan(N 99.0));
+                                  (Attribute("Age"), LessThanOrEqual(N 90.0));
+                                  (Attribute("Age"), GreaterThan(N 10.0));
+                                  (Attribute("Age"), GreaterThanOrEqual(N 30.0)) ])) }
             -> true
         | _ -> false
         |> should equal true
@@ -126,11 +105,9 @@ type ``Given a select query`` () =
     member this.``when the Contains operator is used it should be parsed correctly`` () =
         let select = "SELECT * FROM Employees WHERE Name CONTAINS \"Yan\""
 
-        match run query select with
-        | IsSuccess true &
-          GetSelect [Attribute "*"] &
-          GetFrom "Employees" &
-          GetWhere [ (Attribute("Name"), Contains(S "Yan")) ]
+        match parseDynamoQuery select with
+        | { Select = Select [ Asterisk ]; From = From "Employees";
+            Where = Some(Where [ (Attribute("Name"), Contains(S "Yan")) ]) }
             -> true
         | _ -> false
         |> should equal true
@@ -139,11 +116,9 @@ type ``Given a select query`` () =
     member this.``when the NotContains operator is used it should be parsed correctly`` () =
         let select = "SELECT * FROM Employees WHERE Name NOT CONTAINS \"Yan\""
 
-        match run query select with
-        | IsSuccess true &
-          GetSelect [Attribute "*"] &
-          GetFrom "Employees" &
-          GetWhere [ (Attribute("Name"), NotContains(S "Yan")) ]
+        match parseDynamoQuery select with
+        | { Select = Select [ Asterisk ]; From = From "Employees";
+            Where = Some(Where [ (Attribute("Name"), NotContains(S "Yan")) ]) }
             -> true
         | _ -> false
         |> should equal true
@@ -152,11 +127,9 @@ type ``Given a select query`` () =
     member this.``when the Begins With operator is used it should be parsed correctly`` () =
         let select = "SELECT * FROM Employees WHERE Name BEGINS WITH \"Yan\""
 
-        match run query select with
-        | IsSuccess true &
-          GetSelect [Attribute "*"] &
-          GetFrom "Employees" &
-          GetWhere [ (Attribute("Name"), BeginsWith(S "Yan")) ]
+        match parseDynamoQuery select with
+        | { Select = Select [ Asterisk ]; From = From "Employees";
+            Where = Some(Where [ (Attribute("Name"), BeginsWith(S "Yan")) ]) }
             -> true
         | _ -> false
         |> should equal true
@@ -165,11 +138,9 @@ type ``Given a select query`` () =
     member this.``when the Between operator is used it should be parsed correctly`` () =
         let select = "SELECT * FROM Employees WHERE Age BETWEEN 10 AND 30"
 
-        match run query select with
-        | IsSuccess true &
-          GetSelect [Attribute "*"] &
-          GetFrom "Employees" &
-          GetWhere [ (Attribute("Age"), Between(N 10.0, N 30.0)) ]
+        match parseDynamoQuery select with
+        | { Select = Select [ Asterisk ]; From = From "Employees";
+            Where = Some(Where [ (Attribute("Age"), Between(N 10.0, N 30.0)) ]) }
             -> true
         | _ -> false
         |> should equal true
@@ -179,12 +150,10 @@ type ``Given a select query`` () =
         let select = "SELECT * FROM Employees WHERE Name IN (\"Foo\", \"Bar\") 
                                                 AND Age IN (99, 98, 97)"
 
-        match run query select with
-        | IsSuccess true &
-          GetSelect [Attribute "*"] &
-          GetFrom "Employees" &
-          GetWhere [ (Attribute("Name"), In([ S "Foo"; S "Bar"]));
-                     (Attribute("Age"),  In([ N  99.0; N 98.0; N 97.0])) ]
+        match parseDynamoQuery select with
+        | { Select = Select [ Asterisk ]; From = From "Employees";
+            Where = Some(Where [ (Attribute("Name"), In([ S "Foo"; S "Bar"]));
+                                 (Attribute("Age"),  In([ N  99.0; N 98.0; N 97.0])) ]) }
             -> true
         | _ -> false
         |> should equal true
@@ -193,11 +162,9 @@ type ``Given a select query`` () =
     member this.``when the Is Null operator is used it should be parsed correctly`` () =
         let select = "SELECT * FROM Employees WHERE NickName IS NULL"
 
-        match run query select with
-        | IsSuccess true &
-          GetSelect [Attribute "*"] &
-          GetFrom "Employees" &
-          GetWhere [ (Attribute("NickName"), Null) ]
+        match parseDynamoQuery select with
+        | { Select = Select [ Asterisk ]; From = From "Employees";
+            Where = Some(Where [ (Attribute("NickName"), Null) ]) }
             -> true
         | _ -> false
         |> should equal true
@@ -206,11 +173,9 @@ type ``Given a select query`` () =
     member this.``when the Is Not Null operator is used it should be parsed correctly`` () =
         let select = "SELECT * FROM Employees WHERE NickName IS NOT NULL"
 
-        match run query select with
-        | IsSuccess true &
-          GetSelect [Attribute "*"] &
-          GetFrom "Employees" &
-          GetWhere [ (Attribute("NickName"), NotNull) ]
+        match parseDynamoQuery select with
+        | { Select = Select [ Asterisk ]; From = From "Employees";
+            Where = Some(Where [ (Attribute("NickName"), NotNull) ]) }
             -> true
         | _ -> false
         |> should equal true
@@ -219,12 +184,10 @@ type ``Given a select query`` () =
     member this.``when limit clause is specified, it should be parsed correctly`` () =
         let select = "SELECT * FROM Employees WHERE Age >= 30 LIMIT 10"
 
-        match run query select with
-        | IsSuccess true &
-          GetSelect [Attribute "*"] &
-          GetFrom "Employees" &
-          GetWhere [ (Attribute("Age"), GreaterThanOrEqual(N 30.0)) ] &
-          GetLimit 10
+        match parseDynamoQuery select with
+        | { Select = Select [ Asterisk ]; From = From "Employees";
+            Where = Some(Where [ (Attribute("Age"), GreaterThanOrEqual(N 30.0)) ]);
+            Limit = Some(Limit 10) }
             -> true
         | _ -> false
         |> should equal true

@@ -31,22 +31,25 @@ let (<||>) f g x = (f x) || (g x)
 // parsers for identifiers
 let hashkey     = stringCIReturn_ws "@hashkey" HashKey
 let rangekey    = stringCIReturn_ws "@rangekey" RangeKey
+let asterisk    = stringCIReturn_ws "*" Asterisk
 
-let isAttrName = isLetter <||> isDigit <||> ((=) '*')
+let isAttrName = isLetter <||> isDigit
 let attributeName   : Parser<_> = many1SatisfyL isAttrName "attribute name"
 let attribute   = attributeName .>> ws |>> Attribute
 
-let identifier  = choice [ hashkey; rangekey; attribute ]
+let identifier  = choice [ hashkey; rangekey; asterisk; attribute ]
 
-let attributeNames = 
+// only allow explicit attribute name and asterisk in select
+let selectAttributes = choice [ asterisk; attribute ]
+let pselect = 
     ws
     >>. skipStringCI_ws "select" 
-    >>. (sepBy1 identifier (pstring_ws ",") |>> Select)
+    >>. (sepBy1 selectAttributes (pstring_ws ",") |>> Select)
     .>> ws
 
 // parser for table names
 let isTableName = isLetter <||> isDigit
-let tableName =
+let pfrom =
     ws
     >>. skipStringCI_ws "from"
     >>. ((many1SatisfyL isTableName "table name") |>> From)
@@ -109,7 +112,7 @@ let pwhere =
 let plimit = ws >>. skipStringCI_ws "limit" >>. pint32_ws |>> Limit
 
 // parser for a query
-let pquery = tuple4 attributeNames tableName (opt pwhere) (opt plimit)
+let pquery = tuple4 pselect pfrom (opt pwhere) (opt plimit)
              |>> (fun (select, from, where, limit) -> 
                     { Select = select; From = from; Where = where; Limit = limit })
 
