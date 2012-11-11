@@ -67,4 +67,8 @@ module LowLevel =
                     -> let! res = this.ScanAsync req
                        let scanRes = res.ScanResult
                        return seq { yield! scanRes.Items }
-            } |> Async.RunSynchronously
+            }
+
+        member this.ExecQueryAsTask query = this.ExecQuery query |> Async.StartAsTask
+
+        member this.ExecQuerySync query = this.ExecQuery query |> Async.RunSynchronously
