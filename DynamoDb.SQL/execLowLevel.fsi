@@ -6,21 +6,32 @@
 namespace DynamoDb.SQL.Execution
 
 open System.Collections.Generic
+open System.Threading.Tasks
 open Amazon.DynamoDB
 open Amazon.DynamoDB.Model
-open System.Threading.Tasks
-
-exception EmptySelect
-exception EmptyFrom
+open DynamoDb.SQL.Ast
 
 [<AutoOpen>]
 module LowLevel =
+    /// Active pattern for getting the query or scan request object
+    val (|IsQueryReq|IsScanReq|) : DynamoQuery -> Choice<QueryRequest, ScanRequest>
+
+    /// Extension methods for the low level DynamoDB client
     type AmazonDynamoDBClient with
         /// Executes a query asynchronously and returns the results
-        member ExecQuery        : string -> Async<seq<Dictionary<string, AttributeValue>>>
+        member QueryAsync       : string -> Async<QueryResponse>
 
         /// Executes a query asynchronously as a task and returns the results
-        member ExecQueryAsTask  : string -> Task<seq<Dictionary<string, AttributeValue>>>
+        member QueryAsyncAsTask : string -> Task<QueryResponse>
 
         /// Executes a query synchronously and returns the results
-        member ExecQuerySync    : string -> seq<Dictionary<string, AttributeValue>>
+        member Query            : string -> QueryResponse
+
+        /// Executes a scan asynchronously and returns the results
+        member ScanAsync        : string -> Async<ScanResponse>
+
+        /// Executes a scan asynchronously as a task and returns the results
+        member ScanAsyncAsTask  : string -> Task<ScanResponse>
+
+        /// Executes a scan synchronously and returns the results
+        member Scan             : string -> ScanResponse

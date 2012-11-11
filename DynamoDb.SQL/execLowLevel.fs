@@ -13,62 +13,54 @@ open Amazon.DynamoDB
 open Amazon.DynamoDB.Model
 open Amazon.DynamoDB.DataModel
 
-exception EmptySelect
-exception EmptyFrom
-
 [<AutoOpen>]
 module LowLevel =
-    /// Active pattern to get a GetItem/BatchGetItem/Query/Scan request object for a DynamoQuery
-    let (|IsGetItemReq|IsQueryReq|IsScanReq|) = function
+    let (|IsQueryReq|IsScanReq|) = function
+        // handle invalid requests
         | { Select = Select([]) }   -> raise EmptySelect
-        | { From = From("") }       -> raise EmptyFrom
-        | { From = From(table); Where = Some(Where(GetByKey(key)));
-            Select = Select(SelectAttributes attributes) }
-            -> let req = new GetItemRequest(ConsistentRead = true, // TODO
-                                            Key = key, TableName = table,
-                                            AttributesToGet = attributes)
-               IsGetItemReq req
-        | { From = From(table); Where = Some(Where(Query(hKey, rKeyCondition)));
-            Select = Select(SelectAttributes attributes); Limit = None }
+        | { From = From("") }       -> raise EmptyFrom        
+        // handle Query requests
+        | { From = From(table); Where = Some(Where(Query(hKey, rngKeyCondition)));
+            Select = Select(SelectAttributes attributes); Limit = limit }
             -> let req = new QueryRequest(ConsistentRead = true, // TODO
-                                          TableName = table, HashKeyValue = hKey,
-                                          RangeKeyCondition = rKeyCondition.ToCondition())
+                                          TableName = table, HashKeyValue = hKey.ToAttributeValue(),
+                                          AttributesToGet = attributes)
+
+               // optionally set the range key condition and limit if applicable
+               match rngKeyCondition with 
+               | Some(rndCond) -> req.RangeKeyCondition <- rndCond.ToCondition()
+               | _ -> ()
+
+               match limit with | Some(Limit n) -> req.Limit <- n | _ -> ()
+               
                IsQueryReq req
-        | { From = From(table); Where = Some(Where(Query(hKey, rKeyCondition)));
-            Select = Select(SelectAttributes attributes); Limit = Some(Limit(limit)) }
-            -> let req = new QueryRequest(ConsistentRead = true, // TODO
-                                          TableName = table, HashKeyValue = hKey, Limit = limit,
-                                          RangeKeyCondition = rKeyCondition.ToCondition())
-               IsQueryReq req
-        | { From = From(table); Where = Some(Where(Scan));
-            Select = Select(SelectAttributes attributes); Limit = None }
-            -> let req = new ScanRequest()
-               IsScanReq req
-        | { From = From(table); Where = Some(Where(Scan));
-            Select = Select(SelectAttributes attributes); Limit = Some(Limit(limit)) }
-            -> let req = new ScanRequest(Limit = limit)
+        // handle Scan requests
+        | { From = From(table); Where = Some(Where(Scan(scanFilters)));
+            Select = Select(SelectAttributes attributes); Limit = limit }
+            -> let scanFilters = scanFilters |> Seq.map (fun (attr, cond) -> attr, cond.ToCondition())
+               let req = new ScanRequest(TableName = table, AttributesToGet = attributes,
+                                         ScanFilter = new Dictionary<string, Condition>(dict scanFilters))
+
+               match limit with | Some(Limit n) -> req.Limit <- n | _ -> ()
                IsScanReq req
 
     type AmazonDynamoDBClient with
-        member this.ExecQuery (query : string) =
+        member this.QueryAsync (query : string) =
+            let dynamoQuery = parseDynamoQuery query
+
+            match dynamoQuery with
+            | IsQueryReq req -> async { return! this.QueryAsync req }
+            | _ -> raise <| InvalidQuery (sprintf "Not a valid query request : %s" query)            
+
+        member this.QueryAsyncAsTask query = this.QueryAsync query |> Async.StartAsTask
+        member this.Query query = this.QueryAsync query |> Async.RunSynchronously
+
+        member this.ScanAsync (query : string) =
             let dynamoQuery = parseDynamoQuery query
     
-            async {
-                match dynamoQuery with
-                | IsGetItemReq req
-                    -> let! res = this.GetItemAsync req
-                       let getItemResult = res.GetItemResult
-                       return seq { yield getItemResult.Item }
-                | IsQueryReq req
-                    -> let! res = this.QueryAsync req
-                       let queryRes = res.QueryResult
-                       return seq { yield! queryRes.Items }
-                | IsScanReq req
-                    -> let! res = this.ScanAsync req
-                       let scanRes = res.ScanResult
-                       return seq { yield! scanRes.Items }
-            }
+            match dynamoQuery with
+            | IsScanReq req -> async { return! this.ScanAsync req }
+            | _ -> raise <| InvalidQuery (sprintf "Not a valid scan request : %s" query)
 
-        member this.ExecQueryAsTask query = this.ExecQuery query |> Async.StartAsTask
-
-        member this.ExecQuerySync query = this.ExecQuery query |> Async.RunSynchronously
+        member this.ScanAsyncAsTask query = this.ScanAsync query |> Async.StartAsTask
+        member this.Scan query = this.ScanAsync query |> Async.RunSynchronously

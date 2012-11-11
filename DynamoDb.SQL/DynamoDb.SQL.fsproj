@@ -49,7 +49,8 @@
     <Compile Include="execCore.fs" />
     <Compile Include="execLowLevel.fsi" />
     <Compile Include="execLowLevel.fs" />
-    <Compile Include="execHighLevel.fs" />
+    <Compile Include="execCxt.fsi" />
+    <Compile Include="execCxt.fs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

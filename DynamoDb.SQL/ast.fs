@@ -7,6 +7,7 @@ namespace DynamoDb.SQL.Ast
 
 open System.Collections.Generic
 open Amazon.DynamoDB.Model
+open Amazon.DynamoDB.DocumentModel
 
 [<StructuredFormatDisplay("{StructuredFormatDisplay}")>]
 type Identifier = 
@@ -38,6 +39,16 @@ type Operant =
             match this with
             | S(str) -> new AttributeValue(S = str)
             | N(n)   -> new AttributeValue(N = string n)
+
+        member this.ToPrimitive() =
+            match this with
+            | S(str) -> new Primitive(str)
+            | N(n)   -> new Primitive(string n, true)
+
+        member this.ToObject() =
+            match this with
+            | S(str) -> str :> obj
+            | N(n)   -> n :> obj
 
         member private this.StructuredFormatDisplay = this.ToString()
 
@@ -103,6 +114,18 @@ type FilterCondition =
                 | In(opLst)              -> "IN",           opLst |> Seq.map (fun op -> op.ToAttributeValue())
 
             new Condition(ComparisonOperator = operator, AttributeValueList = new List<AttributeValue>(attrVals))
+
+        /// returns a corresponding query operator and operator values
+        member this.ToQueryOperatorAndValues() =
+            match this with
+            | Equal(op)              -> Some <| (QueryOperator.Equal,                [| op.ToObject() |])
+            | GreaterThan(op)        -> Some <| (QueryOperator.GreaterThan,          [| op.ToObject() |])
+            | GreaterThanOrEqual(op) -> Some <| (QueryOperator.GreaterThanOrEqual,   [| op.ToObject() |])
+            | LessThan(op)           -> Some <| (QueryOperator.LessThan,             [| op.ToObject() |])
+            | LessThanOrEqual(op)    -> Some <| (QueryOperator.LessThanOrEqual,      [| op.ToObject() |])
+            | BeginsWith(op)         -> Some <| (QueryOperator.BeginsWith,           [| op.ToObject() |])
+            | Between(op1, op2)      -> Some <| (QueryOperator.Between,              [| op1.ToObject(); op2.ToObject() |])
+            | _                      -> None
 
 [<StructuredFormatDisplay("{StructuredFormatDisplay}")>]
 type Select = 

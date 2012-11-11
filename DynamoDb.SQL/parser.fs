@@ -33,11 +33,9 @@ let hashkey     = stringCIReturn_ws "@hashkey" HashKey
 let rangekey    = stringCIReturn_ws "@rangekey" RangeKey
 let asterisk    = stringCIReturn_ws "*" Asterisk
 
-let isAttrName = isLetter <||> isDigit
+let isAttrName  = isLetter <||> isDigit
 let attributeName   : Parser<_> = many1SatisfyL isAttrName "attribute name"
 let attribute   = attributeName .>> ws |>> Attribute
-
-let identifier  = choice [ hashkey; rangekey; asterisk; attribute ]
 
 // only allow explicit attribute name and asterisk in select
 let selectAttributes = choice [ asterisk; attribute ]
@@ -68,6 +66,9 @@ let stringLiteral =
 // parser for the operant (string or numeric value)
 let operant = ws >>. choiceL [ (stringLiteral |>> S); (pfloat |>> N) ] "String or Numeric value" .>> ws
 
+// don't allow asterisk (*) in the where clause
+let whereAttributes  = choice [ hashkey; rangekey; attribute ]
+
 // parsers for binary/unary/between conditions
 let binaryOperators     = choice [ stringReturn_ws "=" Equal;           
                                    stringReturn_ws "!=" NotEqual;
@@ -78,21 +79,21 @@ let binaryOperators     = choice [ stringReturn_ws "=" Equal;
                                    stringCIReturn_ws "contains" Contains;
                                    stringCIReturn_ws "not contains" NotContains;
                                    stringCIReturn_ws "begins with" BeginsWith ]
-let binaryCondition     = pipe3 identifier binaryOperators operant (fun id op v -> id, op v)
+let binaryCondition     = pipe3 whereAttributes binaryOperators operant (fun id op v -> id, op v)
 
 let unaryOperators      = choice [ stringCIReturn_ws "is null" Null; 
                                    stringCIReturn_ws "is not null" NotNull ]
-let unaryCondition      = pipe2 identifier unaryOperators (fun id op -> id, op)
+let unaryCondition      = pipe2 whereAttributes unaryOperators (fun id op -> id, op)
 
 let between             = stringCIReturn_ws "between" Between
 let and'                = skipStringCI_ws "and"
-let betweenCondition    = pipe5 identifier between operant and' operant (fun id op v1 _ v2 -> id, op(v1, v2))
+let betweenCondition    = pipe5 whereAttributes between operant and' operant (fun id op v1 _ v2 -> id, op(v1, v2))
 
 let in'                 = stringCIReturn_ws "in" In
 let openBracket         = skipString_ws "("
 let closeBracket        = skipString_ws ")"
 let operantLst          = sepBy1 operant (ws >>. skipString_ws ",")
-let inCondition         = pipe5 identifier in' openBracket operantLst closeBracket (fun id op _ lst _ -> id, op(lst))
+let inCondition         = pipe5 whereAttributes in' openBracket operantLst closeBracket (fun id op _ lst _ -> id, op(lst))
 
 let filterCondition     = 
     ws 
