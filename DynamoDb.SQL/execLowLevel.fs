@@ -6,6 +6,7 @@
 namespace DynamoDb.SQL.Execution
 
 open System.Collections.Generic
+open System.Runtime.CompilerServices
 open DynamoDb.SQL.Ast
 open DynamoDb.SQL.Parser
 open DynamoDb.SQL.Extensions
@@ -44,23 +45,38 @@ module LowLevel =
                match limit with | Some(Limit n) -> req.Limit <- n | _ -> ()
                IsScanReq req
 
-    type AmazonDynamoDBClient with
-        member this.QueryAsync (query : string) =
-            let dynamoQuery = parseDynamoQuery query
+[<Extension>]
+[<AbstractClass>]
+[<Sealed>]
+type AmazonDynamoDBClientExt =
+    [<Extension>]
+    static member QueryAsync (clt : AmazonDynamoDBClient, query : string) =
+        let dynamoQuery = parseDynamoQuery query
 
-            match dynamoQuery with
-            | IsQueryReq req -> async { return! this.QueryAsync req }
-            | _ -> raise <| InvalidQuery (sprintf "Not a valid query request : %s" query)            
+        match dynamoQuery with
+        | IsQueryReq req -> async { return! clt.QueryAsync req }
+        | _ -> raise <| InvalidQuery (sprintf "Not a valid query request : %s" query)            
 
-        member this.QueryAsyncAsTask query = this.QueryAsync query |> Async.StartAsTask
-        member this.Query query = this.QueryAsync query |> Async.RunSynchronously
+    [<Extension>]
+    static member QueryAsyncAsTask (clt : AmazonDynamoDBClient, query : string) = 
+        AmazonDynamoDBClientExt.QueryAsync(clt, query) |> Async.StartAsTask
 
-        member this.ScanAsync (query : string) =
-            let dynamoQuery = parseDynamoQuery query
+    [<Extension>]
+    static member Query (clt : AmazonDynamoDBClient, query : string) = 
+        AmazonDynamoDBClientExt.QueryAsync(clt, query) |> Async.RunSynchronously
+
+    [<Extension>]
+    static member ScanAsync (clt : AmazonDynamoDBClient, query : string) =
+        let dynamoQuery = parseDynamoQuery query
     
-            match dynamoQuery with
-            | IsScanReq req -> async { return! this.ScanAsync req }
-            | _ -> raise <| InvalidQuery (sprintf "Not a valid scan request : %s" query)
+        match dynamoQuery with
+        | IsScanReq req -> async { return! clt.ScanAsync req }
+        | _ -> raise <| InvalidQuery (sprintf "Not a valid scan request : %s" query)
 
-        member this.ScanAsyncAsTask query = this.ScanAsync query |> Async.StartAsTask
-        member this.Scan query = this.ScanAsync query |> Async.RunSynchronously
+    [<Extension>]
+    static member ScanAsyncAsTask (clt : AmazonDynamoDBClient, query : string) = 
+        AmazonDynamoDBClientExt.ScanAsync(clt, query) |> Async.StartAsTask
+    
+    [<Extension>]
+    static member Scan (clt : AmazonDynamoDBClient, query : string) = 
+        AmazonDynamoDBClientExt.ScanAsync(clt, query) |> Async.RunSynchronously

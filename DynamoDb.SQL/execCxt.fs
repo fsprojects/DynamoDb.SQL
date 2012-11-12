@@ -5,6 +5,7 @@
 
 namespace DynamoDb.SQL.Execution
 
+open System.Runtime.CompilerServices
 open Amazon.DynamoDB.DataModel
 open Amazon.DynamoDB.DocumentModel
 open DynamoDb.SQL.Ast
@@ -44,17 +45,22 @@ module Helper =
 
                IsScanConfig config
 
-    type DynamoDBContext with
-        member this.Query<'T> (query : string) =
-            let dynamoQuery = parseDynamoQuery query
-            let co = new DynamoDBOperationConfig()
-            match dynamoQuery with
-            | IsQueryConfig config -> this.FromQuery<'T> config
-            | _ -> raise <| InvalidQuery (sprintf "Not a valid query operation : %s" query)
+[<Extension>]
+[<AbstractClass>]
+[<Sealed>]
+type DynamoDBContextExt =
+    [<Extension>]
+    static member ExecQuery<'T> (cxt : DynamoDBContext, query : string) =
+        let dynamoQuery = parseDynamoQuery query
+        let co = new DynamoDBOperationConfig()
+        match dynamoQuery with
+        | IsQueryConfig config -> cxt.FromQuery<'T> config
+        | _ -> raise <| InvalidQuery (sprintf "Not a valid query operation : %s" query)
 
-        member this.Scan (query : string) =
-            let dynamoQuery = parseDynamoQuery query
+    [<Extension>]
+    static member ExecScan (cxt : DynamoDBContext, query : string) =
+        let dynamoQuery = parseDynamoQuery query
 
-            match dynamoQuery with
-            | IsScanConfig config -> this.FromScan<'T> config
-            | _ -> raise <| InvalidQuery (sprintf "Not a valid scan operation : %s" query)
+        match dynamoQuery with
+        | IsScanConfig config -> cxt.FromScan<'T> config
+        | _ -> raise <| InvalidQuery (sprintf "Not a valid scan operation : %s" query)

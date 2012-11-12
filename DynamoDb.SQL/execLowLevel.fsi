@@ -5,6 +5,7 @@
 
 namespace DynamoDb.SQL.Execution
 
+open System.Runtime.CompilerServices
 open System.Collections.Generic
 open System.Threading.Tasks
 open Amazon.DynamoDB
@@ -16,22 +17,31 @@ module LowLevel =
     /// Active pattern for getting the query or scan request object
     val (|IsQueryReq|IsScanReq|) : DynamoQuery -> Choice<QueryRequest, ScanRequest>
 
-    /// Extension methods for the low level DynamoDB client
-    type AmazonDynamoDBClient with
-        /// Executes a query asynchronously and returns the results
-        member QueryAsync       : string -> Async<QueryResponse>
+/// Extension methods for the low level DynamoDB client
+[<Extension>]
+[<AbstractClass>]
+[<Sealed>]
+type AmazonDynamoDBClientExt =
+    /// Executes a query asynchronously and returns the results
+    [<Extension>]
+    static member QueryAsync       : AmazonDynamoDBClient * string -> Async<QueryResponse>
 
-        /// Executes a query asynchronously as a task and returns the results
-        member QueryAsyncAsTask : string -> Task<QueryResponse>
+    /// Executes a query asynchronously as a task and returns the results
+    [<Extension>]
+    static member QueryAsyncAsTask : AmazonDynamoDBClient * string -> Task<QueryResponse>
 
-        /// Executes a query synchronously and returns the results
-        member Query            : string -> QueryResponse
+    /// Executes a query synchronously and returns the results
+    [<Extension>]
+    static member Query            : AmazonDynamoDBClient * string -> QueryResponse
 
-        /// Executes a scan asynchronously and returns the results
-        member ScanAsync        : string -> Async<ScanResponse>
+    /// Executes a scan asynchronously and returns the results
+    [<Extension>]
+    static member ScanAsync        : AmazonDynamoDBClient * string -> Async<ScanResponse>
 
-        /// Executes a scan asynchronously as a task and returns the results
-        member ScanAsyncAsTask  : string -> Task<ScanResponse>
+    /// Executes a scan asynchronously as a task and returns the results
+    [<Extension>]
+    static member ScanAsyncAsTask  : AmazonDynamoDBClient * string -> Task<ScanResponse>
 
-        /// Executes a scan synchronously and returns the results
-        member Scan             : string -> ScanResponse
+    /// Executes a scan synchronously and returns the results
+    [<Extension>]
+    static member Scan             : AmazonDynamoDBClient * string -> ScanResponse
