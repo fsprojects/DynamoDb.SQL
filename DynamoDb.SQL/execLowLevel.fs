@@ -16,13 +16,12 @@ open Amazon.DynamoDB.DataModel
 
 [<AutoOpen>]
 module LowLevel =
-    let (|IsQueryReq|IsScanReq|) = function
-        // handle invalid requests
-        | { Select = Select([]) }   -> raise EmptySelect
-        | { From = From("") }       -> raise EmptyFrom        
-        // handle Query requests
-        | { From = From(table); Where = Some(Where(Query(hKey, rngKeyCondition)));
-            Select = Select(SelectAttributes attributes); Limit = limit }
+    let (|GetQueryReq|) (query : DynamoQuery) = 
+        match query with
+        | { From    = From table
+            Where   = Where(QueryCondition(hKey, rngKeyCondition))
+            Select  = Select(SelectAttributes attributes)
+            Limit   = limit }
             -> let req = new QueryRequest(ConsistentRead = true, // TODO
                                           TableName = table, HashKeyValue = hKey.ToAttributeValue(),
                                           AttributesToGet = attributes)
@@ -34,16 +33,26 @@ module LowLevel =
 
                match limit with | Some(Limit n) -> req.Limit <- n | _ -> ()
                
-               IsQueryReq req
-        // handle Scan requests
-        | { From = From(table); Where = Some(Where(Scan(scanFilters)));
-            Select = Select(SelectAttributes attributes); Limit = limit }
-            -> let scanFilters = scanFilters |> Seq.map (fun (attr, cond) -> attr, cond.ToCondition())
-               let req = new ScanRequest(TableName = table, AttributesToGet = attributes,
-                                         ScanFilter = new Dictionary<string, Condition>(dict scanFilters))
+               req
+
+    let (|GetScanReq|) (scan : DynamoScan) = 
+        match scan with
+        | { From    = From table
+            Where   = where
+            Select  = Select(SelectAttributes attributes) 
+            Limit   = limit }
+            -> let req = new ScanRequest(TableName = table, AttributesToGet = attributes)
+
+               // optionally set the scan filters and limit
+               match where with 
+               | Some(Where(ScanCondition scanFilters)) -> 
+                    let scanFilters = scanFilters |> Seq.map (fun (attr, cond) -> attr, cond.ToCondition())
+                    req.ScanFilter <- new Dictionary<string, Condition>(dict scanFilters)
+               | _ -> ()
 
                match limit with | Some(Limit n) -> req.Limit <- n | _ -> ()
-               IsScanReq req
+               
+               req
 
 [<Extension>]
 [<AbstractClass>]
@@ -54,7 +63,7 @@ type AmazonDynamoDBClientExt =
         let dynamoQuery = parseDynamoQuery query
 
         match dynamoQuery with
-        | IsQueryReq req -> async { return! clt.QueryAsync req }
+        | GetQueryReq req -> async { return! clt.QueryAsync req }
         | _ -> raise <| InvalidQuery (sprintf "Not a valid query request : %s" query)            
 
     [<Extension>]
@@ -67,11 +76,11 @@ type AmazonDynamoDBClientExt =
 
     [<Extension>]
     static member ScanAsync (clt : AmazonDynamoDBClient, query : string) =
-        let dynamoQuery = parseDynamoQuery query
+        let dynamoScan = parseDynamoScan query
     
-        match dynamoQuery with
-        | IsScanReq req -> async { return! clt.ScanAsync req }
-        | _ -> raise <| InvalidQuery (sprintf "Not a valid scan request : %s" query)
+        match dynamoScan with
+        | GetScanReq req -> async { return! clt.ScanAsync req }
+        | _ -> raise <| InvalidScan (sprintf "Not a valid scan request : %s" query)
 
     [<Extension>]
     static member ScanAsyncAsTask (clt : AmazonDynamoDBClient, query : string) = 

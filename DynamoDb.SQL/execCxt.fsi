@@ -12,9 +12,12 @@ open Amazon.DynamoDB.DataModel
 open Amazon.DynamoDB.DocumentModel
 
 [<AutoOpen>]
-module Helper =
-    /// Active pattern for getting the query or scan operation config
-    val (|IsQueryConfig|IsScanConfig|) : DynamoQuery -> Choice<QueryOperationConfig, ScanOperationConfig>
+module Cxt =
+    /// Active pattern for getting the query operation config out of a DynamoQuery
+    val (|GetQueryConfig|) : DynamoQuery -> QueryOperationConfig
+    
+    /// Active pattern for getting the scan operation config out of a DynamoScan
+    val (|GetScanConfig|)  : DynamoScan -> ScanOperationConfig
 
 /// Extension methods for the DynamoDBContext class
 [<Extension>]

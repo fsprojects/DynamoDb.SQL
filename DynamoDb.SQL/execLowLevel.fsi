@@ -14,8 +14,11 @@ open DynamoDb.SQL.Ast
 
 [<AutoOpen>]
 module LowLevel =
-    /// Active pattern for getting the query or scan request object
-    val (|IsQueryReq|IsScanReq|) : DynamoQuery -> Choice<QueryRequest, ScanRequest>
+    /// Active pattern for getting the query request object out of a DynamoQuery
+    val (|GetQueryReq|) : DynamoQuery -> QueryRequest
+
+    /// Active pattern for getting the scan request object out of a DynamoScan
+    val (|GetScanReq|) : DynamoScan -> ScanRequest
 
 /// Extension methods for the low level DynamoDB client
 [<Extension>]

@@ -9,10 +9,12 @@ open FParsec
 open DynamoDb.SQL.Ast
 
 /// Exception that's raised when the query being parsed is invalid
-exception InvalidQuery  of string
+exception InvalidTableName  of string
+exception InvalidQuery      of string
+exception InvalidScan       of string
 
-/// Parser for a DynamoQuery
-val pquery : Parser<DynamoQuery, unit>
-
-/// Function to parse a query string and return the corresponding DynamoQuery
+/// Function to parse a string and return the corresponding DynamoQuery
 val parseDynamoQuery : string -> DynamoQuery
+
+/// Function to parse a string and return the corresponding DynamoScan
+val parseDynamoScan  : string -> DynamoScan

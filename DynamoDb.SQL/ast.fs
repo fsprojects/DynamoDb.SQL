@@ -45,11 +45,6 @@ type Operant =
             | S(str) -> new Primitive(str)
             | N(n)   -> new Primitive(string n, true)
 
-        member this.ToObject() =
-            match this with
-            | S(str) -> str :> obj
-            | N(n)   -> n :> obj
-
         member private this.StructuredFormatDisplay = this.ToString()
 
 [<StructuredFormatDisplay("{StructuredFormatDisplay}")>]
@@ -114,19 +109,7 @@ type FilterCondition =
                 | In(opLst)              -> "IN",           opLst |> Seq.map (fun op -> op.ToAttributeValue())
 
             new Condition(ComparisonOperator = operator, AttributeValueList = new List<AttributeValue>(attrVals))
-
-        /// returns a corresponding query operator and operator values
-        member this.ToQueryOperatorAndValues() =
-            match this with
-            | Equal(op)              -> Some <| (QueryOperator.Equal,                [| op.ToObject() |])
-            | GreaterThan(op)        -> Some <| (QueryOperator.GreaterThan,          [| op.ToObject() |])
-            | GreaterThanOrEqual(op) -> Some <| (QueryOperator.GreaterThanOrEqual,   [| op.ToObject() |])
-            | LessThan(op)           -> Some <| (QueryOperator.LessThan,             [| op.ToObject() |])
-            | LessThanOrEqual(op)    -> Some <| (QueryOperator.LessThanOrEqual,      [| op.ToObject() |])
-            | BeginsWith(op)         -> Some <| (QueryOperator.BeginsWith,           [| op.ToObject() |])
-            | Between(op1, op2)      -> Some <| (QueryOperator.Between,              [| op1.ToObject(); op2.ToObject() |])
-            | _                      -> None
-
+            
 [<StructuredFormatDisplay("{StructuredFormatDisplay}")>]
 type Select = 
     Select of Identifier list
@@ -172,12 +155,35 @@ type Limit =
 
         member private this.StructuredFormatDisplay = this.ToString()
 
+/// Represents a query against data in DynamoDB
 type DynamoQuery =
     {
-        Select          : Select;
-        From            : From;
-        Where           : Where option;
+        Select          : Select
+        From            : From
+        Where           : Where
         Limit           : Limit option
     }
 
-    override this.ToString () = sprintf "%A %A" this.Select this.From
+    override this.ToString () = 
+        match this.Limit with
+        | Some(limit) -> sprintf "%A %A %A %A" this.Select this.From this.Where limit
+        | _           -> sprintf "%A %A %A" this.Select this.From this.Where
+
+/// Represents a scan against data in DynamoDB
+type DynamoScan =
+    {
+        Select          : Select
+        From            : From
+        Where           : Where option
+        Limit           : Limit option
+    }
+
+    override this.ToString () = 
+        let appendIfSome someOption appendee = 
+            match someOption with
+            | Some(x)   -> sprintf "%A %A" appendee x
+            | _         -> appendee
+
+        sprintf "%A %A" this.Select this.From
+        |> appendIfSome this.Where
+        |> appendIfSome this.Limit
