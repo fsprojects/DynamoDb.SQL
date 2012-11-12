@@ -20,7 +20,7 @@ type ``Given a DynamoQuery`` () =
         let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\""
 
         match dynamoQuery with
-        | { Where = Some(Where(Query(S "Yan", None))) }
+        | { Where = Where(QueryCondition(S "Yan", None)) }
             -> true
         | _ -> false
         |> should equal true
@@ -30,7 +30,7 @@ type ``Given a DynamoQuery`` () =
         let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey = 30"
 
         match dynamoQuery with
-        | { Where = Some(Where(Query(S "Yan", Some(Equal (N 30.0))))) }
+        | { Where = Where(QueryCondition(S "Yan", Some(Equal (N 30.0)))) }
             -> true
         | _ -> false
         |> should equal true
@@ -40,40 +40,29 @@ type ``Given a DynamoQuery`` () =
         let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey > 30"
 
         match dynamoQuery with
-        | { Where = Some(Where(Query(S "Yan", Some(GreaterThan (N 30.0))))) }
+        | { Where = Where(QueryCondition(S "Yan", Some(GreaterThan (N 30.0)))) }
             -> true
         | _ -> false
         |> should equal true
 
     [<Test>]
-    member this.``when there is a hash key and a range key in filter it should be interpreted as a Query operation`` () =
+    member this.``when there is a hash key and a range key between filter it should be interpreted as a Query operation`` () =
         let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25"
 
         match dynamoQuery with
-        | { Where = Some(Where(Query(S "Yan", Some(Between (N 5.0, N 25.0))))) } 
+        | { Where = Where(QueryCondition(S "Yan", Some(Between (N 5.0, N 25.0)))) } 
             -> true
         | _ -> false
         |> should equal true
 
     [<Test>]
-    member this.``when there is one attribute in filter it should be interpreted as a Scan operation`` () =
-        let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE FirstName = \"Yan\""
+    [<ExpectedException(typeof<InvalidQueryFormat>)>]
+    member this.``when there is no 'hashkey =' condition in where clause it should except`` () =
+        let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey > 30"
 
-        match dynamoQuery with
-        | { Where = Some(Where(Scan [ ("FirstName", Equal (S "Yan")) ])) }
-            -> true
-        | _ -> false
-        |> should equal true
-
-    [<Test>]
-    member this.``when there are multiple attributes in filter it should be interpreted as a Scan operation`` () =
-        let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND LastName != \"Cui\" AND Age >= 30"
-
-        match dynamoQuery with
-        | { Where = Some(Where(Scan [ ("FirstName", Equal (S "Yan")); ("LastName", NotEqual (S "Cui")); ("Age", GreaterThanOrEqual (N 30.0)) ])) }
-            -> true
-        | _ -> false
-        |> should equal true
+        match dynamoQuery with 
+        | { Where = Where(QueryCondition _) } -> ()
+        |> should throw typeof<InvalidQueryFormat>
 
     [<Test>]
     member this.``when there is only an asterisk (*) in the SELECT clause it should return null as attribtue values`` () =
@@ -101,6 +90,18 @@ type ``Given a DynamoQuery`` () =
 
         match dynamoQuery with
         | { Select = Select(SelectAttributes(lst)) } when lst.Count = 2 && lst.[0] = "Name" && lst.[1] = "Age"
+            -> true
+        | _ -> false
+        |> should equal true
+
+[<TestFixture>]
+type ``Given a DynamoScan`` () =
+    [<Test>]
+    member this.``when there are multiple attributes in filter it should be interpreted as a Scan operation`` () =
+        let dynamoScan = parseDynamoScan "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND LastName != \"Cui\" AND Age >= 30"
+
+        match dynamoScan with
+        | { Where = Some(Where(ScanCondition [ ("FirstName", Equal (S "Yan")); ("LastName", NotEqual (S "Cui")); ("Age", GreaterThanOrEqual (N 30.0)) ])) }
             -> true
         | _ -> false
         |> should equal true
