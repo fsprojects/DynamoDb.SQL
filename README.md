@@ -25,6 +25,10 @@ The extension methods defined in this library are written in a way that makes th
 
 For more details on using this library, please refer to the [**Getting Started**](https://github.com/theburningmonk/DynamoDb.SQL/wiki/Getting-Started) wiki page.
 
+### Where's the Nuget package???
+
+It's coming!
+
 ### Feedbacks
 
 As always, your feedbacks are very welcomed and appreciated! Please feel free to report any bugs and suggest features/changes, I'll get to them as soon as I'm able to.
