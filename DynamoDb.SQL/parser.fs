@@ -1,9 +1,14 @@
 ﻿// Copyright (c) Yan Cui 2012
 
+// Email : theburningmonk@gmail.com
+// Blog  : http://theburningmonk.com
+
 module DynamoDb.SQL.Parser
 
 open FParsec
 open DynamoDb.SQL.Ast
+
+exception InvalidQuery  of string
 
 type Parser<'t> = Parser<'t, unit>
 
@@ -13,51 +18,40 @@ let ws = spaces     // eats any whitespace
 // helper functions that ignores subsequent whitespaces
 let pstring_ws s            = pstring s .>> ws
 let pstringCI_ws s          = pstringCI s .>> ws
+let skipString_ws s         = skipString s .>> ws
 let skipStringCI_ws s       = skipStringCI s .>> ws
 let stringReturn_ws s r     = stringReturn s r .>> ws
 let stringCIReturn_ws s r   = stringCIReturn s r .>> ws
 let pfloat_ws               = pfloat
-let pint64_ws               = pint64
 let pint32_ws               = pint32
-let pint16_ws               = pint16
-let pint8_ws                = pint8
 
-// parsers for attribute names
-let isAttrName c = isLetter c || isDigit c || c = '*'
+let (<&&>) f g x = (f x) && (g x)
+let (<||>) f g x = (f x) || (g x)
+
+// parsers for identifiers
+let hashkey     = stringCIReturn_ws "@hashkey" HashKey
+let rangekey    = stringCIReturn_ws "@rangekey" RangeKey
+let asterisk    = stringCIReturn_ws "*" Asterisk
+
+let isAttrName  = isLetter <||> isDigit
 let attributeName   : Parser<_> = many1SatisfyL isAttrName "attribute name"
-let attributeNames = 
+let attribute   = attributeName .>> ws |>> Attribute
+
+// only allow explicit attribute name and asterisk in select
+let selectAttributes = choice [ asterisk; attribute ]
+let pselect = 
     ws
     >>. skipStringCI_ws "select" 
-    >>. (sepBy1 attributeName (pstring_ws ",") |>> Select)
+    >>. (sepBy1 selectAttributes (pstring_ws ",") |>> Select)
     .>> ws
 
 // parser for table names
-let isTableName c = isLetter c || isDigit c
-let tableName =
+let isTableName = isLetter <||> isDigit
+let pfrom =
     ws
     >>. skipStringCI_ws "from"
     >>. ((many1SatisfyL isTableName "table name") |>> From)
     .>> ws
-
-// parsers for identifiers in the where clauses
-let hashkey     = stringCIReturn_ws "@hashkey" HashKey
-let rangekey    = stringCIReturn_ws "@rangekey" RangeKey
-let attribute   = attributeName .>> ws |>> Attribute
-let identifier  = choice [ hashkey; rangekey; attribute ]
-
-// parsers for operators
-let equal               = stringReturn_ws "=" Equal
-let greaterThan         = stringReturn_ws ">" GreaterThan
-let greaterThanOrEqual  = stringReturn_ws ">=" GreaterThanOrEqual
-let lessThan            = stringReturn_ws "<" LessThan
-let lessThanOrEqual     = stringReturn_ws "<=" LessThanOrEqual
-let beginsWith          = stringReturn_ws "BeginsWith" BeginsWith
-let operators           = choice [ greaterThanOrEqual; 
-                                   lessThanOrEqual; 
-                                   equal; 
-                                   greaterThan; 
-                                   lessThan;
-                                   beginsWith ]
 
 let stringLiteral =
     let normalCharSnippet = manySatisfy (fun c -> c <> '\\' && c <> '"')
@@ -69,27 +63,60 @@ let stringLiteral =
     between (pstring "\"") (pstring "\"")
             (stringsSepBy normalCharSnippet escapedChar)
 
-let value = choiceL [ (stringLiteral |>> box); (pfloat |>> box) ] "String or Numeric value" .>> ws
+// parser for the operant (string or numeric value)
+let operant = ws >>. choiceL [ (stringLiteral |>> S); (pfloat |>> N) ] "String or Numeric value" .>> ws
 
-let filterCondition = ws >>. pipe3 identifier operators value (fun id op v -> id, op, v) .>> ws
+// don't allow asterisk (*) in the where clause
+let whereAttributes  = choice [ hashkey; rangekey; attribute ]
 
-let where =
-    ws
-    >>. skipStringCI_ws "where"
-    >>. (sepBy1 filterCondition (ws >>. pstringCI_ws "and")
-        |>> (fun filterLst -> filterLst |> List.toArray |> Where))
+// parsers for binary/unary/between conditions
+let binaryOperators     = choice [ stringReturn_ws "=" Equal;           
+                                   stringReturn_ws "!=" NotEqual;
+                                   stringReturn_ws ">=" GreaterThanOrEqual;
+                                   stringReturn_ws ">" GreaterThan;                                   
+                                   stringReturn_ws "<=" LessThanOrEqual;
+                                   stringReturn_ws "<" LessThan;                                   
+                                   stringCIReturn_ws "contains" Contains;
+                                   stringCIReturn_ws "not contains" NotContains;
+                                   stringCIReturn_ws "begins with" BeginsWith ]
+let binaryCondition     = pipe3 whereAttributes binaryOperators operant (fun id op v -> id, op v)
+
+let unaryOperators      = choice [ stringCIReturn_ws "is null" Null; 
+                                   stringCIReturn_ws "is not null" NotNull ]
+let unaryCondition      = pipe2 whereAttributes unaryOperators (fun id op -> id, op)
+
+let between             = stringCIReturn_ws "between" Between
+let and'                = skipStringCI_ws "and"
+let betweenCondition    = pipe5 whereAttributes between operant and' operant (fun id op v1 _ v2 -> id, op(v1, v2))
+
+let in'                 = stringCIReturn_ws "in" In
+let openBracket         = skipString_ws "("
+let closeBracket        = skipString_ws ")"
+let operantLst          = sepBy1 operant (ws >>. skipString_ws ",")
+let inCondition         = pipe5 whereAttributes in' openBracket operantLst closeBracket (fun id op _ lst _ -> id, op(lst))
+
+let filterCondition     = 
+    ws 
+    >>. attempt unaryCondition 
+        <|> attempt binaryCondition 
+        <|> attempt betweenCondition 
+        <|> inCondition
     .>> ws
 
-let limit = ws >>. skipStringCI_ws "limit" >>. pint32_ws |>> Limit
+let pwhere =
+    ws
+    >>. skipStringCI_ws "where"
+    >>. (sepBy1 filterCondition (ws >>. and')
+        |>> (fun filterLst -> filterLst |> Where))
+    .>> ws
 
-let query = tuple4 attributeNames tableName (opt where) (opt limit)
+let plimit = ws >>. skipStringCI_ws "limit" >>. pint32_ws |>> Limit
 
-let parse = run query
+// parser for a query
+let pquery = tuple4 pselect pfrom (opt pwhere) (opt plimit)
+             |>> (fun (select, from, where, limit) -> 
+                    { Select = select; From = from; Where = where; Limit = limit })
 
-// helper active patterns
-let (|IsSuccess|)   = function | Success(_) -> true | _ -> false
-let (|IsFailure|_|) = function | Failure(errMsg, _, _) -> Some(errMsg) | _ -> None
-let (|GetSelect|_|) = function | Success((Select(attrLst), _, _, _), _, _) -> Some(attrLst) | _ -> None
-let (|GetFrom|_|)   = function | Success((_, From(table), _, _), _, _) -> Some(table) | _ -> None
-let (|GetWhere|_|)  = function | Success((_, _, Some(Where(filters)), _), _, _) -> Some(filters) | _ -> None
-let (|GetLimit|_|)  = function | Success((_, _, _, Some(Limit(n))), _, _) -> Some(n) | _ -> None
+let parseDynamoQuery str = match run pquery str with
+                           | Success(result, _, _) -> result
+                           | Failure(errStr, _, _) -> raise <| InvalidQuery errStr
