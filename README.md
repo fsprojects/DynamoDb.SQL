@@ -25,9 +25,11 @@ The extension methods defined in this library are written in a way that makes th
 
 For more details on using this library, please refer to the [**Getting Started**](https://github.com/theburningmonk/DynamoDb.SQL/wiki/Getting-Started) wiki page.
 
-### Where's the Nuget package???
+### Nuget
 
-It's coming!
+Download and install **DynamoDb.SQL** using [NuGet](https://nuget.org/packages/DynamoDb.SQL).
+
+<a href="https://nuget.org/packages/DynamoDb.SQL"><img src="http://theburningmonk.com/images/dynamodb.sql-nuget-install.png" alt="NuGet package"/></a>
 
 ### Feedbacks
 
