@@ -56,7 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="AWSSDK">
-      <HintPath>..\packages\AWSSDK.1.5.7.1\lib\AWSSDK.dll</HintPath>
+      <HintPath>..\packages\AWSSDK.1.5.8.0\lib\AWSSDK.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="FParsec">

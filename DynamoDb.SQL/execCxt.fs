@@ -18,7 +18,8 @@ module Cxt =
         | { From    = From(table) 
             Where   = Where(QueryCondition(hKey, rngKeyCondition))
             Select  = Select(SelectAttributes attributes)
-            Limit   = limit }
+            Limit   = limit
+            Order   = order }
             -> let config = new QueryOperationConfig(ConsistentRead = true, // TODO
                                                      AttributesToGet = attributes,
                                                      HashKey = hKey.ToPrimitive())
@@ -29,6 +30,9 @@ module Cxt =
                | _ -> ()
 
                match limit with | Some(Limit n) -> config.Limit <- n | _ -> ()
+               match order with 
+               | Some(Asc) -> config.BackwardSearch <- false
+               | _ -> config.BackwardSearch <- true
                
                config
         
