@@ -217,6 +217,34 @@ type ``Given a query`` () =
         | _ -> false
         |> should equal true
 
+    [<Test>]
+    member this.``when order asc is specified, it should be parsed correctly`` () =
+        let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey >= 30 ORDER ASC LIMIT 10"
+
+        match parseDynamoQuery select with
+        | { Select  = Select [ Asterisk ]
+            From    = From "Employees"
+            Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, GreaterThanOrEqual(N 30.0)) ]
+            Limit   = Some(Limit 10);
+            Order   = Some(Asc) }
+            -> true
+        | _ -> false
+        |> should equal true
+
+    [<Test>]
+    member this.``when order desc is specified, it should be parsed correctly`` () =
+        let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey >= 30 ORDER DESC LIMIT 10"
+
+        match parseDynamoQuery select with
+        | { Select  = Select [ Asterisk ]
+            From    = From "Employees"
+            Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, GreaterThanOrEqual(N 30.0)) ]
+            Limit   = Some(Limit 10);
+            Order   = Some(Desc) }
+            -> true
+        | _ -> false
+        |> should equal true
+
 [<TestFixture>]
 type ``Given a scan`` () =
     [<Test>]

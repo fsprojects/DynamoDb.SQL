@@ -9,6 +9,14 @@ open System.Collections.Generic
 open Amazon.DynamoDB.Model
 open Amazon.DynamoDB.DocumentModel
 
+module Utils = 
+    let appendIfSome someOption appendee = 
+        match someOption with
+        | Some(x)   -> sprintf "%A %A" appendee x
+        | _         -> appendee
+
+open Utils
+
 [<StructuredFormatDisplay("{StructuredFormatDisplay}")>]
 type Identifier = 
     | HashKey
@@ -109,6 +117,18 @@ type FilterCondition =
                 | In(opLst)              -> "IN",           opLst |> Seq.map (fun op -> op.ToAttributeValue())
 
             new Condition(ComparisonOperator = operator, AttributeValueList = new List<AttributeValue>(attrVals))
+
+[<StructuredFormatDisplay("{StructuredFormatDisplay}")>]     
+type OrderDirection =
+    | Asc
+    | Desc
+    with
+        override this.ToString() =
+            match this with
+            | Asc   -> "ORDER ASC"
+            | Desc  -> "ORDER DESC"
+
+        member private this.StructuredFormatDisplay = this.ToString()
             
 [<StructuredFormatDisplay("{StructuredFormatDisplay}")>]
 type Select = 
@@ -158,32 +178,28 @@ type Limit =
 /// Represents a query against data in DynamoDB
 type DynamoQuery =
     {
-        Select          : Select
-        From            : From
-        Where           : Where
-        Limit           : Limit option
+        Select  : Select
+        From    : From
+        Where   : Where
+        Limit   : Limit option
+        Order   : OrderDirection option
     }
 
     override this.ToString () = 
-        match this.Limit with
-        | Some(limit) -> sprintf "%A %A %A %A" this.Select this.From this.Where limit
-        | _           -> sprintf "%A %A %A" this.Select this.From this.Where
+        sprintf "%A %A" this.Select this.From
+        |> appendIfSome this.Limit
+        |> appendIfSome this.Order
 
 /// Represents a scan against data in DynamoDB
 type DynamoScan =
     {
-        Select          : Select
-        From            : From
-        Where           : Where option
-        Limit           : Limit option
+        Select  : Select
+        From    : From
+        Where   : Where option
+        Limit   : Limit option
     }
 
     override this.ToString () = 
-        let appendIfSome someOption appendee = 
-            match someOption with
-            | Some(x)   -> sprintf "%A %A" appendee x
-            | _         -> appendee
-
         sprintf "%A %A" this.Select this.From
         |> appendIfSome this.Where
         |> appendIfSome this.Limit

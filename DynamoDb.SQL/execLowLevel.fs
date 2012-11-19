@@ -21,7 +21,8 @@ module LowLevel =
         | { From    = From table
             Where   = Where(QueryCondition(hKey, rngKeyCondition))
             Select  = Select(SelectAttributes attributes)
-            Limit   = limit }
+            Limit   = limit
+            Order   = order }
             -> let req = new QueryRequest(ConsistentRead = true, // TODO
                                           TableName = table, HashKeyValue = hKey.ToAttributeValue(),
                                           AttributesToGet = attributes)
@@ -32,6 +33,9 @@ module LowLevel =
                | _ -> ()
 
                match limit with | Some(Limit n) -> req.Limit <- n | _ -> ()
+               match order with 
+               | Some(Asc) -> req.ScanIndexForward <- true 
+               | _ -> req.ScanIndexForward <- false
                
                req
 

@@ -78,17 +78,24 @@ module Common =
 
     let plimit = ws >>. skipStringCI_ws "limit" >>. pint32_ws |>> Limit
 
+    // parser for the order directions
+    let porder = 
+        ws 
+        >>. choice [ stringCIReturn_ws "order asc" Asc
+                     stringCIReturn_ws "order desc" Desc ]
+        .>> ws
+
 [<RequireQualifiedAccess>]
 module QueryParser =
     // allow @hashkey, @rangekey in the Where clause for a QUERY
     let whereAttributes     = choice [ hashkey; rangekey ]
 
     // parsers for binary/between conditions allowed in a QUERY
-    let binaryOperators     = choice [ stringReturn_ws "="  Equal;
-                                       stringReturn_ws ">=" GreaterThanOrEqual;
-                                       stringReturn_ws ">"  GreaterThan;
-                                       stringReturn_ws "<=" LessThanOrEqual;
-                                       stringReturn_ws "<"  LessThan;
+    let binaryOperators     = choice [ stringReturn_ws "="  Equal
+                                       stringReturn_ws ">=" GreaterThanOrEqual
+                                       stringReturn_ws ">"  GreaterThan
+                                       stringReturn_ws "<=" LessThanOrEqual
+                                       stringReturn_ws "<"  LessThan
                                        stringCIReturn_ws "begins with" BeginsWith ]
     let binaryCondition     = pipe3 whereAttributes binaryOperators operant (fun id op v -> id, op v)
 
@@ -111,9 +118,9 @@ module QueryParser =
 
     // parser for a query
     let pquery : Parser<DynamoQuery, unit> = 
-        tuple4 pselect pfrom pwhere (opt plimit)
-        |>> (fun (select, from, where, limit) -> 
-                { Select = select; From = from; Where = where; Limit = limit })
+        tuple5 pselect pfrom pwhere (opt porder) (opt plimit)
+        |>> (fun (select, from, where, order, limit) -> 
+                { Select = select; From = from; Where = where; Limit = limit; Order = order })
 
 [<RequireQualifiedAccess>]
 module ScanParser = 
@@ -121,14 +128,14 @@ module ScanParser =
     let whereAttributes     = attribute
 
     // parsers for binary/unary/between conditions allowed in a SCAN
-    let binaryOperators     = choice [ stringReturn_ws "="  Equal;           
-                                       stringReturn_ws "!=" NotEqual;
-                                       stringReturn_ws ">=" GreaterThanOrEqual;
-                                       stringReturn_ws ">"  GreaterThan;                                   
-                                       stringReturn_ws "<=" LessThanOrEqual;
-                                       stringReturn_ws "<"  LessThan;                                   
-                                       stringCIReturn_ws "contains" Contains;
-                                       stringCIReturn_ws "not contains" NotContains;
+    let binaryOperators     = choice [ stringReturn_ws "="  Equal
+                                       stringReturn_ws "!=" NotEqual
+                                       stringReturn_ws ">=" GreaterThanOrEqual
+                                       stringReturn_ws ">"  GreaterThan
+                                       stringReturn_ws "<=" LessThanOrEqual
+                                       stringReturn_ws "<"  LessThan
+                                       stringCIReturn_ws "contains" Contains
+                                       stringCIReturn_ws "not contains" NotContains
                                        stringCIReturn_ws "begins with" BeginsWith ]
     let binaryCondition     = pipe3 whereAttributes binaryOperators operant (fun id op v -> id, op v)
 
