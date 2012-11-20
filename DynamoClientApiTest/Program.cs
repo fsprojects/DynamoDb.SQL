@@ -24,14 +24,20 @@ namespace DynamoClientApiTest
 
             // query all
             //var hashKey = "\"Amazon DynamoDB#DynamoDB Thread 1\"";
-            //var queryAllRes = client.QueryAsyncAsTask("SELECT * from Reply where @HashKey = " + hashKey).Result;
+            //var queryAllRes = client.QueryAsyncAsTask("SELECT * from Reply where @HashKey = " + hashKey).Result;            
 
             // query subset
             //var querySubsetRes1 = client.QueryAsyncAsTask("select * from Reply where @HashKey = " + hashKey + " and @RangeKey >= \"2012-06-10\"").Result;
             //var querySubsetRes2 = client.QueryAsyncAsTask("select * from Reply where @HashKey = " + hashKey + " and @RangeKey < \"2012-06-10\"").Result;
+            //var querySubsetRes3 = client.QueryAsyncAsTask("select * from Reply where @HashKey = " + hashKey + " ORDER DESC LIMIT 2").Result;
+            //var querySubsetRes4 = client.QueryAsyncAsTask("select * from Reply where @HashKey = " + hashKey + " ORDER ASC LIMIT 2").Result;
+            //var querySubsetRes5 = client.QueryAsyncAsTask("select * from Reply where @HashKey = " + hashKey + " LIMIT 2").Result;
             
-            //var querySubsetRes3 = cxt.ExecQuery<Reply>("select * from Reply where @HashKey = " + hashKey + " and @RangeKey >= \"2012-06-10\"").ToArray();
-            //var querySubsetRes4 = cxt.ExecQuery<Reply>("select * from Reply where @HashKey = " + hashKey + " and @RangeKey < \"2012-06-10\"").ToArray();
+            //var querySubsetRes1 = cxt.ExecQuery<Reply>("select * from Reply where @HashKey = " + hashKey + " and @RangeKey >= \"2012-06-10\"").ToArray();
+            //var querySubsetRes2 = cxt.ExecQuery<Reply>("select * from Reply where @HashKey = " + hashKey + " and @RangeKey < \"2012-06-10\"").ToArray();
+            //var querySubsetRes3 = cxt.ExecQuery<Reply>("select * from Reply where @HashKey = " + hashKey + " ORDER DESC LIMIT 2");
+            //var querySubsetRes4 = cxt.ExecQuery<Reply>("select * from Reply where @HashKey = " + hashKey + " ORDER ASC LIMIT 2");
+            //var querySubsetRes5 = cxt.ExecQuery<Reply>("select * from Reply where @HashKey = " + hashKey + " LIMIT 2");
 
             //var scanRes1 = client.ScanAsyncAsTask("Select * from Reply where PostedBy contains \"A\"").Result;
             //var scanRes2 = client.ScanAsyncAsTask("Select * from Reply where ReplyDateTime between \"2012-06-10\" and \"2012-06-20\"").Result;
@@ -39,6 +45,8 @@ namespace DynamoClientApiTest
             //var scanRes3 = cxt.ExecScan<Reply>("Select * from Reply where PostedBy contains \"A\"");
             //var scanRes4 = cxt.ExecScan<Reply>("Select * from Reply where ReplyDateTime between \"2012-06-10\" and \"2012-06-20\"");
             
+            Console.WriteLine("all done...");
+
             Console.ReadKey();
         }
 

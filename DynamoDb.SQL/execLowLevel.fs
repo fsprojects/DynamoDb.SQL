@@ -34,8 +34,9 @@ module LowLevel =
 
                match limit with | Some(Limit n) -> req.Limit <- n | _ -> ()
                match order with 
-               | Some(Asc) -> req.ScanIndexForward <- true 
-               | _ -> req.ScanIndexForward <- false
+               | Some(Asc)  -> req.ScanIndexForward <- true
+               | Some(Desc) -> req.ScanIndexForward <- false
+               | _          -> ()
                
                req
 
