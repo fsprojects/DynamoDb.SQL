@@ -31,8 +31,11 @@ module Cxt =
 
                match limit with | Some(Limit n) -> config.Limit <- n | _ -> ()
                match order with 
-               | Some(Asc) -> config.BackwardSearch <- false
-               | _ -> config.BackwardSearch <- true
+               | Some(Asc)  -> config.BackwardSearch <- false
+               | Some(Desc) -> config.BackwardSearch <- true
+               | None       -> ()
+
+               let configs = new DynamoDBOperationConfig()
                
                config
         
@@ -66,7 +69,13 @@ type DynamoDBContextExt =
         let dynamoQuery = parseDynamoQuery query
         let co = new DynamoDBOperationConfig()
         match dynamoQuery with
-        | GetQueryConfig config -> cxt.FromQuery<'T> config
+        | { Limit = Some(Limit n) } & GetQueryConfig config 
+            -> // NOTE: the reason the Seq.take is needed here is that the limit set in the 
+               // Query operation limit is 'per page', and DynamoDBContext lazy-loads all results
+               // see https://forums.aws.amazon.com/thread.jspa?messageID=375136&#375136
+               cxt.FromQuery<'T> config |> Seq.take n
+        | GetQueryConfig config
+            -> cxt.FromQuery<'T> config
         | _ -> raise <| InvalidQuery (sprintf "Not a valid query operation : %s" query)
 
     [<Extension>]
