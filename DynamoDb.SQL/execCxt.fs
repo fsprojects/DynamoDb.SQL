@@ -5,6 +5,7 @@
 
 namespace DynamoDb.SQL.Execution
 
+open System.Linq
 open System.Runtime.CompilerServices
 open Amazon.DynamoDB.DataModel
 open Amazon.DynamoDB.DocumentModel
@@ -73,7 +74,7 @@ type DynamoDBContextExt =
             -> // NOTE: the reason the Seq.take is needed here is that the limit set in the 
                // Query operation limit is 'per page', and DynamoDBContext lazy-loads all results
                // see https://forums.aws.amazon.com/thread.jspa?messageID=375136&#375136
-               cxt.FromQuery<'T> config |> Seq.take n
+               (cxt.FromQuery<'T> config).Take n
         | GetQueryConfig config
             -> cxt.FromQuery<'T> config
         | _ -> raise <| InvalidQuery (sprintf "Not a valid query operation : %s" query)
