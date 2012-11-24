@@ -45,10 +45,14 @@ module Common =
     // only allow explicit attribute name and asterisk in select
     let selectAttributes = choice [ asterisk; attribute ]
     let pselect = 
-        ws
-        >>. skipStringCI_ws "select" 
+        skipStringCI_ws "select" 
         >>. (sepBy1 selectAttributes (pstring_ws ",") |>> Select)
-        .>> ws
+
+    // count action cannot specify a list of attributes
+    let pcount = stringCIReturn_ws "count *" Count
+
+    // an action is either select or count
+    let paction = ws >>. choice [pselect; pcount] .>> ws
 
     // parser for table names
     let isTableName = isLetter <||> isDigit
@@ -118,9 +122,9 @@ module QueryParser =
 
     // parser for a query
     let pquery : Parser<DynamoQuery, unit> = 
-        tuple5 pselect pfrom pwhere (opt porder) (opt plimit)
-        |>> (fun (select, from, where, order, limit) -> 
-                { Select = select; From = from; Where = where; Limit = limit; Order = order })
+        tuple5 paction pfrom pwhere (opt porder) (opt plimit)
+        |>> (fun (action, from, where, order, limit) -> 
+                { Action = action; From = from; Where = where; Limit = limit; Order = order })
 
 [<RequireQualifiedAccess>]
 module ScanParser = 
@@ -169,9 +173,9 @@ module ScanParser =
         .>> ws
 
     // parser for a scan
-    let pscan = tuple4 pselect pfrom (opt pwhere) (opt plimit)
-                |>> (fun (select, from, where, limit) -> 
-                        { Select = select; From = from; Where = where; Limit = limit })
+    let pscan = tuple4 paction pfrom (opt pwhere) (opt plimit)
+                |>> (fun (action, from, where, limit) -> 
+                        { Action = action; From = from; Where = where; Limit = limit })
 
 let parseDynamoQuery str = match run QueryParser.pquery str with
                            | Success(result, _, _) -> result

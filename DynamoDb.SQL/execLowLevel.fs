@@ -20,12 +20,14 @@ module LowLevel =
         match query with
         | { From    = From table
             Where   = Where(QueryCondition(hKey, rngKeyCondition))
-            Select  = Select(SelectAttributes attributes)
+            Action  = ActionParams(isCount, attributes)
             Limit   = limit
             Order   = order }
-            -> let req = new QueryRequest(ConsistentRead = true, // TODO
-                                          TableName = table, HashKeyValue = hKey.ToAttributeValue(),
-                                          AttributesToGet = attributes)
+            -> let req = new QueryRequest(ConsistentRead  = true, // TODO
+                                          TableName       = table, 
+                                          HashKeyValue    = hKey.ToAttributeValue(),
+                                          AttributesToGet = attributes,
+                                          Count           = isCount)
 
                // optionally set the range key condition and limit if applicable
                match rngKeyCondition with 
@@ -44,9 +46,11 @@ module LowLevel =
         match scan with
         | { From    = From table
             Where   = where
-            Select  = Select(SelectAttributes attributes) 
+            Action  = ActionParams(isCount, attributes)
             Limit   = limit }
-            -> let req = new ScanRequest(TableName = table, AttributesToGet = attributes)
+            -> let req = new ScanRequest(TableName       = table, 
+                                         AttributesToGet = attributes,
+                                         Count           = isCount)
 
                // optionally set the scan filters and limit
                match where with 

@@ -30,6 +30,7 @@ module Core =
     /// Active pattern to find out whether a given identifier exists in a list of identifiers
     let (|ContainsIdentifier|) expected identifiers = identifiers |> List.exists ((=) expected)
     
+    /// Active pattern to get the names of the attributes from a list of identifiers in a Select
     let (|SelectAttributes|) (identifiers : Identifier list) =
         match identifiers with
         | ContainsIdentifier Asterisk true 
@@ -37,3 +38,9 @@ module Core =
         | _ -> // only asterisk and attribute names are allowed in select so ok to assume attribute names here
                let attrValues = identifiers |> Seq.map (fun (Attribute name) -> name)
                new List<string>(attrValues)
+
+    /// Active pattern to return the values for the Count and AttributesToGet request parameters
+    let (|ActionParams|) action =
+        match action with
+        | Count -> true, Unchecked.defaultof<List<string>>
+        | Select(SelectAttributes attributes) -> false, attributes

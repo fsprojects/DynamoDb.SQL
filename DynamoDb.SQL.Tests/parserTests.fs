@@ -47,7 +47,7 @@ type ``Given a query`` () =
                       LIMIT     5"
 
         match parseDynamoQuery select with
-        | { Select  = Select [ Attribute "Name"; Attribute "Age"; Attribute "Salary" ]
+        | { Action  = Select [ Attribute "Name"; Attribute "Age"; Attribute "Salary" ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")) ]
             Limit   = Some(Limit 5) }
@@ -63,7 +63,7 @@ type ``Given a query`` () =
                       liMIt 5"
 
         match parseDynamoQuery select with
-        | { Select  = Select [ Attribute "Name"; Attribute "Age"; Attribute "Salary" ]
+        | { Action  = Select [ Attribute "Name"; Attribute "Age"; Attribute "Salary" ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")) ]
             Limit   = Some(Limit 5) }
@@ -76,7 +76,7 @@ type ``Given a query`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey = \"Cui\""
 
         match parseDynamoQuery select with
-        | { Select  = Select [ Asterisk ]
+        | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal(S "Yan")); (RangeKey, Equal(S "Cui")) ]
             Limit   = None }
@@ -101,7 +101,7 @@ type ``Given a query`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey < 99"
 
         match parseDynamoQuery select with
-        | { Select  = Select [ Asterisk ]
+        | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, LessThan (N 99.0)) ]
             Limit   = None }
@@ -114,7 +114,7 @@ type ``Given a query`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey <= 99"
 
         match parseDynamoQuery select with
-        | { Select  = Select [ Asterisk ]
+        | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, LessThanOrEqual (N 99.0)) ]
             Limit   = None }
@@ -127,7 +127,7 @@ type ``Given a query`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey > 99"
 
         match parseDynamoQuery select with
-        | { Select  = Select [ Asterisk ]
+        | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, GreaterThan (N 99.0)) ]
             Limit   = None }
@@ -140,7 +140,7 @@ type ``Given a query`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey >= 99"
 
         match parseDynamoQuery select with
-        | { Select  = Select [ Asterisk ]
+        | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, GreaterThanOrEqual (N 99.0)) ]
             Limit   = None }
@@ -165,7 +165,7 @@ type ``Given a query`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey BEGINS WITH \"Cui\""
 
         match parseDynamoQuery select with
-        | { Select  = Select [ Asterisk ]
+        | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, BeginsWith (S "Cui")) ]
             Limit   = None }
@@ -178,7 +178,7 @@ type ``Given a query`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey BETWEEN 10 AND 30"
 
         match parseDynamoQuery select with
-        | { Select  = Select [ Asterisk ]
+        | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, Between ((N 10.0), (N 30.0))) ]
             Limit   = None }
@@ -209,7 +209,7 @@ type ``Given a query`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey >= 30 LIMIT 10"
 
         match parseDynamoQuery select with
-        | { Select  = Select [ Asterisk ]
+        | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, GreaterThanOrEqual(N 30.0)) ]
             Limit   = Some(Limit 10) }
@@ -222,7 +222,7 @@ type ``Given a query`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey >= 30 ORDER ASC LIMIT 10"
 
         match parseDynamoQuery select with
-        | { Select  = Select [ Asterisk ]
+        | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, GreaterThanOrEqual(N 30.0)) ]
             Limit   = Some(Limit 10);
@@ -236,7 +236,7 @@ type ``Given a query`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey >= 30 ORDER DESC LIMIT 10"
 
         match parseDynamoQuery select with
-        | { Select  = Select [ Asterisk ]
+        | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, GreaterThanOrEqual(N 30.0)) ]
             Limit   = Some(Limit 10);
@@ -244,6 +244,26 @@ type ``Given a query`` () =
             -> true
         | _ -> false
         |> should equal true
+
+    [<Test>]
+    member this.``when a count query is specified, it should be parsed correctly`` () =
+        let count = "COUNT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey >= 30 ORDER DESC LIMIT 10"
+
+        match parseDynamoQuery count with
+        | { Action  = Count
+            From    = From "Employees"
+            Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, GreaterThanOrEqual(N 30.0)) ]
+            Limit   = Some(Limit 10);
+            Order   = Some(Desc) }
+            -> true
+        | _ -> false
+        |> should equal true
+
+    [<Test>]
+    [<ExpectedException(typeof<InvalidQuery>)>]
+    member this.``when a count query is specified with attribute names, it should except`` () =
+        let count = "COUNT FirstName FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey >= 30 ORDER DESC LIMIT 10"
+        parseDynamoQuery count |> should throw typeof<InvalidQuery>
 
 [<TestFixture>]
 type ``Given a scan`` () =
@@ -264,7 +284,7 @@ type ``Given a scan`` () =
         let select = "SELECT * FROM Employees"
 
         match parseDynamoScan select with
-        | { Select  = Select [ Asterisk ]
+        | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = None
             Limit   = None }
@@ -287,7 +307,7 @@ type ``Given a scan`` () =
                       LIMIT     5"
 
         match parseDynamoScan select with
-        | { Select  = Select [ Attribute "Name"; Attribute "Age"; Attribute "Salary" ]
+        | { Action  = Select [ Attribute "Name"; Attribute "Age"; Attribute "Salary" ]
             From    = From "Employees"
             Where   = Some(Where [ (Attribute "FirstName", Equal (S "Yan")) ])
             Limit   = Some(Limit 5) }
@@ -303,7 +323,7 @@ type ``Given a scan`` () =
                       liMIt 5"
 
         match parseDynamoScan select with
-        | { Select  = Select [ Attribute "Name"; Attribute "Age"; Attribute "Salary" ]
+        | { Action  = Select [ Attribute "Name"; Attribute "Age"; Attribute "Salary" ]
             From    = From "Employees"
             Where   = Some(Where [ (Attribute "FirstName", Equal (S "Yan")) ])
             Limit   = Some(Limit 5) }
@@ -328,7 +348,7 @@ type ``Given a scan`` () =
         let select = "SELECT * FROM Employees WHERE Age = 30"
 
         match parseDynamoScan select with
-        | { Select  = Select [ Asterisk ]
+        | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Some(Where [ (Attribute "Age", Equal (N 30.0)) ])
             Limit   = None }
@@ -341,7 +361,7 @@ type ``Given a scan`` () =
         let select = "SELECT * FROM Employees WHERE FirstName != \"Yan\""
         
         match parseDynamoScan select with
-        | { Select  = Select [ Asterisk ]
+        | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Some(Where [ (Attribute "FirstName", NotEqual (S "Yan")) ])
             Limit   = None }
@@ -358,7 +378,7 @@ type ``Given a scan`` () =
                       AND   Age < 90"
 
         match parseDynamoScan select with
-        | { Select  = Select [ Asterisk ]
+        | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Some(Where [ (Attribute "Age", GreaterThanOrEqual(N 10.0))
                                    (Attribute "Age", GreaterThan(N 20.0))
@@ -374,7 +394,7 @@ type ``Given a scan`` () =
         let select = "SELECT * FROM Employees WHERE FirstName CONTAINS \"Yan\""
         
         match parseDynamoScan select with
-        | { Select  = Select [ Asterisk ]
+        | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Some(Where [ (Attribute "FirstName", Contains(S "Yan")) ])
             Limit   = None }
@@ -387,7 +407,7 @@ type ``Given a scan`` () =
         let select = "SELECT * FROM Employees WHERE FirstName NOT CONTAINS \"Yan\""
         
         match parseDynamoScan select with
-        | { Select  = Select [ Asterisk ]
+        | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Some(Where [ (Attribute "FirstName", NotContains(S "Yan")) ])
             Limit   = None }
@@ -400,7 +420,7 @@ type ``Given a scan`` () =
         let select = "SELECT * FROM Employees WHERE FirstName BEGINS WITH \"Yan\""
 
         match parseDynamoScan select with
-        | { Select  = Select [ Asterisk ]
+        | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Some(Where [ (Attribute "FirstName", BeginsWith (S "Yan")) ])
             Limit   = None }
@@ -413,7 +433,7 @@ type ``Given a scan`` () =
         let select = "SELECT * FROM Employees WHERE Age BETWEEN 10 AND 30"
 
         match parseDynamoScan select with
-        | { Select  = Select [ Asterisk ]
+        | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Some(Where [ (Attribute "Age", Between ((N 10.0), (N 30.0))) ])
             Limit   = None }
@@ -426,7 +446,7 @@ type ``Given a scan`` () =
         let select = "SELECT * FROM Employees WHERE Age IN (10, 30, 50)"
         
         match parseDynamoScan select with
-        | { Select  = Select [ Asterisk ]
+        | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Some(Where [ (Attribute "Age", In [ N 10.0; N 30.0; N 50.0 ]) ])
             Limit   = None }
@@ -439,7 +459,7 @@ type ``Given a scan`` () =
         let select = "SELECT * FROM Employees WHERE LastName IS NULL"
         
         match parseDynamoScan select with
-        | { Select  = Select [ Asterisk ]
+        | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Some(Where [ (Attribute "LastName", Null) ])
             Limit   = None }
@@ -452,7 +472,7 @@ type ``Given a scan`` () =
         let select = "SELECT * FROM Employees WHERE LastName IS NOT NULL"
         
         match parseDynamoScan select with
-        | { Select  = Select [ Asterisk ]
+        | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Some(Where [ (Attribute "LastName", NotNull) ])
             Limit   = None }
@@ -465,10 +485,29 @@ type ``Given a scan`` () =
         let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND Age >= 30 LIMIT 10"
 
         match parseDynamoScan select with
-        | { Select  = Select [ Asterisk ]
+        | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Some(Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "Age", GreaterThanOrEqual(N 30.0)) ])
             Limit   = Some(Limit 10) }
             -> true
         | _ -> false
         |> should equal true
+
+    [<Test>]
+    member this.``when a count query is specified, it should be parsed correctly`` () =
+        let count = "COUNT * FROM Employees WHERE FirstName = \"Yan\" AND Age >= 30 LIMIT 10"
+
+        match parseDynamoScan count with
+        | { Action  = Count
+            From    = From "Employees"
+            Where   = Some(Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "Age", GreaterThanOrEqual(N 30.0)) ])
+            Limit   = Some(Limit 10) }
+            -> true
+        | _ -> false
+        |> should equal true
+
+    [<Test>]
+    [<ExpectedException(typeof<InvalidScan>)>]
+    member this.``when a count query is specified with attribute names, it should except`` () =
+        let count = "COUNT FirstName FROM Employees WHERE FirstName = \"Yan\" AND Age >= 30 ORDER DESC LIMIT 10"
+        parseDynamoScan count |> should throw typeof<InvalidScan>
