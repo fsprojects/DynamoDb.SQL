@@ -5,6 +5,7 @@
 
 namespace DynamoDb.SQL.Execution
 
+open System
 open System.Linq
 open System.Runtime.CompilerServices
 open Amazon.DynamoDB.DataModel
@@ -18,7 +19,7 @@ module Cxt =
         match query with
         | { From    = From(table) 
             Where   = Where(QueryCondition(hKey, rngKeyCondition))
-            Select  = Select(SelectAttributes attributes)
+            Action  = Select(SelectAttributes attributes)
             Limit   = limit
             Order   = order }
             -> let config = new QueryOperationConfig(ConsistentRead = true, // TODO
@@ -39,12 +40,13 @@ module Cxt =
                let configs = new DynamoDBOperationConfig()
                
                config
+        | { Action = Count } -> raise <| NotSupportedException("Count is not supported by DynamoDBContext")
         
     let (|GetScanConfig|) (scan : DynamoScan) =
         match scan with
         | { From    = From(table)
             Where   = where
-            Select  = Select(SelectAttributes attributes)
+            Action  = Select(SelectAttributes attributes)
             Limit   = limit }
             -> let config = new ScanOperationConfig(AttributesToGet = attributes)
 
@@ -60,6 +62,7 @@ module Cxt =
                match limit with | Some(Limit n) -> config.Limit <- n | _ -> ()
 
                config
+        | { Action = Count } -> raise <| NotSupportedException("Count is not supported by DynamoDBContext")
 
 [<Extension>]
 [<AbstractClass>]
@@ -68,7 +71,6 @@ type DynamoDBContextExt =
     [<Extension>]
     static member ExecQuery<'T> (cxt : DynamoDBContext, query : string) =
         let dynamoQuery = parseDynamoQuery query
-        let co = new DynamoDBOperationConfig()
         match dynamoQuery with
         | { Limit = Some(Limit n) } & GetQueryConfig config 
             -> // NOTE: the reason the Seq.take is needed here is that the limit set in the 

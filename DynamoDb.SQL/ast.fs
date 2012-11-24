@@ -131,12 +131,14 @@ type OrderDirection =
         member private this.StructuredFormatDisplay = this.ToString()
             
 [<StructuredFormatDisplay("{StructuredFormatDisplay}")>]
-type Select = 
-    Select of Identifier list
+type Action = 
+    | Select of Identifier list
+    | Count
     with 
         override this.ToString () = 
             match this with 
             | Select(lst) -> sprintf "SELECT %s" <| System.String.Join(", ", lst)
+            | Count       -> "COUNT *"
 
         member private this.StructuredFormatDisplay = this.ToString()
 
@@ -178,7 +180,7 @@ type Limit =
 /// Represents a query against data in DynamoDB
 type DynamoQuery =
     {
-        Select  : Select
+        Action  : Action
         From    : From
         Where   : Where
         Limit   : Limit option
@@ -186,20 +188,20 @@ type DynamoQuery =
     }
 
     override this.ToString () = 
-        sprintf "%A %A" this.Select this.From
+        sprintf "%A %A" this.Action this.From
         |> appendIfSome this.Limit
         |> appendIfSome this.Order
 
 /// Represents a scan against data in DynamoDB
 type DynamoScan =
     {
-        Select  : Select
+        Action  : Action
         From    : From
         Where   : Where option
         Limit   : Limit option
     }
 
     override this.ToString () = 
-        sprintf "%A %A" this.Select this.From
+        sprintf "%A %A" this.Action this.From
         |> appendIfSome this.Where
         |> appendIfSome this.Limit

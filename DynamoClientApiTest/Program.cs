@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Amazon.DynamoDB;
 using Amazon.DynamoDB.DataModel;
 using Amazon.DynamoDB.DocumentModel;
+using Amazon.DynamoDB.Model;
 
 using DynamoDb.SQL.Execution;
 
@@ -24,7 +25,8 @@ namespace DynamoClientApiTest
 
             // query all
             //var hashKey = "\"Amazon DynamoDB#DynamoDB Thread 1\"";
-            //var queryAllRes = client.QueryAsyncAsTask("SELECT * from Reply where @HashKey = " + hashKey).Result;            
+            //var queryAllRes = client.QueryAsyncAsTask("SELECT * from Reply where @HashKey = " + hashKey).Result;       
+            //var queryCountAllRes = client.QueryAsyncAsTask("COUNT * from Reply where @HashKey = " + hashKey).Result;
 
             // query subset
             //var querySubsetRes1 = client.QueryAsyncAsTask("select * from Reply where @HashKey = " + hashKey + " and @RangeKey >= \"2012-06-10\"").Result;
@@ -40,7 +42,9 @@ namespace DynamoClientApiTest
             //var querySubsetRes5 = cxt.ExecQuery<Reply>("select * from Reply where @HashKey = " + hashKey + " LIMIT 2");
 
             //var scanRes1 = client.ScanAsyncAsTask("Select * from Reply where PostedBy contains \"A\"").Result;
+            //var scanCountRes1 = client.ScanAsyncAsTask("Count * from Reply where PostedBy contains \"A\"").Result;
             //var scanRes2 = client.ScanAsyncAsTask("Select * from Reply where ReplyDateTime between \"2012-06-10\" and \"2012-06-20\"").Result;
+            //var scanCountRes2 = client.ScanAsyncAsTask("Count * from Reply where ReplyDateTime between \"2012-06-10\" and \"2012-06-20\"").Result;
 
             //var scanRes3 = cxt.ExecScan<Reply>("Select * from Reply where PostedBy contains \"A\"");
             //var scanRes4 = cxt.ExecScan<Reply>("Select * from Reply where ReplyDateTime between \"2012-06-10\" and \"2012-06-20\"");

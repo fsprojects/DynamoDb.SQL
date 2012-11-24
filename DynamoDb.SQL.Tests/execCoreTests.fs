@@ -69,7 +69,7 @@ type ``Given a DynamoQuery`` () =
         let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\""
 
         match dynamoQuery with
-        | { Select = Select(SelectAttributes(null)) }
+        | { Action = Select(SelectAttributes(null)) }
             -> true
         | _ -> false
         |> should equal true
@@ -79,7 +79,7 @@ type ``Given a DynamoQuery`` () =
         let dynamoQuery = parseDynamoQuery "SELECT *, Name, Age FROM Employees WHERE @HashKey = \"Yan\""
 
         match dynamoQuery with
-        | { Select = Select(SelectAttributes(null)) }
+        | { Action = Select(SelectAttributes(null)) }
             -> true
         | _ -> false
         |> should equal true
@@ -89,7 +89,7 @@ type ``Given a DynamoQuery`` () =
         let dynamoQuery = parseDynamoQuery "SELECT Name, Age FROM Employees WHERE @HashKey = \"Yan\""
 
         match dynamoQuery with
-        | { Select = Select(SelectAttributes(lst)) } when lst.Count = 2 && lst.[0] = "Name" && lst.[1] = "Age"
+        | { Action = Select(SelectAttributes(lst)) } when lst.Count = 2 && lst.[0] = "Name" && lst.[1] = "Age"
             -> true
         | _ -> false
         |> should equal true
