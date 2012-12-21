@@ -19,7 +19,17 @@ module Cxt =
     /// Active pattern for getting the scan operation config out of a DynamoScan
     val (|GetScanConfig|)  : DynamoScan -> ScanOperationConfig
 
-/// Extension methods for the DynamoDBContext class
+/// Extension methods for the DynamoDBContext class to be used in F#
+[<AutoOpen>]
+module ContextExt =
+    type DynamoDBContext with
+        /// Executes a query synchronously and returns the results
+        member ExecQuery<'T>    : string -> IEnumerable<'T>
+
+        /// Executes a scan synchronously and returns the results
+        member ExecScan<'T>     : string -> IEnumerable<'T>
+
+/// Extension methods for the DynamoDBContext class to be used in C#
 [<Extension>]
 [<AbstractClass>]
 [<Sealed>]

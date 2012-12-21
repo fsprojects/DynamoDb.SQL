@@ -14,6 +14,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{F0F01D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleCs", "ExampleCs\ExampleCs.csproj", "{9C528125-519F-4FFF-BC93-6274720D6758}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ExampleFs", "ExampleFs\ExampleFs.fsproj", "{77901442-DDA1-45E6-866C-5EA0955DE82B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,6 +56,16 @@ Global
 		{9C528125-519F-4FFF-BC93-6274720D6758}.Release|Mixed Platforms.Build.0 = Release|x86
 		{9C528125-519F-4FFF-BC93-6274720D6758}.Release|x86.ActiveCfg = Release|x86
 		{9C528125-519F-4FFF-BC93-6274720D6758}.Release|x86.Build.0 = Release|x86
+		{77901442-DDA1-45E6-866C-5EA0955DE82B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77901442-DDA1-45E6-866C-5EA0955DE82B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77901442-DDA1-45E6-866C-5EA0955DE82B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{77901442-DDA1-45E6-866C-5EA0955DE82B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{77901442-DDA1-45E6-866C-5EA0955DE82B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{77901442-DDA1-45E6-866C-5EA0955DE82B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77901442-DDA1-45E6-866C-5EA0955DE82B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77901442-DDA1-45E6-866C-5EA0955DE82B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{77901442-DDA1-45E6-866C-5EA0955DE82B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{77901442-DDA1-45E6-866C-5EA0955DE82B}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

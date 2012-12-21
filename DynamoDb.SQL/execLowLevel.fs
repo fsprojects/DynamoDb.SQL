@@ -63,7 +63,6 @@ module LowLevel =
                
                req
 
-// F# extension methods
 [<AutoOpen>]
 module ClientExt = 
     type AmazonDynamoDBClient with
@@ -85,22 +84,15 @@ module ClientExt =
 
         member this.Scan (query : string) = this.ScanAsync(query) |> Async.RunSynchronously
 
-// C# extension methods
 [<Extension>]
 [<AbstractClass>]
 [<Sealed>]
 type AmazonDynamoDBClientExt =
     [<Extension>]
-    static member QueryAsync (clt : AmazonDynamoDBClient, query : string) = clt.QueryAsync(query)
-
-    [<Extension>]
     static member QueryAsyncAsTask (clt : AmazonDynamoDBClient, query : string) = clt.QueryAsync(query) |> Async.StartAsTask
 
     [<Extension>]
     static member Query (clt : AmazonDynamoDBClient, query : string) = clt.Query(query)
-
-    [<Extension>]
-    static member ScanAsync (clt : AmazonDynamoDBClient, query : string) = clt.ScanAsync(query)
 
     [<Extension>]
     static member ScanAsyncAsTask (clt : AmazonDynamoDBClient, query : string) = clt.ScanAsync(query) |> Async.StartAsTask
