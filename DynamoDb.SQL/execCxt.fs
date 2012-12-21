@@ -64,27 +64,34 @@ module Cxt =
                config
         | { Action = Count } -> raise <| NotSupportedException("Count is not supported by DynamoDBContext")
 
+[<AutoOpen>]
+module ContextExt = 
+    type DynamoDBContext with
+        member this.ExecQuery (query : string) =
+            let dynamoQuery = parseDynamoQuery query
+            match dynamoQuery with
+            | { Limit = Some(Limit n) } & GetQueryConfig config 
+                -> // NOTE: the reason the Seq.take is needed here is that the limit set in the 
+                   // Query operation limit is 'per page', and DynamoDBContext lazy-loads all results
+                   // see https://forums.aws.amazon.com/thread.jspa?messageID=375136&#375136
+                   (this.FromQuery config).Take n
+            | GetQueryConfig config
+                -> this.FromQuery config
+            | _ -> raise <| InvalidQuery (sprintf "Not a valid query operation : %s" query)
+
+        member this.ExecScan (query : string) =
+            let dynamoScan = parseDynamoScan query
+
+            match dynamoScan with
+            | GetScanConfig config -> this.FromScan config
+            | _ -> raise <| InvalidScan (sprintf "Not a valid scan operation : %s" query)
+
 [<Extension>]
 [<AbstractClass>]
 [<Sealed>]
 type DynamoDBContextExt =
     [<Extension>]
-    static member ExecQuery<'T> (cxt : DynamoDBContext, query : string) =
-        let dynamoQuery = parseDynamoQuery query
-        match dynamoQuery with
-        | { Limit = Some(Limit n) } & GetQueryConfig config 
-            -> // NOTE: the reason the Seq.take is needed here is that the limit set in the 
-               // Query operation limit is 'per page', and DynamoDBContext lazy-loads all results
-               // see https://forums.aws.amazon.com/thread.jspa?messageID=375136&#375136
-               (cxt.FromQuery<'T> config).Take n
-        | GetQueryConfig config
-            -> cxt.FromQuery<'T> config
-        | _ -> raise <| InvalidQuery (sprintf "Not a valid query operation : %s" query)
+    static member ExecQuery (cxt : DynamoDBContext, query : string) = cxt.ExecQuery(query)
 
     [<Extension>]
-    static member ExecScan (cxt : DynamoDBContext, query : string) =
-        let dynamoScan = parseDynamoScan query
-
-        match dynamoScan with
-        | GetScanConfig config -> cxt.FromScan<'T> config
-        | _ -> raise <| InvalidScan (sprintf "Not a valid scan operation : %s" query)
+    static member ExecScan (cxt : DynamoDBContext, query : string) = cxt.ExecScan(query)
