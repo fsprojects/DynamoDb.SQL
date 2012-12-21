@@ -8,8 +8,8 @@
     <ProjectGuid>{9C528125-519F-4FFF-BC93-6274720D6758}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DynamoClientApiTest</RootNamespace>
-    <AssemblyName>DynamoClientApiTest</AssemblyName>
+    <RootNamespace>ExampleCs</RootNamespace>
+    <AssemblyName>ExampleCs</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -39,9 +39,9 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AWSSDK, Version=1.5.8.0, Culture=neutral, PublicKeyToken=cd2d24cd2bace800, processorArchitecture=MSIL">
+    <Reference Include="AWSSDK, Version=1.5.9.2, Culture=neutral, PublicKeyToken=cd2d24cd2bace800, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\AWSSDK.1.5.8.0\lib\AWSSDK.dll</HintPath>
+      <HintPath>..\packages\AWSSDK.1.5.9.2\lib\AWSSDK.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

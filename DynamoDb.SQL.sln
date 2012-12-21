@@ -5,14 +5,14 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DynamoDb.SQL", "DynamoDb.SQ
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DynamoDb.SQL.Tests", "DynamoDb.SQL.Tests\DynamoDb.SQL.Tests.fsproj", "{B4B8B239-AEE5-42CE-BAE2-8E6CA1C3D2D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamoClientApiTest", "DynamoClientApiTest\DynamoClientApiTest.csproj", "{9C528125-519F-4FFF-BC93-6274720D6758}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{F0F01DDC-7450-45A2-BFF3-C02863CF7219}"
 	ProjectSection(SolutionItems) = preProject
 		.nuget\NuGet.Config = .nuget\NuGet.Config
 		.nuget\NuGet.exe = .nuget\NuGet.exe
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleCs", "ExampleCs\ExampleCs.csproj", "{9C528125-519F-4FFF-BC93-6274720D6758}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
