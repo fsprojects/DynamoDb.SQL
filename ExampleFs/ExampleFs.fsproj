@@ -34,7 +34,8 @@
     <DocumentationFile>bin\Release\ExampleFs.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AWSSDK, Version=1.5.5.1, Culture=neutral, PublicKeyToken=cd2d24cd2bace800">
+    <Reference Include="AWSSDK">
+      <HintPath>..\packages\AWSSDK.1.5.9.2\lib\AWSSDK.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="mscorlib" />
