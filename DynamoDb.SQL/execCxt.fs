@@ -15,14 +15,14 @@ open DynamoDb.SQL.Parser
 
 [<AutoOpen>]
 module Cxt =
-    let (|GetQueryConfig|) (query : DynamoQuery) = 
+    let (|GetQueryConfig|) consistentRead (query : DynamoQuery) = 
         match query with
         | { From    = From(table) 
             Where   = Where(QueryCondition(hKey, rngKeyCondition))
             Action  = Select(SelectAttributes attributes)
             Limit   = limit
             Order   = order }
-            -> let config = new QueryOperationConfig(ConsistentRead = true, // TODO
+            -> let config = new QueryOperationConfig(ConsistentRead = consistentRead,
                                                      AttributesToGet = attributes,
                                                      HashKey = hKey.ToPrimitive())
 
@@ -67,15 +67,16 @@ module Cxt =
 [<AutoOpen>]
 module ContextExt = 
     type DynamoDBContext with
-        member this.ExecQuery (query : string) =
+        member this.ExecQuery (query : string, ?consistentRead) =
+            let consistentRead = defaultArg consistentRead true
             let dynamoQuery = parseDynamoQuery query
             match dynamoQuery with
-            | { Limit = Some(Limit n) } & GetQueryConfig config 
+            | { Limit = Some(Limit n) } & GetQueryConfig consistentRead config
                 -> // NOTE: the reason the Seq.take is needed here is that the limit set in the 
                    // Query operation limit is 'per page', and DynamoDBContext lazy-loads all results
                    // see https://forums.aws.amazon.com/thread.jspa?messageID=375136&#375136
                    (this.FromQuery config).Take n
-            | GetQueryConfig config
+            | GetQueryConfig consistentRead config
                 -> this.FromQuery config
             | _ -> raise <| InvalidQuery (sprintf "Not a valid query operation : %s" query)
 
@@ -91,7 +92,10 @@ module ContextExt =
 [<Sealed>]
 type DynamoDBContextExt =
     [<Extension>]
-    static member ExecQuery (cxt : DynamoDBContext, query : string) = cxt.ExecQuery(query)
+    static member ExecQuery (cxt : DynamoDBContext, query : string) = cxt.ExecQuery(query, true)
+
+    [<Extension>]
+    static member ExecQuery (cxt : DynamoDBContext, query : string, consistentRead) = cxt.ExecQuery(query, consistentRead)
 
     [<Extension>]
     static member ExecScan (cxt : DynamoDBContext, query : string) = cxt.ExecScan(query)

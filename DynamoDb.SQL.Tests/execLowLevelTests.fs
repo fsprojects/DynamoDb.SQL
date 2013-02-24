@@ -20,10 +20,12 @@ type ``Given a DynamoQuery`` () =
         let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\""
 
         match dynamoQuery with
-        | GetQueryReq req when req.TableName = "Employees" && req.HashKeyValue.S = "Yan" &&
-                               req.Limit = 0 && req.RangeKeyCondition = null &&
-                               req.AttributesToGet = null &&
-                               req.Count = false
+        | GetQueryReq true req 
+            when req.TableName = "Employees" && req.HashKeyValue.S = "Yan" &&
+                 req.Limit = 0 && req.RangeKeyCondition = null &&
+                 req.AttributesToGet = null &&
+                 req.Count = false &&
+                 req.ConsistentRead
             -> true
         | _ -> false
         |> should equal true
@@ -33,12 +35,14 @@ type ``Given a DynamoQuery`` () =
         let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey = 30"
 
         match dynamoQuery with
-        | GetQueryReq req when req.TableName = "Employees" && req.HashKeyValue.S = "Yan" &&
-                               req.Limit = 0 && req.RangeKeyCondition.ComparisonOperator = "EQ" &&
-                               req.RangeKeyCondition.AttributeValueList.Count = 1 &&
-                               req.RangeKeyCondition.AttributeValueList.[0].N = "30" &&
-                               req.AttributesToGet = null &&
-                               req.Count = false
+        | GetQueryReq true req 
+            when req.TableName = "Employees" && req.HashKeyValue.S = "Yan" &&
+                 req.Limit = 0 && req.RangeKeyCondition.ComparisonOperator = "EQ" &&
+                 req.RangeKeyCondition.AttributeValueList.Count = 1 &&
+                 req.RangeKeyCondition.AttributeValueList.[0].N = "30" &&
+                 req.AttributesToGet = null &&
+                 req.Count = false &&
+                 req.ConsistentRead
             -> true
         | _ -> false
         |> should equal true
@@ -48,12 +52,14 @@ type ``Given a DynamoQuery`` () =
         let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey > 30"
 
         match dynamoQuery with
-        | GetQueryReq req when req.TableName = "Employees" && req.HashKeyValue.S = "Yan" &&
-                               req.Limit = 0 && req.RangeKeyCondition.ComparisonOperator = "GT" &&
-                               req.RangeKeyCondition.AttributeValueList.Count = 1 &&
-                               req.RangeKeyCondition.AttributeValueList.[0].N = "30" &&
-                               req.AttributesToGet = null &&
-                               req.Count = false
+        | GetQueryReq true req 
+            when req.TableName = "Employees" && req.HashKeyValue.S = "Yan" &&
+                 req.Limit = 0 && req.RangeKeyCondition.ComparisonOperator = "GT" &&
+                 req.RangeKeyCondition.AttributeValueList.Count = 1 &&
+                 req.RangeKeyCondition.AttributeValueList.[0].N = "30" &&
+                 req.AttributesToGet = null &&
+                 req.Count = false &&
+                 req.ConsistentRead
             -> true
         | _ -> false
         |> should equal true
@@ -63,13 +69,15 @@ type ``Given a DynamoQuery`` () =
         let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25"
 
         match dynamoQuery with
-        | GetQueryReq req when req.TableName = "Employees" && req.HashKeyValue.S = "Yan" &&
-                               req.Limit = 0 && req.RangeKeyCondition.ComparisonOperator = "BETWEEN" &&
-                               req.RangeKeyCondition.AttributeValueList.Count = 2 &&
-                               req.RangeKeyCondition.AttributeValueList.[0].N = "5" &&
-                               req.RangeKeyCondition.AttributeValueList.[1].N = "25" &&
-                               req.AttributesToGet = null &&
-                               req.Count = false
+        | GetQueryReq true req 
+            when req.TableName = "Employees" && req.HashKeyValue.S = "Yan" &&
+                 req.Limit = 0 && req.RangeKeyCondition.ComparisonOperator = "BETWEEN" &&
+                 req.RangeKeyCondition.AttributeValueList.Count = 2 &&
+                 req.RangeKeyCondition.AttributeValueList.[0].N = "5" &&
+                 req.RangeKeyCondition.AttributeValueList.[1].N = "25" &&
+                 req.AttributesToGet = null &&
+                 req.Count = false &&
+                 req.ConsistentRead
             -> true
         | _ -> false
         |> should equal true
@@ -79,29 +87,51 @@ type ``Given a DynamoQuery`` () =
         let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25 Limit 100"
 
         match dynamoQuery with
-        | GetQueryReq req when req.TableName = "Employees" && req.HashKeyValue.S = "Yan" &&
-                               req.Limit = 100 && req.RangeKeyCondition.ComparisonOperator = "BETWEEN" &&
-                               req.RangeKeyCondition.AttributeValueList.Count = 2 &&
-                               req.RangeKeyCondition.AttributeValueList.[0].N = "5" &&
-                               req.RangeKeyCondition.AttributeValueList.[1].N = "25" &&
-                               req.AttributesToGet = null &&
-                               req.Count = false
+        | GetQueryReq true req 
+            when req.TableName = "Employees" && req.HashKeyValue.S = "Yan" &&
+                 req.Limit = 100 && req.RangeKeyCondition.ComparisonOperator = "BETWEEN" &&
+                 req.RangeKeyCondition.AttributeValueList.Count = 2 &&
+                 req.RangeKeyCondition.AttributeValueList.[0].N = "5" &&
+                 req.RangeKeyCondition.AttributeValueList.[1].N = "25" &&
+                 req.AttributesToGet = null &&
+                 req.Count = false &&
+                 req.ConsistentRead
             -> true
         | _ -> false
         |> should equal true
 
     [<Test>]
-    member this.``when the action is Count the QueryRequest shoul have Count set to true`` () =
+    member this.``when specified to not use consistent read the returned QueryRequest should have consistent read set to false`` () =
         let dynamoQuery = parseDynamoQuery "COUNT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25 Limit 100"
 
         match dynamoQuery with
-        | GetQueryReq req when req.TableName = "Employees" && req.HashKeyValue.S = "Yan" &&
-                               req.Limit = 100 && req.RangeKeyCondition.ComparisonOperator = "BETWEEN" &&
-                               req.RangeKeyCondition.AttributeValueList.Count = 2 &&
-                               req.RangeKeyCondition.AttributeValueList.[0].N = "5" &&
-                               req.RangeKeyCondition.AttributeValueList.[1].N = "25" &&
-                               req.AttributesToGet = null &&
-                               req.Count = true
+        | GetQueryReq false req 
+            when req.TableName = "Employees" && req.HashKeyValue.S = "Yan" &&
+                 req.Limit = 100 && req.RangeKeyCondition.ComparisonOperator = "BETWEEN" &&
+                 req.RangeKeyCondition.AttributeValueList.Count = 2 &&
+                 req.RangeKeyCondition.AttributeValueList.[0].N = "5" &&
+                 req.RangeKeyCondition.AttributeValueList.[1].N = "25" &&
+                 req.AttributesToGet = null &&
+                 req.Count = true &&
+                 not req.ConsistentRead
+            -> true
+        | _ -> false
+        |> should equal true
+
+    [<Test>]
+    member this.``when `` () =
+        let dynamoQuery = parseDynamoQuery "COUNT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25 Limit 100"
+
+        match dynamoQuery with
+        | GetQueryReq true req 
+            when req.TableName = "Employees" && req.HashKeyValue.S = "Yan" &&
+                 req.Limit = 100 && req.RangeKeyCondition.ComparisonOperator = "BETWEEN" &&
+                 req.RangeKeyCondition.AttributeValueList.Count = 2 &&
+                 req.RangeKeyCondition.AttributeValueList.[0].N = "5" &&
+                 req.RangeKeyCondition.AttributeValueList.[1].N = "25" &&
+                 req.AttributesToGet = null &&
+                 req.Count = true &&
+                 req.ConsistentRead
             -> true
         | _ -> false
         |> should equal true

@@ -16,14 +16,14 @@ open Amazon.DynamoDB.DataModel
 
 [<AutoOpen>]
 module LowLevel =
-    let (|GetQueryReq|) (query : DynamoQuery) = 
+    let (|GetQueryReq|) consistentRead (query : DynamoQuery) = 
         match query with
         | { From    = From table
             Where   = Where(QueryCondition(hKey, rngKeyCondition))
             Action  = ActionParams(isCount, attributes)
             Limit   = limit
             Order   = order }
-            -> let req = new QueryRequest(ConsistentRead  = true, // TODO
+            -> let req = new QueryRequest(ConsistentRead  = consistentRead,
                                           TableName       = table, 
                                           HashKeyValue    = hKey.ToAttributeValue(),
                                           AttributesToGet = attributes,
@@ -66,14 +66,16 @@ module LowLevel =
 [<AutoOpen>]
 module ClientExt = 
     type AmazonDynamoDBClient with
-        member this.QueryAsync (query : string) =
+        member this.QueryAsync (query : string, ?consistentRead) =
+            let consistentRead = defaultArg consistentRead true
             let dynamoQuery = parseDynamoQuery query
 
             match dynamoQuery with
-            | GetQueryReq req -> async { return! this.QueryAsync req }
+            | GetQueryReq consistentRead req 
+                -> async { return! this.QueryAsync req }
             | _ -> raise <| InvalidQuery (sprintf "Not a valid query request : %s" query)
 
-        member this.Query (query : string) = this.QueryAsync(query) |> Async.RunSynchronously
+        member this.Query (query : string, ?consistentRead) = this.QueryAsync(query, ?consistentRead = consistentRead) |> Async.RunSynchronously
 
         member this.ScanAsync (query : string) =
             let dynamoScan = parseDynamoScan query
@@ -89,10 +91,16 @@ module ClientExt =
 [<Sealed>]
 type AmazonDynamoDBClientExt =
     [<Extension>]
-    static member QueryAsyncAsTask (clt : AmazonDynamoDBClient, query : string) = clt.QueryAsync(query) |> Async.StartAsTask
+    static member QueryAsyncAsTask (clt : AmazonDynamoDBClient, query : string) = clt.QueryAsync(query, true) |> Async.StartAsTask
 
     [<Extension>]
-    static member Query (clt : AmazonDynamoDBClient, query : string) = clt.Query(query)
+    static member QueryAsyncAsTask (clt : AmazonDynamoDBClient, query : string, consistentRead) = clt.QueryAsync(query, consistentRead) |> Async.StartAsTask
+
+    [<Extension>]
+    static member Query (clt : AmazonDynamoDBClient, query : string) = clt.Query(query, true)
+
+    [<Extension>]
+    static member Query (clt : AmazonDynamoDBClient, query : string, consistentRead) = clt.Query(query, consistentRead)
 
     [<Extension>]
     static member ScanAsyncAsTask (clt : AmazonDynamoDBClient, query : string) = clt.ScanAsync(query) |> Async.StartAsTask
