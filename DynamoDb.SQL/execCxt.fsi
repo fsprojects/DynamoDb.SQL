@@ -14,7 +14,7 @@ open Amazon.DynamoDB.DocumentModel
 [<AutoOpen>]
 module Cxt =
     /// Active pattern for getting the query operation config out of a DynamoQuery
-    val (|GetQueryConfig|) : bool -> DynamoQuery -> QueryOperationConfig
+    val (|GetQueryConfig|) : DynamoQuery -> QueryOperationConfig
     
     /// Active pattern for getting the scan operation config out of a DynamoScan
     val (|GetScanConfig|)  : DynamoScan -> ScanOperationConfig
@@ -24,7 +24,7 @@ module Cxt =
 module ContextExt =
     type DynamoDBContext with
         /// Executes a query synchronously and returns the results
-        member ExecQuery<'T>    : string * bool option -> IEnumerable<'T>
+        member ExecQuery<'T>    : string -> IEnumerable<'T>
 
         /// Executes a scan synchronously and returns the results
         member ExecScan<'T>     : string -> IEnumerable<'T>
@@ -34,15 +34,9 @@ module ContextExt =
 [<AbstractClass>]
 [<Sealed>]
 type DynamoDBContextExt =
-    /// Executes a query synchronously and returns the results.
-    /// This method uses consistent read by default.
+    /// Executes a query synchronously and returns the results
     [<Extension>]
     static member ExecQuery<'T>    : DynamoDBContext * string -> IEnumerable<'T>
-
-    /// Executes a query synchronously and returns the results.
-    /// This method allows you to specify whether to use consistent read
-    [<Extension>]
-    static member ExecQuery<'T>    : DynamoDBContext * string * bool -> IEnumerable<'T>
 
     /// Executes a scan synchronously and returns the results
     [<Extension>]

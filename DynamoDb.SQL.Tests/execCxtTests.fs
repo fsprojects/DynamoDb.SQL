@@ -21,12 +21,11 @@ type ``Given a DynamoQuery`` () =
         let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\""
 
         match dynamoQuery with
-        | GetQueryConfig true config 
+        | GetQueryConfig config 
             when config.HashKey.AsString() = "Yan" &&
                  config.Limit = Int32.MaxValue &&
                  config.Filter.Condition = null &&
-                 config.AttributesToGet = null &&
-                 config.ConsistentRead
+                 config.AttributesToGet = null
             -> true
         | _ -> false
         |> should equal true
@@ -36,14 +35,13 @@ type ``Given a DynamoQuery`` () =
         let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey = 30"
 
         match dynamoQuery with
-        | GetQueryConfig true config 
+        | GetQueryConfig config 
             when config.HashKey.AsString() = "Yan" &&
                  config.Limit = Int32.MaxValue && 
                  config.Filter.Condition.ComparisonOperator = "EQ" &&
                  config.Filter.Condition.AttributeValueList.Count = 1 &&
                  config.Filter.Condition.AttributeValueList.[0].N = "30" &&
-                 config.AttributesToGet = null &&
-                 config.ConsistentRead
+                 config.AttributesToGet = null
             -> true
         | _ -> false
         |> should equal true
@@ -53,14 +51,13 @@ type ``Given a DynamoQuery`` () =
         let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey > 30"
 
         match dynamoQuery with
-        | GetQueryConfig true config 
+        | GetQueryConfig config 
             when config.HashKey.AsString() = "Yan" &&
                  config.Limit = Int32.MaxValue && 
                  config.Filter.Condition.ComparisonOperator = "GT" &&
                  config.Filter.Condition.AttributeValueList.Count = 1 &&
                  config.Filter.Condition.AttributeValueList.[0].N = "30" &&
-                 config.AttributesToGet = null &&
-                 config.ConsistentRead
+                 config.AttributesToGet = null
             -> true
         | _ -> false
         |> should equal true
@@ -70,15 +67,14 @@ type ``Given a DynamoQuery`` () =
         let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25"
 
         match dynamoQuery with
-        | GetQueryConfig true config 
+        | GetQueryConfig config 
             when config.HashKey.AsString() = "Yan" &&
                  config.Limit = Int32.MaxValue && 
                  config.Filter.Condition.ComparisonOperator = "BETWEEN" &&
                  config.Filter.Condition.AttributeValueList.Count = 2 &&
                  config.Filter.Condition.AttributeValueList.[0].N = "5" &&
                  config.Filter.Condition.AttributeValueList.[1].N = "25" &&
-                 config.AttributesToGet = null &&
-                 config.ConsistentRead
+                 config.AttributesToGet = null
             -> true
         | _ -> false
         |> should equal true
@@ -88,33 +84,14 @@ type ``Given a DynamoQuery`` () =
         let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25 LIMIT 100"
 
         match dynamoQuery with
-        | GetQueryConfig true config 
+        | GetQueryConfig config 
             when config.HashKey.AsString() = "Yan" &&
                  config.Limit = 100 && 
                  config.Filter.Condition.ComparisonOperator = "BETWEEN" &&
                  config.Filter.Condition.AttributeValueList.Count = 2 &&
                  config.Filter.Condition.AttributeValueList.[0].N = "5" &&
                  config.Filter.Condition.AttributeValueList.[1].N = "25" &&
-                 config.AttributesToGet = null &&
-                 config.ConsistentRead
-            -> true
-        | _ -> false
-        |> should equal true
-
-    [<Test>]
-    member this.``when specified to not use consistent read the returned QueryOperationConfig should have consistent read set to false`` () =
-        let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25 LIMIT 100"
-
-        match dynamoQuery with
-        | GetQueryConfig false config 
-            when config.HashKey.AsString() = "Yan" &&
-                 config.Limit = 100 && 
-                 config.Filter.Condition.ComparisonOperator = "BETWEEN" &&
-                 config.Filter.Condition.AttributeValueList.Count = 2 &&
-                 config.Filter.Condition.AttributeValueList.[0].N = "5" &&
-                 config.Filter.Condition.AttributeValueList.[1].N = "25" &&
-                 config.AttributesToGet = null &&
-                 not config.ConsistentRead
+                 config.AttributesToGet = null
             -> true
         | _ -> false
         |> should equal true
