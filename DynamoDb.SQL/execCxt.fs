@@ -37,8 +37,6 @@ module Cxt =
                | Some(Desc) -> config.BackwardSearch <- true
                | None       -> ()
 
-               let configs = new DynamoDBOperationConfig()
-               
                config
         | { Action = Count } -> raise <| NotSupportedException("Count is not supported by DynamoDBContext")
         
