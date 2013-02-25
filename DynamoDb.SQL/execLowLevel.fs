@@ -39,7 +39,7 @@ module LowLevel =
                | Some(Asc)  -> req.ScanIndexForward <- true
                | Some(Desc) -> req.ScanIndexForward <- false
                | _          -> ()
-               
+
                req
 
     let (|GetScanReq|) (scan : DynamoScan) = 
