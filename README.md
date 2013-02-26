@@ -31,6 +31,8 @@ Download and install **DynamoDb.SQL** using [NuGet](https://nuget.org/packages/D
 
 <a href="https://nuget.org/packages/DynamoDb.SQL"><img src="http://theburningmonk.com/images/dynamodb.sql-nuget-install.png" alt="NuGet package"/></a>
 
+You can view the release notes [here](https://github.com/theburningmonk/DynamoDb.SQL/wiki/Release-Notes).
+
 ### Keep in touch
 
 Please follow the official twitter account [@DynamoDbSQL](https://twitter.com/DynamoDbSQL) for updates, and feel free to send me any feedbacks or questions you have about the project :-)
