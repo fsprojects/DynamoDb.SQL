@@ -30,6 +30,14 @@ module Common =
     let pfloat_ws               = pfloat
     let pint32_ws               = pint32
 
+    open FParsec.Internals
+
+    // FParsec only supports up to pipe5, extend it by piping the result of the first 5 parser through a second pipe
+    let pipe6 (p1: Parser<'a,'u>) (p2: Parser<'b,'u>) (p3: Parser<'c,'u>) (p4: Parser<'d,'u>) (p5: Parser<'e,'u>) (p6: Parser<'f, 'u>) g =
+        pipe2 (pipe5 p1 p2 p3 p4 p5 (fun a b c d e -> a, b, c, d, e)) p6 (fun (a, b, c, d, e) f -> g a b c d e f)
+
+    let tuple6 p1 p2 p3 p4 p5 p6 = pipe6 p1 p2 p3 p4 p5 p6 (fun a b c d e f -> (a, b, c, d, e, f))
+
     let (<&&>) f g x = (f x) && (g x)
     let (<||>) f g x = (f x) || (g x)
 
@@ -77,6 +85,10 @@ module Common =
         between (pstring "\"") (pstring "\"")
                 (stringsSepBy normalCharSnippet escapedChar)
 
+    let openParentheses   = skipString_ws "("
+    let closeParentheses  = skipString_ws ")"
+    let comma             = pstring_ws ","
+
     // parser for the operant (string or numeric value)
     let operant = ws >>. choiceL [ (stringLiteral |>> S); (pfloat |>> N) ] "String or Numeric value" .>> ws
 
@@ -107,24 +119,21 @@ module QueryParser =
     let and'                = skipStringCI_ws "and"
     let betweenCondition    = pipe5 whereAttributes between operant and' operant (fun id op v1 _ v2 -> id, op(v1, v2))
 
-    let filterCondition     = 
-        ws 
-        >>. attempt binaryCondition 
-            <|> attempt betweenCondition 
-        .>> ws
+    let pcondition          = choice [ attempt binaryCondition; attempt betweenCondition ]
+    let filterConditions    = sepBy1 (ws >>. pcondition .>> ws) (ws >>. and')
+    let pwhere = ws >>. skipStringCI_ws "where" >>. (filterConditions |>> Where) .>> ws
 
-    let pwhere =
-        ws
-        >>. skipStringCI_ws "where"
-        >>. (sepBy1 filterCondition (ws >>. and')
-            |>> (fun filterLst -> filterLst |> Where))
-        .>> ws
+    let consistentRead      = stringCIReturn_ws "noconsistentread" NoConsistentRead
+    let queryPageSize       = skipStringCI_ws "pagesize" >>. openParentheses >>. pint32_ws .>> closeParentheses |>> QueryPageSize
+    let queryOption         = choice [ consistentRead; queryPageSize ]
+    let queryOptions        = sepBy1 queryOption comma |>> List.toArray
+    let pwith = ws >>. skipStringCI_ws "with" >>. openParentheses >>. queryOptions .>> closeParentheses
 
     // parser for a query
     let pquery : Parser<DynamoQuery, unit> = 
-        tuple5 paction pfrom pwhere (opt porder) (opt plimit)
-        |>> (fun (action, from, where, order, limit) -> 
-                { Action = action; From = from; Where = where; Limit = limit; Order = order })
+        tuple6 paction pfrom pwhere (opt porder) (opt plimit) (opt pwith)
+        |>> (fun (action, from, where, order, limit, with') -> 
+                { Action = action; From = from; Where = where; Limit = limit; Order = order; Options = with' })
 
 [<RequireQualifiedAccess>]
 module ScanParser = 
@@ -151,31 +160,25 @@ module ScanParser =
     let and'                = skipStringCI_ws "and"
     let betweenCondition    = pipe5 whereAttributes between operant and' operant (fun id op v1 _ v2 -> id, op(v1, v2))
 
-    let in'                 = stringCIReturn_ws "in" In
-    let openBracket         = skipString_ws "("
-    let closeBracket        = skipString_ws ")"
+    let in'                 = stringCIReturn_ws "in" In    
     let operantLst          = sepBy1 operant (ws >>. skipString_ws ",")
-    let inCondition         = pipe5 whereAttributes in' openBracket operantLst closeBracket (fun id op _ lst _ -> id, op(lst))
+    let inCondition         = pipe5 whereAttributes in' openParentheses operantLst closeParentheses (fun id op _ lst _ -> id, op(lst))
 
-    let filterCondition     = 
-        ws 
-        >>. attempt unaryCondition 
-            <|> attempt binaryCondition 
-            <|> attempt betweenCondition 
-            <|> inCondition
-        .>> ws
+    let pcondition          = choice [ attempt unaryCondition;   attempt binaryCondition;
+                                       attempt betweenCondition; inCondition ]
+    let filterConditions    = sepBy1 (ws >>. pcondition .>> ws) (ws >>. and')
 
-    let pwhere =
-        ws
-        >>. skipStringCI_ws "where"
-        >>. (sepBy1 filterCondition (ws >>. and')
-            |>> (fun filterLst -> filterLst |> Where))
-        .>> ws
+    let pwhere = ws >>. skipStringCI_ws "where" >>. (filterConditions |>> Where) .>> ws
+
+    let scanPageSize        = skipStringCI_ws "pagesize" >>. openParentheses >>. pint32_ws .>> closeParentheses |>> ScanPageSize
+    let scanOptions         = sepBy1 scanPageSize comma |>> List.toArray
+
+    let pwith = ws >>. skipStringCI_ws "with" >>. openParentheses >>. scanOptions .>> closeParentheses
 
     // parser for a scan
-    let pscan = tuple4 paction pfrom (opt pwhere) (opt plimit)
-                |>> (fun (action, from, where, limit) -> 
-                        { Action = action; From = from; Where = where; Limit = limit })
+    let pscan = tuple5 paction pfrom (opt pwhere) (opt plimit) (opt pwith)
+                |>> (fun (action, from, where, limit, with') -> 
+                        { Action = action; From = from; Where = where; Limit = limit; Options = with' })
 
 let parseDynamoQuery str = match run QueryParser.pquery str with
                            | Success(result, _, _) -> result

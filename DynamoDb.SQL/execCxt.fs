@@ -20,25 +20,24 @@ module Cxt =
         | { From    = From(table) 
             Where   = Where(QueryCondition(hKey, rngKeyCondition))
             Action  = Select(SelectAttributes attributes)
-            Limit   = limit
-            Order   = order }
-            -> let config = new QueryOperationConfig(ConsistentRead = true, // TODO
-                                                     AttributesToGet = attributes,
+            Order   = order
+            Options = opts }
+            -> let config = new QueryOperationConfig(AttributesToGet = attributes,
                                                      HashKey = hKey.ToPrimitive())
 
-               // optionally set the range key condition and limit if applicable
+               // optionally set the range key condition if applicable
                match rngKeyCondition with 
                | Some(rndCond) -> config.Filter <- new RangeFilter(rndCond.ToCondition())
                | _ -> ()
 
-               match limit with | Some(Limit n) -> config.Limit <- n | _ -> ()
                match order with 
                | Some(Asc)  -> config.BackwardSearch <- false
                | Some(Desc) -> config.BackwardSearch <- true
                | None       -> ()
 
-               let configs = new DynamoDBOperationConfig()
-               
+               config.ConsistentRead <- isConsistentRead opts
+               match tryGetQueryPageSize opts with | Some n -> config.Limit <- n | _ -> ()
+
                config
         | { Action = Count } -> raise <| NotSupportedException("Count is not supported by DynamoDBContext")
         
@@ -47,10 +46,10 @@ module Cxt =
         | { From    = From(table)
             Where   = where
             Action  = Select(SelectAttributes attributes)
-            Limit   = limit }
+            Options = opts }
             -> let config = new ScanOperationConfig(AttributesToGet = attributes)
 
-               // optionally set the scan filter and limit if applicable
+               // optionally set the scan filter if applicable
                match where with
                | Some(Where(ScanCondition scanFilters)) -> 
                     let scanFilter = new ScanFilter()
@@ -59,7 +58,7 @@ module Cxt =
                     config.Filter <- scanFilter
                | _ -> ()
                
-               match limit with | Some(Limit n) -> config.Limit <- n | _ -> ()
+               match tryGetScanPageSize opts with | Some n -> config.Limit <- n | _ -> ()
 
                config
         | { Action = Count } -> raise <| NotSupportedException("Count is not supported by DynamoDBContext")
@@ -83,7 +82,13 @@ module ContextExt =
             let dynamoScan = parseDynamoScan query
 
             match dynamoScan with
-            | GetScanConfig config -> this.FromScan config
+            | { Limit = Some(Limit n) } & GetScanConfig config 
+                -> // NOTE: the reason the Seq.take is needed here is that the limit set in the 
+                   // Scan operation limit is 'per page', and DynamoDBContext lazy-loads all results
+                   // see https://forums.aws.amazon.com/thread.jspa?messageID=375136&#375136
+                   (this.FromScan config).Take n
+            | GetScanConfig config
+                -> this.FromScan config
             | _ -> raise <| InvalidScan (sprintf "Not a valid scan operation : %s" query)
 
 [<Extension>]

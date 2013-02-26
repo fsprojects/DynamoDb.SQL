@@ -5,15 +5,20 @@
 
 namespace DynamoDb.SQL.Ast
 
+open System
 open System.Collections.Generic
 open Amazon.DynamoDB.Model
 open Amazon.DynamoDB.DocumentModel
 
 module Utils = 
-    let appendIfSome someOption appendee = 
+    let inline appendIfSome f someOption appendee = 
         match someOption with
-        | Some(x)   -> sprintf "%A %A" appendee x
+        | Some(x)   -> sprintf "%s %s" appendee (f x)
         | _         -> appendee
+
+    let inline join separator (arr : string[]) = String.Join(separator, arr)
+
+    let inline surround before after (str : string) = before + str + after
 
 open Utils
 
@@ -177,6 +182,28 @@ type Limit =
 
         member private this.StructuredFormatDisplay = this.ToString()
 
+[<StructuredFormatDisplay("{StructuredFormatDisplay}")>]
+type QueryOption =
+    | NoConsistentRead
+    | QueryPageSize     of int
+    with
+        override this.ToString () =
+            match this with
+            | NoConsistentRead  -> "NOCONSISTENTREAD"
+            | QueryPageSize n   -> sprintf "PAGESIZE(%d)" n
+
+        member private this.StructuredFormatDisplay = this.ToString()
+
+[<StructuredFormatDisplay("{StructuredFormatDisplay}")>]
+type ScanOption =
+    ScanPageSize        of int
+    with
+        override this.ToString () =
+            match this with
+            | ScanPageSize n    -> sprintf "PAGESIZE(%d)" n
+
+        member private this.StructuredFormatDisplay = this.ToString()
+
 /// Represents a query against data in DynamoDB
 type DynamoQuery =
     {
@@ -185,12 +212,14 @@ type DynamoQuery =
         Where   : Where
         Limit   : Limit option
         Order   : OrderDirection option
+        Options : QueryOption [] option
     }
 
     override this.ToString () = 
-        sprintf "%A %A" this.Action this.From
-        |> appendIfSome this.Limit
-        |> appendIfSome this.Order
+        sprintf "%s %s" (string this.Action) (string this.From)
+        |> appendIfSome string this.Limit
+        |> appendIfSome string this.Order
+        |> appendIfSome (Array.map string >> join "," >> surround "WITH (" ")") this.Options
 
 /// Represents a scan against data in DynamoDB
 type DynamoScan =
@@ -199,9 +228,11 @@ type DynamoScan =
         From    : From
         Where   : Where option
         Limit   : Limit option
+        Options : ScanOption[] option
     }
 
     override this.ToString () = 
-        sprintf "%A %A" this.Action this.From
-        |> appendIfSome this.Where
-        |> appendIfSome this.Limit
+        sprintf "%s %s" (string this.Action) (string this.From)
+        |> appendIfSome string this.Where
+        |> appendIfSome string this.Limit
+        |> appendIfSome (Array.map string >> join "," >> surround "WITH (" ")") this.Options
