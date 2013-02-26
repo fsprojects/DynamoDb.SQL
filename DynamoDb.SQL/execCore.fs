@@ -14,7 +14,7 @@ exception InvalidQueryFormat    of string
 [<AutoOpen>]
 module Core =
     let (|QueryCondition|) (conditions : Filter list) = 
-        let hKey = conditions |> List.tryPick (function | (HashKey, Equal(op)) -> Some(op) | _ -> None)
+        let hKey     = conditions |> List.tryPick (function | (HashKey, Equal(op)) -> Some(op) | _ -> None)
         let rndConds = conditions |> List.choose (function | (RangeKey, cond) when cond.IsAllowedInQuery -> Some(cond) | _ -> None)
 
         // if a hash key value is specified and there is at most one filter condition then this is a Query
@@ -44,3 +44,24 @@ module Core =
         match action with
         | Count -> true, Unchecked.defaultof<List<string>>
         | Select(SelectAttributes attributes) -> false, attributes
+
+    /// Returns whether to use consistent read based on specified query options, default is to use consistent read
+    let isConsistentRead (opts : QueryOption[] option) =
+        match opts with
+        | Some arr ->
+            arr 
+            |> Array.exists (fun opt -> match opt with | NoConsistentRead -> true | _ -> false)
+            |> not
+        | _ -> true
+
+    /// Try to get the page size option from the specified query options
+    let tryGetQueryPageSize (opts : QueryOption[] option) =
+        match opts with
+        | Some arr -> arr |> Array.tryPick (fun opt -> match opt with | QueryPageSize n -> Some n | _ -> None)
+        | _ -> None
+
+    /// Try to get the page size option from the specified scan options
+    let tryGetScanPageSize (opts : ScanOption[] option) =
+        match opts with
+        | Some arr -> arr |> Array.tryPick (fun opt -> match opt with | ScanPageSize n -> Some n | _ -> None)
+        | _ -> None

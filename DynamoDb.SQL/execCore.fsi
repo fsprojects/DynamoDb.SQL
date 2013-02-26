@@ -27,3 +27,12 @@ module Core =
     /// Active pattern to return the values for the Count and AttributesToGet request parameters
     /// See http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/QueryAndScan.html#Count
     val (|ActionParams|)     : Action -> bool * List<string>
+
+    /// Returns whether to use consistent read based on specified query options, default is to use consistent read
+    val isConsistentRead     : QueryOption[] option -> bool
+
+    /// Try to get the page size option from the specified query options
+    val tryGetQueryPageSize  : QueryOption[] option -> int option
+
+    /// Try to get the page size option from the specified scan options
+    val tryGetScanPageSize   : ScanOption[] option -> int option
