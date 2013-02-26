@@ -80,13 +80,13 @@ type ``Given a DynamoQuery`` () =
         |> should equal true
 
     [<Test>]
-    member this.``when there is a limit it should return a QueryOperationConfig`` () =
-        let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25 LIMIT 100"
+    member this.``when there is a page size it should return a QueryOperationConfig with the limit set to that number`` () =
+        let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25 with (pagesize(100))"
 
         match dynamoQuery with
         | GetQueryConfig config 
             when config.HashKey.AsString() = "Yan" &&
-                 config.Limit = 100 && 
+                 config.Limit = 100 &&
                  config.Filter.Condition.ComparisonOperator = "BETWEEN" &&
                  config.Filter.Condition.AttributeValueList.Count = 2 &&
                  config.Filter.Condition.AttributeValueList.[0].N = "5" &&
@@ -112,8 +112,8 @@ type ``Given a DynamoScan`` () =
         |> should equal true
 
     [<Test>]
-    member this.``when there is a limit it should return a ScanOperationConfig`` () =
-        let dynamoQuery = parseDynamoScan "SELECT * FROM Employees LIMIT 100"
+    member this.``when there is a page size option it should return a ScanOperationConfig with limit set to that value`` () =
+        let dynamoQuery = parseDynamoScan "SELECT * FROM Employees with (pagesize(100))"
 
         match dynamoQuery with
         | GetScanConfig config 

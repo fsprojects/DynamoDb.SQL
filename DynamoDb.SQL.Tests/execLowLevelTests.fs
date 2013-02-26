@@ -75,8 +75,8 @@ type ``Given a DynamoQuery`` () =
         |> should equal true
 
     [<Test>]
-    member this.``when there is a limit it should be returned as part of the QueryRequest`` () =
-        let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25 Limit 100"
+    member this.``when there is a page size option it should be returned as part of the QueryRequest`` () =
+        let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25 with (pagesize(100))"
 
         match dynamoQuery with
         | GetQueryReq req when req.TableName = "Employees" && req.HashKeyValue.S = "Yan" &&
@@ -92,11 +92,11 @@ type ``Given a DynamoQuery`` () =
 
     [<Test>]
     member this.``when the action is Count the QueryRequest shoul have Count set to true`` () =
-        let dynamoQuery = parseDynamoQuery "COUNT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25 Limit 100"
+        let dynamoQuery = parseDynamoQuery "COUNT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25"
 
         match dynamoQuery with
         | GetQueryReq req when req.TableName = "Employees" && req.HashKeyValue.S = "Yan" &&
-                               req.Limit = 100 && req.RangeKeyCondition.ComparisonOperator = "BETWEEN" &&
+                               req.Limit = 0 && req.RangeKeyCondition.ComparisonOperator = "BETWEEN" &&
                                req.RangeKeyCondition.AttributeValueList.Count = 2 &&
                                req.RangeKeyCondition.AttributeValueList.[0].N = "5" &&
                                req.RangeKeyCondition.AttributeValueList.[1].N = "25" &&
@@ -123,8 +123,8 @@ type ``Given a DynamoScan`` () =
         |> should equal true
 
     [<Test>]
-    member this.``when there is a limit of 100 it should return a ScanRequest with limit set to 100`` () =
-        let dynamoQuery = parseDynamoScan "SELECT * FROM Employees LIMIT 100"
+    member this.``when there is a page size option of 100 it should return a ScanRequest with limit set to 100`` () =
+        let dynamoQuery = parseDynamoScan "SELECT * FROM Employees with (pagesize(100))"
 
         match dynamoQuery with
         | GetScanReq req when req.TableName = "Employees" &&
