@@ -21,25 +21,26 @@ module LowLevel =
         | { From    = From table
             Where   = Where(QueryCondition(hKey, rngKeyCondition))
             Action  = ActionParams(isCount, attributes)
-            Limit   = limit
-            Order   = order }
-            -> let req = new QueryRequest(ConsistentRead  = true, // TODO
-                                          TableName       = table, 
+            Order   = order
+            Options = opts }
+            -> let req = new QueryRequest(TableName       = table, 
                                           HashKeyValue    = hKey.ToAttributeValue(),
                                           AttributesToGet = attributes,
                                           Count           = isCount)
 
-               // optionally set the range key condition and limit if applicable
+               // optionally set the range key condition if applicable
                match rngKeyCondition with 
                | Some(rndCond) -> req.RangeKeyCondition <- rndCond.ToCondition()
                | _ -> ()
 
-               match limit with | Some(Limit n) -> req.Limit <- n | _ -> ()
                match order with 
                | Some(Asc)  -> req.ScanIndexForward <- true
                | Some(Desc) -> req.ScanIndexForward <- false
                | _          -> ()
-               
+
+               req.ConsistentRead <- isConsistentRead opts
+               match tryGetQueryPageSize opts with | Some n -> req.Limit <- n | _ -> ()
+
                req
 
     let (|GetScanReq|) (scan : DynamoScan) = 
@@ -47,7 +48,7 @@ module LowLevel =
         | { From    = From table
             Where   = where
             Action  = ActionParams(isCount, attributes)
-            Limit   = limit }
+            Options = opts }
             -> let req = new ScanRequest(TableName       = table, 
                                          AttributesToGet = attributes,
                                          Count           = isCount)
@@ -59,7 +60,7 @@ module LowLevel =
                     req.ScanFilter <- new Dictionary<string, Condition>(dict scanFilters)
                | _ -> ()
 
-               match limit with | Some(Limit n) -> req.Limit <- n | _ -> ()
+               match tryGetScanPageSize opts with | Some n -> req.Limit <- n | _ -> ()
                
                req
 

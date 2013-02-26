@@ -265,6 +265,45 @@ type ``Given a query`` () =
         let count = "COUNT FirstName FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey >= 30 ORDER DESC LIMIT 10"
         parseDynamoQuery count |> should throw typeof<InvalidQuery>
 
+    [<Test>]
+    member this.``when NoConsistentRead option is specified it should be parsed correctly`` () =
+        let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" WITH (  nOConsiStentRead )"
+        
+        match parseDynamoQuery select with
+        | { Action  = Select [ Asterisk ]
+            From    = From "Employees"
+            Where   = Where [ (HashKey, Equal (S "Yan")) ]
+            Options = Some [| NoConsistentRead |] }
+            -> true
+        | _ -> false
+        |> should equal true
+
+    [<Test>]
+    member this.``when PageSize option is specified it should be parsed correctly`` () =
+        let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" WITH (Pagesize(  10) )"
+        
+        match parseDynamoQuery select with
+        | { Action  = Select [ Asterisk ]
+            From    = From "Employees"
+            Where   = Where [ (HashKey, Equal (S "Yan")) ]
+            Options = Some [| QueryPageSize 10 |] }
+            -> true
+        | _ -> false
+        |> should equal true
+
+    [<Test>]
+    member this.``when both NoConsistentRead and PageSize options are specified they should be parsed correctly`` () =
+        let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" WITH ( NOconsistentRead, Pagesize(  10) )"
+        
+        match parseDynamoQuery select with
+        | { Action  = Select [ Asterisk ]
+            From    = From "Employees"
+            Where   = Where [ (HashKey, Equal (S "Yan")) ]
+            Options = Some [| NoConsistentRead; QueryPageSize 10 |] }
+            -> true
+        | _ -> false
+        |> should equal true
+
 [<TestFixture>]
 type ``Given a scan`` () =
     [<Test>]
@@ -511,3 +550,16 @@ type ``Given a scan`` () =
     member this.``when a count query is specified with attribute names, it should except`` () =
         let count = "COUNT FirstName FROM Employees WHERE FirstName = \"Yan\" AND Age >= 30 ORDER DESC LIMIT 10"
         parseDynamoScan count |> should throw typeof<InvalidScan>
+
+    [<Test>]
+    member this.``when PageSize option is specified it should be parsed correctly`` () =
+        let select = "SELECT * FROM Employees WITH (Pagesize(  10) )"
+        
+        match parseDynamoScan select with
+        | { Action  = Select [ Asterisk ]
+            From    = From "Employees"
+            Where   = None
+            Options = Some [| ScanPageSize 10 |] }
+            -> true
+        | _ -> false
+        |> should equal true
