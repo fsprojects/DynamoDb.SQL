@@ -72,6 +72,7 @@ module LowLevel =
             aggr.QueryResult.Items.AddRange(res.QueryResult.Items)
             aggr.QueryResult.Count                 <- aggr.QueryResult.Count + res.QueryResult.Count
             aggr.QueryResult.ConsumedCapacityUnits <- aggr.QueryResult.ConsumedCapacityUnits + res.QueryResult.ConsumedCapacityUnits
+            aggr.QueryResult.LastEvaluatedKey      <- res.QueryResult.LastEvaluatedKey
             aggr.ResponseMetadata.RequestId        <- res.ResponseMetadata.RequestId
             aggr
         | _ -> res
@@ -89,7 +90,8 @@ module LowLevel =
             aggr.ScanResult.Count                 <- aggr.ScanResult.Count + newItems.Length
 
             aggr.ScanResult.ConsumedCapacityUnits <- aggr.ScanResult.ConsumedCapacityUnits + res.ScanResult.ConsumedCapacityUnits
-            aggr.ScanResult.ScannedCount          <- aggr.ScanResult.ScannedCount
+            aggr.ScanResult.ScannedCount          <- aggr.ScanResult.ScannedCount + res.ScanResult.ScannedCount
+            aggr.ScanResult.LastEvaluatedKey      <- res.ScanResult.LastEvaluatedKey
             aggr.ResponseMetadata.RequestId       <- res.ResponseMetadata.RequestId
             aggr
         | _ -> res
@@ -106,7 +108,8 @@ module LowLevel =
 
             match res.QueryResult.LastEvaluatedKey with
             | null -> return aggrRes
-            | _    -> return! queryLoop client (maxResults - res.QueryResult.Count) req (Some aggrRes)
+            | _    -> req.ExclusiveStartKey <- res.QueryResult.LastEvaluatedKey
+                      return! queryLoop client (maxResults - res.QueryResult.Count) req (Some aggrRes)
         }
 
     /// Recursively make scan requests and merge results into an aggregate response
@@ -125,10 +128,11 @@ module LowLevel =
 
             match res.ScanResult.LastEvaluatedKey with
             | null -> return aggrRes
-            | _ when aggrRes.ScanResult.Count >= maxResults
-                   -> // short circuit if we have managed to find as many results as we wanted
-                      return aggrRes
-            | _    -> return! scanLoop client (maxResults - res.ScanResult.Count) req (Some aggrRes)
+            // short circuit if we have managed to find as many results as we wanted
+            | _ when res.ScanResult.Count >= maxResults
+                   -> return aggrRes
+            | _    -> req.ExclusiveStartKey <- res.ScanResult.LastEvaluatedKey
+                      return! scanLoop client (maxResults - res.ScanResult.Count) req (Some aggrRes)
         }
 
 [<AutoOpen>]
