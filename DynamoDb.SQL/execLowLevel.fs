@@ -6,6 +6,7 @@
 namespace DynamoDb.SQL.Execution
 
 open System.Collections.Generic
+open System.Linq
 open System.Runtime.CompilerServices
 open DynamoDb.SQL.Ast
 open DynamoDb.SQL.Parser
@@ -64,6 +65,72 @@ module LowLevel =
                
                req
 
+    /// Merges a QueryResponse into an aggregate QueryResponse
+    let mergeQueryResponses (res : QueryResponse) (aggrRes : QueryResponse option) = 
+        match aggrRes with
+        | Some aggr ->
+            aggr.QueryResult.Items.AddRange(res.QueryResult.Items)
+            aggr.QueryResult.Count                 <- aggr.QueryResult.Count + res.QueryResult.Count
+            aggr.QueryResult.ConsumedCapacityUnits <- aggr.QueryResult.ConsumedCapacityUnits + res.QueryResult.ConsumedCapacityUnits
+            aggr.ResponseMetadata.RequestId        <- res.ResponseMetadata.RequestId
+            aggr
+        | _ -> res
+        
+    /// Merges a ScanResponse into an aggregate ScanResponse
+    let mergeScanResponses (res : ScanResponse) maxResults (aggrRes : ScanResponse option) = 
+        match aggrRes with
+        | Some aggr ->
+            // respect the max number of results we want to return from this new response
+            // IEnumerable.Take is used here instead of Seq.take because Seq.take excepts
+            // when there are insufficient number of items which is not desirable here
+            let newItems = res.ScanResult.Items.Take maxResults |> Seq.toArray
+
+            aggr.ScanResult.Items.AddRange(newItems)
+            aggr.ScanResult.Count                 <- aggr.ScanResult.Count + newItems.Length
+
+            aggr.ScanResult.ConsumedCapacityUnits <- aggr.ScanResult.ConsumedCapacityUnits + res.ScanResult.ConsumedCapacityUnits
+            aggr.ScanResult.ScannedCount          <- aggr.ScanResult.ScannedCount
+            aggr.ResponseMetadata.RequestId       <- res.ResponseMetadata.RequestId
+            aggr
+        | _ -> res
+
+    /// Recursively make query requests and merge results into an aggregate response
+    let rec queryLoop (client : AmazonDynamoDBClient) maxResults (req : QueryRequest) (aggrRes : QueryResponse option) =
+        async {
+            // the request limit (max number of items to return) should not exceed the max number of results we want
+            // to return in total
+            req.Limit <- min maxResults req.Limit
+            let! res = client.QueryAsync req
+
+            let aggrRes = mergeQueryResponses res aggrRes
+
+            match res.QueryResult.LastEvaluatedKey with
+            | null -> return aggrRes
+            | _    -> return! queryLoop client (maxResults - res.QueryResult.Count) req (Some aggrRes)
+        }
+
+    /// Recursively make scan requests and merge results into an aggregate response
+    /// NOTE: there are subtle differences with the way 'Limit' works in Scan and Query operations, hence
+    /// why the two separate loop functions.
+    /// In short, 'Limit' in Query terms defines the max number of items to return, but in Scan terms it
+    /// defines the max number of items to evaluate (page size)
+    /// For more details, please refer to the official API doc:
+    /// http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/API_Query.html
+    /// http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/API_Scan.html
+    let rec scanLoop (client : AmazonDynamoDBClient) maxResults (req : ScanRequest) (aggrRes : ScanResponse option) =
+        async {
+            let! res = client.ScanAsync req
+
+            let aggrRes = mergeScanResponses res maxResults aggrRes
+
+            match res.ScanResult.LastEvaluatedKey with
+            | null -> return aggrRes
+            | _ when aggrRes.ScanResult.Count >= maxResults
+                   -> // short circuit if we have managed to find as many results as we wanted
+                      return aggrRes
+            | _    -> return! scanLoop client (maxResults - res.ScanResult.Count) req (Some aggrRes)
+        }
+
 [<AutoOpen>]
 module ClientExt = 
     type AmazonDynamoDBClient with
@@ -71,7 +138,10 @@ module ClientExt =
             let dynamoQuery = parseDynamoQuery query
 
             match dynamoQuery with
-            | GetQueryReq req -> async { return! this.QueryAsync req }
+            | { Limit = Some(Limit n) } & GetQueryReq req 
+                -> queryLoop this n req None
+            | GetQueryReq req 
+                -> async { return! this.QueryAsync req }
             | _ -> raise <| InvalidQuery (sprintf "Not a valid query request : %s" query)
 
         member this.Query (query : string) = this.QueryAsync(query) |> Async.RunSynchronously
@@ -80,7 +150,10 @@ module ClientExt =
             let dynamoScan = parseDynamoScan query
     
             match dynamoScan with
-            | GetScanReq req -> async { return! this.ScanAsync req }
+            | { Limit = Some(Limit n) } & GetScanReq req
+                -> scanLoop this n req None
+            | GetScanReq req 
+                -> async { return! this.ScanAsync req }
             | _ -> raise <| InvalidScan (sprintf "Not a valid scan request : %s" query)
 
         member this.Scan (query : string) = this.ScanAsync(query) |> Async.RunSynchronously
