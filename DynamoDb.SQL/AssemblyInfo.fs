@@ -11,8 +11,8 @@ open System.Runtime.InteropServices
 
 [<assembly: AssemblyProduct("DynamoDb.SQL")>]
 [<assembly: AssemblyCopyright("Copyright @ Yan Cui 2012")>]
-[<assembly: AssemblyVersion("1.1.2")>]
-[<assembly: AssemblyFileVersion("1.1.2")>]
+[<assembly: AssemblyVersion("1.1.3")>]
+[<assembly: AssemblyFileVersion("1.1.3")>]
 [<assembly: InternalsVisibleTo("DynamoDb.SQL.Tests")>]
 
 do ()
