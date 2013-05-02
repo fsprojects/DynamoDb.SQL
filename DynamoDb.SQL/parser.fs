@@ -70,9 +70,9 @@ module Common =
         >>. ((many1SatisfyL isTableName "table name")             
             |>> (function | name when name.Equals("where", StringComparison.CurrentCultureIgnoreCase)
                                     -> raise <| InvalidTableName name
-                            | name when name.Equals("limit", StringComparison.CurrentCultureIgnoreCase)
+                          | name when name.Equals("limit", StringComparison.CurrentCultureIgnoreCase)
                                     -> raise <| InvalidTableName name
-                            | name -> From name))
+                          | name -> From name))
         .>> ws
 
     let stringLiteral =
@@ -163,7 +163,7 @@ module Parser =
         let queryPageSize       = skipStringCI_ws "pagesize" >>. openParentheses >>. pint32_ws .>> closeParentheses |>> QueryPageSize
 
         // DynamoDB allows a-z, A-Z, 0-9, _, - and . in the index name
-        let isValidChar c       = isAsciiLetter c || c = '_' || c = '-' || c = '.'
+        let isValidChar c       = isAsciiLetter c || isDigit c || c = '_' || c = '-' || c = '.'
         let pIndexName          = ws >>. identifier (IdentifierOptions(isAsciiIdStart = isValidChar, isAsciiIdContinue = isValidChar)) .>> ws
     
         let pTrue, pFalse       = stringCIReturn_ws "true" true, stringCIReturn_ws "false" false

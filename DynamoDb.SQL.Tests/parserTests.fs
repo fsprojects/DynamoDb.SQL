@@ -3,7 +3,7 @@
 // Email : theburningmonk@gmail.com
 // Blog  : http://theburningmonk.com
 
-module DynamoDb.SQL.ParserTests
+module DynamoDb.SQL.Parser.Tests
 
 open FsUnit
 open NUnit.Framework
@@ -564,7 +564,7 @@ type ``Given a V2 query`` () =
         parseDynamoQueryV2 count |> should throw typeof<InvalidQuery>
 
     [<Test>]
-    member this.``when NoConsistentRead option is specified it should be parsed correctly`` () =
+    member this.``when NoConsistentRead option is specified it should be captured in the Options clause`` () =
         let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" WITH (  nOConsiStentRead )"
         
         match parseDynamoQueryV2 select with
@@ -577,7 +577,7 @@ type ``Given a V2 query`` () =
         |> should equal true
 
     [<Test>]
-    member this.``when PageSize option is specified it should be parsed correctly`` () =
+    member this.``when PageSize option is specified it should be captured in the Options clause`` () =
         let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" WITH (Pagesize(  10) )"
         
         match parseDynamoQueryV2 select with
@@ -590,11 +590,9 @@ type ``Given a V2 query`` () =
         |> should equal true
 
     [<Test>]
-    member this.``when Index option is specified with AllAttributes set to true it should be parsed correctly`` () =
+    member this.``when Index option is specified with AllAttributes set to true it should be captured in the Options clause`` () =
         let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" WITH (Index( _M-y.1nd3x ,  true) )"
         
-        let res = parseDynamoQueryV2 select
-
         match parseDynamoQueryV2 select with
         | { Action  = Select [ Asterisk ]
             From    = From "Employees"
@@ -605,7 +603,7 @@ type ``Given a V2 query`` () =
         |> should equal true
 
     [<Test>]
-    member this.``when Index option is specified with AllAttributes set to false it should be parsed correctly`` () =
+    member this.``when Index option is specified with AllAttributes set to false it should be captured in the Options clause`` () =
         let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" WITH (Index( _M-y.1nd3x ,  false) )"
         
         let res = parseDynamoQueryV2 select
@@ -620,7 +618,7 @@ type ``Given a V2 query`` () =
         |> should equal true
 
     [<Test>]
-    member this.``when NoReturnedCapacity option is specified it should be parsed correctly`` () =
+    member this.``when NoReturnedCapacity option is specified it should be captured in the Options clause`` () =
         let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" WITH ( NoReturnedCapacity)"
         
         match parseDynamoQueryV2 select with
@@ -633,7 +631,7 @@ type ``Given a V2 query`` () =
         |> should equal true
 
     [<Test>]
-    member this.``when both NoConsistentRead and PageSize options are specified they should be parsed correctly`` () =
+    member this.``when both NoConsistentRead and PageSize options are specified they should be captured in the Options clause`` () =
         let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" WITH ( NOconsistentRead, Pagesize(  10) )"
         
         match parseDynamoQueryV2 select with
