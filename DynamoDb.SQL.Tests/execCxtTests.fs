@@ -8,17 +8,17 @@ module DynamoDb.SQL.Execution.Helper.Tests
 open System
 open FsUnit
 open NUnit.Framework
-open DynamoDb.SQL.Ast
+open DynamoDb.SQL
 open DynamoDb.SQL.Parser
 open DynamoDb.SQL.Execution
 
 let equal = FsUnit.equal
 
 [<TestFixture>]
-type ``Given a DynamoQuery`` () =
+type ``Given a V1 DynamoQuery`` () =
     [<Test>]
     member this.``when there is only a hash key equality filter it should return a QueryOperationConfig`` () =
-        let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\""
+        let dynamoQuery = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey = \"Yan\""
 
         match dynamoQuery with
         | GetQueryConfig config 
@@ -32,7 +32,7 @@ type ``Given a DynamoQuery`` () =
 
     [<Test>]
     member this.``when there is a hash key and a range key equality filter it should return a QueryOperationConfig`` () =
-        let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey = 30"
+        let dynamoQuery = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey = 30"
 
         match dynamoQuery with
         | GetQueryConfig config 
@@ -48,7 +48,7 @@ type ``Given a DynamoQuery`` () =
 
     [<Test>]
     member this.``when there is a hash key and a range key greater than filter it should return a QueryOperationConfig`` () =
-        let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey > 30"
+        let dynamoQuery = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey > 30"
 
         match dynamoQuery with
         | GetQueryConfig config 
@@ -64,7 +64,7 @@ type ``Given a DynamoQuery`` () =
 
     [<Test>]
     member this.``when there is a hash key and a range key in filter it should return a QueryOperationConfig`` () =
-        let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25"
+        let dynamoQuery = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25"
 
         match dynamoQuery with
         | GetQueryConfig config 
@@ -81,7 +81,7 @@ type ``Given a DynamoQuery`` () =
 
     [<Test>]
     member this.``when there is a page size it should return a QueryOperationConfig with the limit set to that number`` () =
-        let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25 with (pagesize(100))"
+        let dynamoQuery = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25 with (pagesize(100))"
 
         match dynamoQuery with
         | GetQueryConfig config 

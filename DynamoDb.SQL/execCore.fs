@@ -3,17 +3,15 @@
 // Email : theburningmonk@gmail.com
 // Blog  : http://theburningmonk.com
 
-namespace DynamoDb.SQL.Execution
+namespace DynamoDb.SQL
 
 open System.Collections.Generic
-open DynamoDb.SQL.Ast
 open Amazon.DynamoDB.Model
 
 exception InvalidQueryFormat    of string
 
-[<AutoOpen>]
 module Core =
-    let (|QueryCondition|) (conditions : Filter list) = 
+    let (|QueryV1Condition|) (conditions : Filter list) = 
         let hKey     = conditions |> List.tryPick (function | (HashKey, Equal(op)) -> Some(op) | _ -> None)
         let rndConds = conditions |> List.choose (function | (RangeKey, cond) when cond.IsAllowedInQuery -> Some(cond) | _ -> None)
 
@@ -22,6 +20,10 @@ module Core =
         | Some(hOp), [] -> hOp, None
         | Some(hOp), [ cond ] -> hOp, Some cond
         | _ -> raise <| InvalidQueryFormat "Query should specify a '@haskey =' clause and at most one @rangekey filter"
+
+    let (|QueryV2Condition|) (conditions : Filter list) = 
+        // only attribute names are allowed by the parser, so safe to assume Attribute clause here
+        conditions |> List.map (fun (Attribute name, cond) -> name, cond)
 
     let (|ScanCondition|) (conditions : Filter list) =
         // only attribute names are allowed by the parser, so safe to assume Attribute clause here
@@ -54,10 +56,25 @@ module Core =
             |> not
         | _ -> true
 
+    /// Returns whether consumed capacity count is not returned
+    let returnConsumedCapacity (opts : QueryOption[] option) =
+        match opts with
+        | Some arr -> 
+            arr 
+            |> Array.exists (fun opt -> match opt with | NoReturnedCapacity -> true | _ -> false)
+            |> not
+        | _ -> true
+
     /// Try to get the page size option from the specified query options
     let tryGetQueryPageSize (opts : QueryOption[] option) =
         match opts with
         | Some arr -> arr |> Array.tryPick (fun opt -> match opt with | QueryPageSize n -> Some n | _ -> None)
+        | _ -> None
+
+    /// Try to get the local secondary index name and whether to use all attributes
+    let tryGetQueryIndex (opts : QueryOption[] option) =
+        match opts with
+        | Some arr -> arr |> Array.tryPick (fun opt -> match opt with | Index(name, allAttrs) -> Some(name, allAttrs) | _ -> None)
         | _ -> None
 
     /// Try to get the page size option from the specified scan options
