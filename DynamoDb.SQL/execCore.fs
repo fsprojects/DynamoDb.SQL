@@ -23,7 +23,13 @@ module Core =
 
     let (|QueryV2Condition|) (conditions : Filter list) = 
         // only attribute names are allowed by the parser, so safe to assume Attribute clause here
-        conditions |> List.map (fun (Attribute name, cond) -> name, cond)
+        let filters = conditions |> List.map (fun (Attribute name, cond) -> name, cond)
+
+        match filters with
+        | [] -> raise <| InvalidQueryFormat "Query should specify a '=' clause against the hash key attribute"
+        | _ when not <| (filters |> List.exists (function | _, Equal _ -> true | _ -> false))
+             -> raise <| InvalidQueryFormat "Query should specify a '=' clause against the hash key attribute"
+        | _  -> filters
 
     let (|ScanCondition|) (conditions : Filter list) =
         // only attribute names are allowed by the parser, so safe to assume Attribute clause here
