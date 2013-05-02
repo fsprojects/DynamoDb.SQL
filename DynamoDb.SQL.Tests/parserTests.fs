@@ -7,36 +7,36 @@ module DynamoDb.SQL.ParserTests
 
 open FsUnit
 open NUnit.Framework
-open DynamoDb.SQL.Ast
+open DynamoDb.SQL
 open DynamoDb.SQL.Parser
 
 let equal = FsUnit.equal
 
 [<TestFixture>]
-type ``Given a query`` () =
+type ``Given a V1 query`` () =
     [<Test>]
     [<ExpectedException(typeof<InvalidQuery>)>]
     member this.``when there is no attributes in the select clause it should except`` () =
         let select = "SELECT FROM Employees WHERE @hashkey = \"Yan\""
-        parseDynamoQuery select |> should throw typeof<InvalidQuery>
+        parseDynamoQueryV1 select |> should throw typeof<InvalidQuery>
 
     [<Test>]
     [<ExpectedException(typeof<InvalidTableName>)>]
     member this.``when there is no table name in the from clause it should except`` () =
         let select = "SELECT * FROM WHERE @hashkey = \"Yan\""
-        parseDynamoQuery select |> should throw typeof<InvalidTableName>
+        parseDynamoQueryV1 select |> should throw typeof<InvalidTableName>
 
     [<Test>]
     [<ExpectedException(typeof<InvalidQuery>)>]
     member this.``when there is no where clause it should except`` () =
         let select = "SELECT * FROM Employees"
-        parseDynamoQuery select |> should throw typeof<InvalidQuery>
+        parseDynamoQueryV1 select |> should throw typeof<InvalidQuery>
 
     [<Test>]
     [<ExpectedException(typeof<InvalidQuery>)>]
     member this.``when there is no filter conditions in the where clause it should except`` () =
         let select = "SELECT * FROM Employees WHERE"
-        parseDynamoQuery select |> should throw typeof<InvalidQuery>
+        parseDynamoQueryV1 select |> should throw typeof<InvalidQuery>
 
     [<Test>]
     member this.``when there is white spaces around the attribute names and table name they should be ignored`` () =
@@ -46,7 +46,7 @@ type ``Given a query`` () =
                         WHERE @HashKey   =      \"Yan\"
                       LIMIT     5"
 
-        match parseDynamoQuery select with
+        match parseDynamoQueryV1 select with
         | { Action  = Select [ Attribute "Name"; Attribute "Age"; Attribute "Salary" ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")) ]
@@ -62,7 +62,7 @@ type ``Given a query`` () =
                       where @hAshkeY = \"Yan\"
                       liMIt 5"
 
-        match parseDynamoQuery select with
+        match parseDynamoQueryV1 select with
         | { Action  = Select [ Attribute "Name"; Attribute "Age"; Attribute "Salary" ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")) ]
@@ -75,7 +75,7 @@ type ``Given a query`` () =
     member this.``when a range key is included in a filter condition it should be parsed`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey = \"Cui\""
 
-        match parseDynamoQuery select with
+        match parseDynamoQueryV1 select with
         | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal(S "Yan")); (RangeKey, Equal(S "Cui")) ]
@@ -88,19 +88,19 @@ type ``Given a query`` () =
     [<ExpectedException(typeof<InvalidQuery>)>]
     member this.``when an attribute name is included in a filter condition it should except`` () =
         let select = "SELECT * FROM Employees WHERE Age = 30"
-        parseDynamoQuery select |> should throw typeof<InvalidQuery>
+        parseDynamoQueryV1 select |> should throw typeof<InvalidQuery>
 
     [<Test>]
     [<ExpectedException(typeof<InvalidQuery>)>]
     member this.``when the != operator is used it should except`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey != 30"
-        parseDynamoQuery select |> should throw typeof<InvalidQuery>
+        parseDynamoQueryV1 select |> should throw typeof<InvalidQuery>
 
     [<Test>]
     member this.``when < operator is used it should be parsed correctly`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey < 99"
 
-        match parseDynamoQuery select with
+        match parseDynamoQueryV1 select with
         | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, LessThan (N 99.0)) ]
@@ -113,7 +113,7 @@ type ``Given a query`` () =
     member this.``when <= operator is used it should be parsed correctly`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey <= 99"
 
-        match parseDynamoQuery select with
+        match parseDynamoQueryV1 select with
         | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, LessThanOrEqual (N 99.0)) ]
@@ -126,7 +126,7 @@ type ``Given a query`` () =
     member this.``when > operator is used it should be parsed correctly`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey > 99"
 
-        match parseDynamoQuery select with
+        match parseDynamoQueryV1 select with
         | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, GreaterThan (N 99.0)) ]
@@ -139,7 +139,7 @@ type ``Given a query`` () =
     member this.``when >= operator is used it should be parsed correctly`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey >= 99"
 
-        match parseDynamoQuery select with
+        match parseDynamoQueryV1 select with
         | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, GreaterThanOrEqual (N 99.0)) ]
@@ -152,19 +152,19 @@ type ``Given a query`` () =
     [<ExpectedException(typeof<InvalidQuery>)>]
     member this.``when the Contains operator is used it should except`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey CONTAINS \"Cui\""
-        parseDynamoQuery select |> should throw typeof<InvalidQuery>
+        parseDynamoQueryV1 select |> should throw typeof<InvalidQuery>
 
     [<Test>]
     [<ExpectedException(typeof<InvalidQuery>)>]
     member this.``when the NotContains operator is used it except`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey NOT CONTAINS \"Cui\""
-        parseDynamoQuery select |> should throw typeof<InvalidQuery>
+        parseDynamoQueryV1 select |> should throw typeof<InvalidQuery>
 
     [<Test>]
     member this.``when the Begins With operator is used it should be parsed correctly`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey BEGINS WITH \"Cui\""
 
-        match parseDynamoQuery select with
+        match parseDynamoQueryV1 select with
         | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, BeginsWith (S "Cui")) ]
@@ -177,7 +177,7 @@ type ``Given a query`` () =
     member this.``when the Between operator is used it should be parsed correctly`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey BETWEEN 10 AND 30"
 
-        match parseDynamoQuery select with
+        match parseDynamoQueryV1 select with
         | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, Between ((N 10.0), (N 30.0))) ]
@@ -190,25 +190,25 @@ type ``Given a query`` () =
     [<ExpectedException(typeof<InvalidQuery>)>]
     member this.``when the In operator is used it should except`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey IN (\"Foo\", \"Bar\")"
-        parseDynamoQuery select |> should throw typeof<InvalidQuery>
+        parseDynamoQueryV1 select |> should throw typeof<InvalidQuery>
 
     [<Test>]
     [<ExpectedException(typeof<InvalidQuery>)>]
     member this.``when the Is Null operator is used it should except`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey IS NULL"
-        parseDynamoQuery select |> should throw typeof<InvalidQuery>
+        parseDynamoQueryV1 select |> should throw typeof<InvalidQuery>
 
     [<Test>]
     [<ExpectedException(typeof<InvalidQuery>)>]
     member this.``when the Is Not Null operator is used it should except`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey IS NOT NULL"
-        parseDynamoQuery select |> should throw typeof<InvalidQuery>
+        parseDynamoQueryV1 select |> should throw typeof<InvalidQuery>
 
     [<Test>]
     member this.``when limit clause is specified, it should be parsed correctly`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey >= 30 LIMIT 10"
 
-        match parseDynamoQuery select with
+        match parseDynamoQueryV1 select with
         | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, GreaterThanOrEqual(N 30.0)) ]
@@ -221,7 +221,7 @@ type ``Given a query`` () =
     member this.``when order asc is specified, it should be parsed correctly`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey >= 30 ORDER ASC LIMIT 10"
 
-        match parseDynamoQuery select with
+        match parseDynamoQueryV1 select with
         | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, GreaterThanOrEqual(N 30.0)) ]
@@ -235,7 +235,7 @@ type ``Given a query`` () =
     member this.``when order desc is specified, it should be parsed correctly`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey >= 30 ORDER DESC LIMIT 10"
 
-        match parseDynamoQuery select with
+        match parseDynamoQueryV1 select with
         | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, GreaterThanOrEqual(N 30.0)) ]
@@ -249,7 +249,7 @@ type ``Given a query`` () =
     member this.``when a count query is specified, it should be parsed correctly`` () =
         let count = "COUNT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey >= 30 ORDER DESC LIMIT 10"
 
-        match parseDynamoQuery count with
+        match parseDynamoQueryV1 count with
         | { Action  = Count
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, GreaterThanOrEqual(N 30.0)) ]
@@ -263,13 +263,13 @@ type ``Given a query`` () =
     [<ExpectedException(typeof<InvalidQuery>)>]
     member this.``when a count query is specified with attribute names, it should except`` () =
         let count = "COUNT FirstName FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey >= 30 ORDER DESC LIMIT 10"
-        parseDynamoQuery count |> should throw typeof<InvalidQuery>
+        parseDynamoQueryV1 count |> should throw typeof<InvalidQuery>
 
     [<Test>]
     member this.``when NoConsistentRead option is specified it should be parsed correctly`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" WITH (  nOConsiStentRead )"
         
-        match parseDynamoQuery select with
+        match parseDynamoQueryV1 select with
         | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")) ]
@@ -282,7 +282,7 @@ type ``Given a query`` () =
     member this.``when PageSize option is specified it should be parsed correctly`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" WITH (Pagesize(  10) )"
         
-        match parseDynamoQuery select with
+        match parseDynamoQueryV1 select with
         | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")) ]
@@ -295,7 +295,299 @@ type ``Given a query`` () =
     member this.``when both NoConsistentRead and PageSize options are specified they should be parsed correctly`` () =
         let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" WITH ( NOconsistentRead, Pagesize(  10) )"
         
-        match parseDynamoQuery select with
+        match parseDynamoQueryV1 select with
+        | { Action  = Select [ Asterisk ]
+            From    = From "Employees"
+            Where   = Where [ (HashKey, Equal (S "Yan")) ]
+            Options = Some [| NoConsistentRead; QueryPageSize 10 |] }
+            -> true
+        | _ -> false
+        |> should equal true
+
+[<TestFixture>]
+type ``Given a V2 query`` () =
+    [<Test>]
+    [<ExpectedException(typeof<InvalidQuery>)>]
+    member this.``when there is no attributes in the select clause it should except`` () =
+        let select = "SELECT FROM Employees WHERE @hashkey = \"Yan\""
+        parseDynamoQueryV1 select |> should throw typeof<InvalidQuery>
+
+    [<Test>]
+    [<ExpectedException(typeof<InvalidTableName>)>]
+    member this.``when there is no table name in the from clause it should except`` () =
+        let select = "SELECT * FROM WHERE @hashkey = \"Yan\""
+        parseDynamoQueryV1 select |> should throw typeof<InvalidTableName>
+
+    [<Test>]
+    [<ExpectedException(typeof<InvalidQuery>)>]
+    member this.``when there is no where clause it should except`` () =
+        let select = "SELECT * FROM Employees"
+        parseDynamoQueryV1 select |> should throw typeof<InvalidQuery>
+
+    [<Test>]
+    [<ExpectedException(typeof<InvalidQuery>)>]
+    member this.``when there is no filter conditions in the where clause it should except`` () =
+        let select = "SELECT * FROM Employees WHERE"
+        parseDynamoQueryV1 select |> should throw typeof<InvalidQuery>
+
+    [<Test>]
+    member this.``when there is white spaces around the attribute names and table name they should be ignored`` () =
+        let select = "SELECT Name,    Age,
+                             Salary
+                      FROM   Employees 
+                        WHERE @HashKey   =      \"Yan\"
+                      LIMIT     5"
+
+        match parseDynamoQueryV1 select with
+        | { Action  = Select [ Attribute "Name"; Attribute "Age"; Attribute "Salary" ]
+            From    = From "Employees"
+            Where   = Where [ (HashKey, Equal (S "Yan")) ]
+            Limit   = Some(Limit 5) }
+            -> true
+        | _ -> false
+        |> should equal true
+
+    [<Test>]
+    member this.``when the SELECT, FROM, WHERE and LIMIT keywords are not in capitals they should still be parsed correctly`` () =
+        let select = "sELeCT Name, Age, Salary
+                      FrOm Employees
+                      where @hAshkeY = \"Yan\"
+                      liMIt 5"
+
+        match parseDynamoQueryV1 select with
+        | { Action  = Select [ Attribute "Name"; Attribute "Age"; Attribute "Salary" ]
+            From    = From "Employees"
+            Where   = Where [ (HashKey, Equal (S "Yan")) ]
+            Limit   = Some(Limit 5) }
+            -> true
+        | _ -> false
+        |> should equal true
+
+    [<Test>]
+    member this.``when a range key is included in a filter condition it should be parsed`` () =
+        let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey = \"Cui\""
+
+        match parseDynamoQueryV1 select with
+        | { Action  = Select [ Asterisk ]
+            From    = From "Employees"
+            Where   = Where [ (HashKey, Equal(S "Yan")); (RangeKey, Equal(S "Cui")) ]
+            Limit   = None }
+            -> true
+        | _ -> false
+        |> should equal true
+
+    [<Test>]
+    [<ExpectedException(typeof<InvalidQuery>)>]
+    member this.``when an attribute name is included in a filter condition it should except`` () =
+        let select = "SELECT * FROM Employees WHERE Age = 30"
+        parseDynamoQueryV1 select |> should throw typeof<InvalidQuery>
+
+    [<Test>]
+    [<ExpectedException(typeof<InvalidQuery>)>]
+    member this.``when the != operator is used it should except`` () =
+        let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey != 30"
+        parseDynamoQueryV1 select |> should throw typeof<InvalidQuery>
+
+    [<Test>]
+    member this.``when < operator is used it should be parsed correctly`` () =
+        let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey < 99"
+
+        match parseDynamoQueryV1 select with
+        | { Action  = Select [ Asterisk ]
+            From    = From "Employees"
+            Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, LessThan (N 99.0)) ]
+            Limit   = None }
+            -> true
+        | _ -> false
+        |> should equal true
+
+    [<Test>]
+    member this.``when <= operator is used it should be parsed correctly`` () =
+        let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey <= 99"
+
+        match parseDynamoQueryV1 select with
+        | { Action  = Select [ Asterisk ]
+            From    = From "Employees"
+            Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, LessThanOrEqual (N 99.0)) ]
+            Limit   = None }
+            -> true
+        | _ -> false
+        |> should equal true
+
+    [<Test>]
+    member this.``when > operator is used it should be parsed correctly`` () =
+        let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey > 99"
+
+        match parseDynamoQueryV1 select with
+        | { Action  = Select [ Asterisk ]
+            From    = From "Employees"
+            Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, GreaterThan (N 99.0)) ]
+            Limit   = None }
+            -> true
+        | _ -> false
+        |> should equal true
+
+    [<Test>]
+    member this.``when >= operator is used it should be parsed correctly`` () =
+        let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey >= 99"
+
+        match parseDynamoQueryV1 select with
+        | { Action  = Select [ Asterisk ]
+            From    = From "Employees"
+            Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, GreaterThanOrEqual (N 99.0)) ]
+            Limit   = None }
+            -> true
+        | _ -> false
+        |> should equal true
+
+    [<Test>]
+    [<ExpectedException(typeof<InvalidQuery>)>]
+    member this.``when the Contains operator is used it should except`` () =
+        let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey CONTAINS \"Cui\""
+        parseDynamoQueryV1 select |> should throw typeof<InvalidQuery>
+
+    [<Test>]
+    [<ExpectedException(typeof<InvalidQuery>)>]
+    member this.``when the NotContains operator is used it except`` () =
+        let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey NOT CONTAINS \"Cui\""
+        parseDynamoQueryV1 select |> should throw typeof<InvalidQuery>
+
+    [<Test>]
+    member this.``when the Begins With operator is used it should be parsed correctly`` () =
+        let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey BEGINS WITH \"Cui\""
+
+        match parseDynamoQueryV1 select with
+        | { Action  = Select [ Asterisk ]
+            From    = From "Employees"
+            Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, BeginsWith (S "Cui")) ]
+            Limit   = None }
+            -> true
+        | _ -> false
+        |> should equal true
+    
+    [<Test>]
+    member this.``when the Between operator is used it should be parsed correctly`` () =
+        let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey BETWEEN 10 AND 30"
+
+        match parseDynamoQueryV1 select with
+        | { Action  = Select [ Asterisk ]
+            From    = From "Employees"
+            Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, Between ((N 10.0), (N 30.0))) ]
+            Limit   = None }
+            -> true
+        | _ -> false
+        |> should equal true
+
+    [<Test>]
+    [<ExpectedException(typeof<InvalidQuery>)>]
+    member this.``when the In operator is used it should except`` () =
+        let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey IN (\"Foo\", \"Bar\")"
+        parseDynamoQueryV1 select |> should throw typeof<InvalidQuery>
+
+    [<Test>]
+    [<ExpectedException(typeof<InvalidQuery>)>]
+    member this.``when the Is Null operator is used it should except`` () =
+        let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey IS NULL"
+        parseDynamoQueryV1 select |> should throw typeof<InvalidQuery>
+
+    [<Test>]
+    [<ExpectedException(typeof<InvalidQuery>)>]
+    member this.``when the Is Not Null operator is used it should except`` () =
+        let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey IS NOT NULL"
+        parseDynamoQueryV1 select |> should throw typeof<InvalidQuery>
+
+    [<Test>]
+    member this.``when limit clause is specified, it should be parsed correctly`` () =
+        let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey >= 30 LIMIT 10"
+
+        match parseDynamoQueryV1 select with
+        | { Action  = Select [ Asterisk ]
+            From    = From "Employees"
+            Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, GreaterThanOrEqual(N 30.0)) ]
+            Limit   = Some(Limit 10) }
+            -> true
+        | _ -> false
+        |> should equal true
+
+    [<Test>]
+    member this.``when order asc is specified, it should be parsed correctly`` () =
+        let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey >= 30 ORDER ASC LIMIT 10"
+
+        match parseDynamoQueryV1 select with
+        | { Action  = Select [ Asterisk ]
+            From    = From "Employees"
+            Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, GreaterThanOrEqual(N 30.0)) ]
+            Limit   = Some(Limit 10);
+            Order   = Some(Asc) }
+            -> true
+        | _ -> false
+        |> should equal true
+
+    [<Test>]
+    member this.``when order desc is specified, it should be parsed correctly`` () =
+        let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey >= 30 ORDER DESC LIMIT 10"
+
+        match parseDynamoQueryV1 select with
+        | { Action  = Select [ Asterisk ]
+            From    = From "Employees"
+            Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, GreaterThanOrEqual(N 30.0)) ]
+            Limit   = Some(Limit 10);
+            Order   = Some(Desc) }
+            -> true
+        | _ -> false
+        |> should equal true
+
+    [<Test>]
+    member this.``when a count query is specified, it should be parsed correctly`` () =
+        let count = "COUNT * FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey >= 30 ORDER DESC LIMIT 10"
+
+        match parseDynamoQueryV1 count with
+        | { Action  = Count
+            From    = From "Employees"
+            Where   = Where [ (HashKey, Equal (S "Yan")); (RangeKey, GreaterThanOrEqual(N 30.0)) ]
+            Limit   = Some(Limit 10);
+            Order   = Some(Desc) }
+            -> true
+        | _ -> false
+        |> should equal true
+
+    [<Test>]
+    [<ExpectedException(typeof<InvalidQuery>)>]
+    member this.``when a count query is specified with attribute names, it should except`` () =
+        let count = "COUNT FirstName FROM Employees WHERE @hashkey = \"Yan\" AND @rangekey >= 30 ORDER DESC LIMIT 10"
+        parseDynamoQueryV1 count |> should throw typeof<InvalidQuery>
+
+    [<Test>]
+    member this.``when NoConsistentRead option is specified it should be parsed correctly`` () =
+        let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" WITH (  nOConsiStentRead )"
+        
+        match parseDynamoQueryV1 select with
+        | { Action  = Select [ Asterisk ]
+            From    = From "Employees"
+            Where   = Where [ (HashKey, Equal (S "Yan")) ]
+            Options = Some [| NoConsistentRead |] }
+            -> true
+        | _ -> false
+        |> should equal true
+
+    [<Test>]
+    member this.``when PageSize option is specified it should be parsed correctly`` () =
+        let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" WITH (Pagesize(  10) )"
+        
+        match parseDynamoQueryV1 select with
+        | { Action  = Select [ Asterisk ]
+            From    = From "Employees"
+            Where   = Where [ (HashKey, Equal (S "Yan")) ]
+            Options = Some [| QueryPageSize 10 |] }
+            -> true
+        | _ -> false
+        |> should equal true
+
+    [<Test>]
+    member this.``when both NoConsistentRead and PageSize options are specified they should be parsed correctly`` () =
+        let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\" WITH ( NOconsistentRead, Pagesize(  10) )"
+        
+        match parseDynamoQueryV1 select with
         | { Action  = Select [ Asterisk ]
             From    = From "Employees"
             Where   = Where [ (HashKey, Equal (S "Yan")) ]

@@ -7,17 +7,17 @@ module DynamoDb.SQL.Execution.LowLevel.Tests
 
 open FsUnit
 open NUnit.Framework
-open DynamoDb.SQL.Ast
+open DynamoDb.SQL
 open DynamoDb.SQL.Parser
 open DynamoDb.SQL.Execution
 
 let equal = FsUnit.equal
 
 [<TestFixture>]
-type ``Given a DynamoQuery`` () =
+type ``Given a V1 DynamoQuery`` () =
     [<Test>]
     member this.``when there is only a hash key equality filter it should null as RangeKeyCondition`` () =
-        let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\""
+        let dynamoQuery = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey = \"Yan\""
 
         match dynamoQuery with
         | GetQueryReq req when req.TableName = "Employees" && req.HashKeyValue.S = "Yan" &&
@@ -30,7 +30,7 @@ type ``Given a DynamoQuery`` () =
 
     [<Test>]
     member this.``when there is a hash key and a range key equality filter it should return RangeKeyCondition with EQ operator`` () =
-        let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey = 30"
+        let dynamoQuery = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey = 30"
 
         match dynamoQuery with
         | GetQueryReq req when req.TableName = "Employees" && req.HashKeyValue.S = "Yan" &&
@@ -45,7 +45,7 @@ type ``Given a DynamoQuery`` () =
 
     [<Test>]
     member this.``when there is a hash key and a range key greater than filter it should return RangeKeyCondition with GT operator`` () =
-        let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey > 30"
+        let dynamoQuery = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey > 30"
 
         match dynamoQuery with
         | GetQueryReq req when req.TableName = "Employees" && req.HashKeyValue.S = "Yan" &&
@@ -60,7 +60,7 @@ type ``Given a DynamoQuery`` () =
 
     [<Test>]
     member this.``when there is a hash key and a range key in between filter it should return RangeKeyCondition with BETWEEN operator`` () =
-        let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25"
+        let dynamoQuery = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25"
 
         match dynamoQuery with
         | GetQueryReq req when req.TableName = "Employees" && req.HashKeyValue.S = "Yan" &&
@@ -76,7 +76,7 @@ type ``Given a DynamoQuery`` () =
 
     [<Test>]
     member this.``when there is a page size option it should be returned as part of the QueryRequest`` () =
-        let dynamoQuery = parseDynamoQuery "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25 with (pagesize(100))"
+        let dynamoQuery = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25 with (pagesize(100))"
 
         match dynamoQuery with
         | GetQueryReq req when req.TableName = "Employees" && req.HashKeyValue.S = "Yan" &&
@@ -92,7 +92,7 @@ type ``Given a DynamoQuery`` () =
 
     [<Test>]
     member this.``when the action is Count the QueryRequest shoul have Count set to true`` () =
-        let dynamoQuery = parseDynamoQuery "COUNT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25"
+        let dynamoQuery = parseDynamoQueryV1 "COUNT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25"
 
         match dynamoQuery with
         | GetQueryReq req when req.TableName = "Employees" && req.HashKeyValue.S = "Yan" &&

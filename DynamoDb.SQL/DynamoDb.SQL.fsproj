@@ -42,21 +42,26 @@
   <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="(!Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets')) And (!Exists('$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets')) And (Exists('$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets'))" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="ast.fsi" />
     <Compile Include="ast.fs" />
     <Compile Include="parser.fsi" />
     <Compile Include="parser.fs" />
     <Compile Include="extensions.fs" />
     <Compile Include="execCore.fsi" />
     <Compile Include="execCore.fs" />
-    <Compile Include="execLowLevel.fsi" />
-    <Compile Include="execLowLevel.fs" />
-    <Compile Include="execCxt.fsi" />
-    <Compile Include="execCxt.fs" />
+    <Compile Include="execLowLevelV1.fsi" />
+    <Compile Include="execLowLevelV1.fs" />
+    <Compile Include="execLowLevelV2.fsi" />
+    <Compile Include="execLowLevelV2.fs" />
+    <Compile Include="execCxtV1.fsi" />
+    <Compile Include="execCxtV1.fs" />
+    <Compile Include="execCxtV2.fsi" />
+    <Compile Include="execCxtV2.fs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="AWSSDK">
-      <HintPath>..\packages\AWSSDK.1.5.16.1\lib\AWSSDK.dll</HintPath>
+      <HintPath>..\packages\AWSSDK.1.5.18.0\lib\AWSSDK.dll</HintPath>
     </Reference>
     <Reference Include="FParsec">
       <HintPath>..\packages\FParsec.0.9.2.0\lib\net40\FParsec.dll</HintPath>
