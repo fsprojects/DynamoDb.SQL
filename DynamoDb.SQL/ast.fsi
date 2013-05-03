@@ -1,4 +1,9 @@
-﻿namespace DynamoDb.SQL
+﻿// Copyright (c) Yan Cui 2012
+
+// Email : theburningmonk@gmail.com
+// Blog  : http://theburningmonk.com
+
+namespace DynamoDb.SQL
 
 [<AutoOpen>]
 module internal Ast =
@@ -70,10 +75,11 @@ module internal Ast =
         | NoConsistentRead
         | QueryPageSize         of int
         | Index                 of string * bool // index name * all attributes
-        | NoReturnedCapacity
+        | QueryNoReturnedCapacity
 
     type ScanOption =
-        ScanPageSize        of int
+        | ScanPageSize        of int
+        | ScanNoReturnedCapacity
 
     type DynamoQuery =
         {

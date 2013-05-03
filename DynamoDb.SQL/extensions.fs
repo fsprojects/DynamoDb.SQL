@@ -1,4 +1,9 @@
-﻿namespace DynamoDb.SQL.Extensions
+﻿// Copyright (c) Yan Cui 2012
+
+// Email : theburningmonk@gmail.com
+// Blog  : http://theburningmonk.com
+
+namespace DynamoDb.SQL.Extensions
 
 type GetItemRequestV1 = Amazon.DynamoDB.Model.GetItemRequest
 type GetItemRequestV2 = Amazon.DynamoDBv2.Model.GetItemRequest

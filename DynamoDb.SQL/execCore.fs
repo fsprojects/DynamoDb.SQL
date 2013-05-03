@@ -67,7 +67,7 @@ module Core =
         match opts with
         | Some arr -> 
             arr 
-            |> Array.exists (fun opt -> match opt with | NoReturnedCapacity -> true | _ -> false)
+            |> Array.exists (fun opt -> match opt with | QueryNoReturnedCapacity -> true | _ -> false)
             |> not
         | _ -> true
 

@@ -29,7 +29,7 @@ module Cxt =
                     | Some(idxName, allAttributes) 
                         -> config.IndexName <- idxName
                            allAttributes
-                    | _ -> false
+                    | _ -> true
 
                // you cannot specify both AttributesToGet and SPECIFIC_ATTRIBUTES in Select
                // for more details, see http://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Query.html
@@ -91,7 +91,7 @@ module ContextExt =
             | _ -> raise <| InvalidQuery (sprintf "Not a valid query operation : %s" query)
 
         member this.ExecScan (query : string) =
-            let dynamoScan = parseDynamoScan query
+            let dynamoScan = parseDynamoScanV2 query
 
             match dynamoScan with
             | { Limit = Some(Limit n) } & GetScanConfig config 

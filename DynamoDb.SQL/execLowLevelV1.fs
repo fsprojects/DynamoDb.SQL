@@ -150,7 +150,7 @@ module ClientExt =
         member this.Query (query : string) = this.QueryAsync(query) |> Async.RunSynchronously
 
         member this.ScanAsync (query : string) =
-            let dynamoScan = parseDynamoScan query
+            let dynamoScan = parseDynamoScanV1 query
     
             match dynamoScan with
             | { Limit = Some(Limit n) } & GetScanReq req

@@ -42,9 +42,11 @@
   <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="(!Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets')) And (!Exists('$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets')) And (Exists('$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets'))" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <ItemGroup>
-    <Compile Include="parserTests.fs" />
+    <Compile Include="parserV1Tests.fs" />
+    <Compile Include="parserV2Tests.fs" />
     <Compile Include="execCoreTests.fs" />
-    <Compile Include="execLowLevelTests.fs" />
+    <Compile Include="execLowLevelV1Tests.fs" />
+    <Compile Include="execLowLevelV2Tests.fs" />
     <Compile Include="execCxtTests.fs" />
     <None Include="packages.config" />
     <None Include="app.config" />

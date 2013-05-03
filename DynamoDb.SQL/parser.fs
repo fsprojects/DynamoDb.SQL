@@ -174,7 +174,7 @@ module Parser =
                                   .>> closeParentheses 
                                   |>> Index
 
-        let noReturnedCapacity  = stringCIReturn_ws "NoReturnedCapacity" NoReturnedCapacity
+        let noReturnedCapacity  = stringCIReturn_ws "NoReturnedCapacity" QueryNoReturnedCapacity
 
         let queryOption         = choice [ consistentRead; queryPageSize; index; noReturnedCapacity ]
         let queryOptions        = sepBy1 queryOption comma |>> List.toArray
@@ -187,7 +187,7 @@ module Parser =
                     { Action = action; From = from; Where = where; Limit = limit; Order = order; Options = with' })
 
     [<RequireQualifiedAccess>]
-    module ScanParser = 
+    module ScanV1Parser = 
         // only allow attributes in the Where clause for a SCAN
         let whereAttributes     = attribute
 
@@ -231,6 +231,54 @@ module Parser =
                     |>> (fun (action, from, where, limit, with') -> 
                             { Action = action; From = from; Where = where; Limit = limit; Options = with' })
 
+    [<RequireQualifiedAccess>]
+    module ScanV2Parser = 
+        // only allow attributes in the Where clause for a SCAN
+        let whereAttributes     = attribute
+
+        // parsers for binary/unary/between conditions allowed in a SCAN
+        let binaryOperators     = choice [ stringReturn_ws "="  Equal
+                                           stringReturn_ws "!=" NotEqual
+                                           stringReturn_ws ">=" GreaterThanOrEqual
+                                           stringReturn_ws ">"  GreaterThan
+                                           stringReturn_ws "<=" LessThanOrEqual
+                                           stringReturn_ws "<"  LessThan
+                                           stringCIReturn_ws "contains" Contains
+                                           stringCIReturn_ws "not contains" NotContains
+                                           stringCIReturn_ws "begins with" BeginsWith ]
+        let binaryCondition     = pipe3 whereAttributes binaryOperators operant (fun id op v -> id, op v)
+
+        let unaryOperators      = choice [ stringCIReturn_ws "is null" Null; 
+                                           stringCIReturn_ws "is not null" NotNull ]
+        let unaryCondition      = pipe2 whereAttributes unaryOperators (fun id op -> id, op)
+
+        let between             = stringCIReturn_ws "between" Between
+        let and'                = skipStringCI_ws "and"
+        let betweenCondition    = pipe5 whereAttributes between operant and' operant (fun id op v1 _ v2 -> id, op(v1, v2))
+
+        let in'                 = stringCIReturn_ws "in" In    
+        let operantLst          = sepBy1 operant (ws >>. skipString_ws ",")
+        let inCondition         = pipe5 whereAttributes in' openParentheses operantLst closeParentheses (fun id op _ lst _ -> id, op(lst))
+
+        let pcondition          = choice [ attempt unaryCondition;   attempt binaryCondition;
+                                           attempt betweenCondition; inCondition ]
+        let filterConditions    = sepBy1 (ws >>. pcondition .>> ws) (ws >>. and')
+
+        let pwhere = ws >>. skipStringCI_ws "where" >>. (filterConditions |>> Where) .>> ws
+
+        let scanPageSize        = skipStringCI_ws "pagesize" >>. openParentheses >>. pint32_ws .>> closeParentheses |>> ScanPageSize
+        let noReturnedCapacity  = stringCIReturn_ws "NoReturnedCapacity" ScanNoReturnedCapacity
+
+        let scanOption          = choice [ scanPageSize; noReturnedCapacity ]
+        let scanOptions         = sepBy1 scanOption comma |>> List.toArray
+
+        let pwith = ws >>. skipStringCI_ws "with" >>. openParentheses >>. scanOptions .>> closeParentheses
+
+        // parser for a scan
+        let pscan = tuple5 paction pfrom (opt pwhere) (opt plimit) (opt pwith)
+                    |>> (fun (action, from, where, limit, with') -> 
+                            { Action = action; From = from; Where = where; Limit = limit; Options = with' })
+
     let parseDynamoQueryV1 str = match run QueryV1Parser.pquery str with
                                  | Success(result, _, _) -> result
                                  | Failure(errStr, _, _) -> raise <| InvalidQuery errStr
@@ -239,6 +287,10 @@ module Parser =
                                  | Success(result, _, _) -> result
                                  | Failure(errStr, _, _) -> raise <| InvalidQuery errStr
 
-    let parseDynamoScan str = match run ScanParser.pscan str with
-                              | Success(result, _, _) -> result
-                              | Failure(errStr, _, _) -> raise <| InvalidScan errStr
+    let parseDynamoScanV1 str = match run ScanV1Parser.pscan str with
+                                | Success(result, _, _) -> result
+                                | Failure(errStr, _, _) -> raise <| InvalidScan errStr
+
+    let parseDynamoScanV2 str = match run ScanV2Parser.pscan str with
+                                | Success(result, _, _) -> result
+                                | Failure(errStr, _, _) -> raise <| InvalidScan errStr

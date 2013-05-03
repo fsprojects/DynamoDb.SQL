@@ -79,7 +79,7 @@ module ContextExt =
             | _ -> raise <| InvalidQuery (sprintf "Not a valid query operation : %s" query)
 
         member this.ExecScan (query : string) =
-            let dynamoScan = parseDynamoScan query
+            let dynamoScan = parseDynamoScanV1 query
 
             match dynamoScan with
             | { Limit = Some(Limit n) } & GetScanConfig config 
