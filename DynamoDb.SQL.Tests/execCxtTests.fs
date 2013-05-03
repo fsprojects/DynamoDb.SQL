@@ -97,10 +97,10 @@ type ``Given a V1 DynamoQuery`` () =
         |> should equal true
 
 [<TestFixture>]
-type ``Given a DynamoScan`` () =
+type ``Given a V1 DynamoScan`` () =
     [<Test>]
     member this.``when there is no where clause it should return a ScanOperationConfig`` () =
-        let dynamoQuery = parseDynamoScan "SELECT * FROM Employees"
+        let dynamoQuery = parseDynamoScanV1 "SELECT * FROM Employees"
 
         match dynamoQuery with
         | GetScanConfig config 
@@ -113,7 +113,7 @@ type ``Given a DynamoScan`` () =
 
     [<Test>]
     member this.``when there is a page size option it should return a ScanOperationConfig with limit set to that value`` () =
-        let dynamoQuery = parseDynamoScan "SELECT * FROM Employees with (pagesize(100))"
+        let dynamoQuery = parseDynamoScanV1 "SELECT * FROM Employees with (pagesize(100))"
 
         match dynamoQuery with
         | GetScanConfig config 
@@ -126,7 +126,7 @@ type ``Given a DynamoScan`` () =
 
     [<Test>]
     member this.``when there is one attribute in filter it should return a ScanRequest`` () =
-        let dynamoQuery = parseDynamoScan "SELECT * FROM Employees WHERE FirstName = \"Yan\""
+        let dynamoQuery = parseDynamoScanV1 "SELECT * FROM Employees WHERE FirstName = \"Yan\""
 
         match dynamoQuery with
         | GetScanConfig config 
@@ -142,7 +142,7 @@ type ``Given a DynamoScan`` () =
 
     [<Test>]
     member this.``when there are multiple attributes in filter it should return a ScanRequest`` () =
-        let dynamoQuery = parseDynamoScan "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND LastName != \"Cui\" AND Age >= 30"
+        let dynamoQuery = parseDynamoScanV1 "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND LastName != \"Cui\" AND Age >= 30"
 
         match dynamoQuery with
         | GetScanReq req when req.TableName = "Employees" &&

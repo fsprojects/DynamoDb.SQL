@@ -166,10 +166,10 @@ type ``Given a V2 DynamoQuery`` () =
         |> should equal true
                 
 [<TestFixture>]
-type ``Given a DynamoScan`` () =
+type ``Given a V1 DynamoScan`` () =
     [<Test>]
     member this.``when there are multiple attributes in filter it should be interpreted as a Scan operation`` () =
-        let dynamoScan = parseDynamoScan "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND LastName != \"Cui\" AND Age >= 30"
+        let dynamoScan = parseDynamoScanV1 "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND LastName != \"Cui\" AND Age >= 30"
 
         match dynamoScan with
         | { Where = Some(Where(ScanCondition [ ("FirstName", Equal (S "Yan")); ("LastName", NotEqual (S "Cui")); ("Age", GreaterThanOrEqual (N 30.0)) ])) }
@@ -183,17 +183,17 @@ type ``Given some array of query options`` () =
 
     [<Test>]
     member this.``when there is a NoConsistentRead option specified 'isConsistentRead' should return false`` () =
-        isConsistentRead (Some [| NoConsistentRead; NoReturnedCapacity |]) 
+        isConsistentRead (Some [| NoConsistentRead; QueryNoReturnedCapacity |]) 
         |> should equal false
 
     [<Test>]
     member this.``when there are multiple NoConsistentRead options specified 'isConsistentRead' should return false`` () =
-        isConsistentRead (Some [| NoConsistentRead; NoReturnedCapacity; NoConsistentRead |]) 
+        isConsistentRead (Some [| NoConsistentRead; QueryNoReturnedCapacity; NoConsistentRead |]) 
         |> should equal false
 
     [<Test>]
     member this.``when no NoConsistentRead option is specified 'isConsistentRead' should return true`` () =
-        isConsistentRead (Some [| NoReturnedCapacity |]) |> should equal true
+        isConsistentRead (Some [| QueryNoReturnedCapacity |]) |> should equal true
 
     [<Test>]
     member this.``when there are no query options specified 'isConsistentRead' should return true`` () =
@@ -206,12 +206,12 @@ type ``Given some array of query options`` () =
 
     [<Test>]
     member this.``when there is a NoReturnedCapacity option specified 'returnConsumedCapacity' should return false`` () =
-        returnConsumedCapacity (Some [| NoReturnedCapacity; NoConsistentRead |]) 
+        returnConsumedCapacity (Some [| QueryNoReturnedCapacity; NoConsistentRead |]) 
         |> should equal false
 
     [<Test>]
     member this.``when there are multiple NoReturnedCapacity options specified 'returnConsumedCapacity' should return false`` () =
-        returnConsumedCapacity (Some [| NoReturnedCapacity; NoConsistentRead; NoReturnedCapacity |]) 
+        returnConsumedCapacity (Some [| QueryNoReturnedCapacity; NoConsistentRead; QueryNoReturnedCapacity |]) 
         |> should equal false
 
     [<Test>]
@@ -230,7 +230,7 @@ type ``Given some array of query options`` () =
 
     [<Test>]
     member this.``when there is a QueryPageSize(5) option specified 'tryGetQueryPageSize' should return Some 5`` () =
-        tryGetQueryPageSize (Some [| QueryPageSize 5; NoReturnedCapacity |]) 
+        tryGetQueryPageSize (Some [| QueryPageSize 5; QueryNoReturnedCapacity |]) 
         |> should equal <| Some 5
 
     [<Test>]

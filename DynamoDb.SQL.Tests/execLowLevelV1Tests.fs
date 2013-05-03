@@ -16,7 +16,7 @@ let equal = FsUnit.equal
 [<TestFixture>]
 type ``Given a V1 DynamoQuery`` () =
     [<Test>]
-    member this.``when there is only a hash key equality filter it should null as RangeKeyCondition`` () =
+    member this.``when there is only a hash key equality filter it should return null as RangeKeyCondition`` () =
         let dynamoQuery = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey = \"Yan\""
 
         match dynamoQuery with
@@ -106,11 +106,45 @@ type ``Given a V1 DynamoQuery`` () =
         | _ -> false
         |> should equal true
 
+    [<Test>]
+    member this.``when the ASC order is specified the QueryRequest shoul have ScanIndexForward set to true`` () =
+        let dynamoQuery = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25 ORDER ASC"
+
+        match dynamoQuery with
+        | GetQueryReq req when req.TableName = "Employees" && req.HashKeyValue.S = "Yan" &&
+                               req.Limit = 0 && req.RangeKeyCondition.ComparisonOperator = "BETWEEN" &&
+                               req.RangeKeyCondition.AttributeValueList.Count = 2 &&
+                               req.RangeKeyCondition.AttributeValueList.[0].N = "5" &&
+                               req.RangeKeyCondition.AttributeValueList.[1].N = "25" &&
+                               req.AttributesToGet = null &&
+                               req.Count = false &&
+                               req.ScanIndexForward = true
+            -> true
+        | _ -> false
+        |> should equal true
+
+    [<Test>]
+    member this.``when the DESC order is specified the QueryRequest shoul have ScanIndexForward set to false`` () =
+        let dynamoQuery = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25 ORDER DESC"
+
+        match dynamoQuery with
+        | GetQueryReq req when req.TableName = "Employees" && req.HashKeyValue.S = "Yan" &&
+                               req.Limit = 0 && req.RangeKeyCondition.ComparisonOperator = "BETWEEN" &&
+                               req.RangeKeyCondition.AttributeValueList.Count = 2 &&
+                               req.RangeKeyCondition.AttributeValueList.[0].N = "5" &&
+                               req.RangeKeyCondition.AttributeValueList.[1].N = "25" &&
+                               req.AttributesToGet = null &&
+                               req.Count = false &&
+                               req.ScanIndexForward = false
+            -> true
+        | _ -> false
+        |> should equal true
+               
 [<TestFixture>]
-type ``Given a DynamoScan`` () =
+type ``Given a V1 DynamoScan`` () =
     [<Test>]
     member this.``when there is no where clause it should return a ScanRequest with empty ScanFilter`` () =
-        let dynamoQuery = parseDynamoScan "SELECT * FROM Employees"
+        let dynamoQuery = parseDynamoScanV1 "SELECT * FROM Employees"
 
         match dynamoQuery with
         | GetScanReq req when req.TableName = "Employees" &&
@@ -124,7 +158,7 @@ type ``Given a DynamoScan`` () =
 
     [<Test>]
     member this.``when there is a page size option of 100 it should return a ScanRequest with limit set to 100`` () =
-        let dynamoQuery = parseDynamoScan "SELECT * FROM Employees with (pagesize(100))"
+        let dynamoQuery = parseDynamoScanV1 "SELECT * FROM Employees with (pagesize(100))"
 
         match dynamoQuery with
         | GetScanReq req when req.TableName = "Employees" &&
@@ -138,7 +172,7 @@ type ``Given a DynamoScan`` () =
 
     [<Test>]
     member this.``when there is one attribute in filter it should return a ScanRequest with a ScanFilter of 1`` () =
-        let dynamoQuery = parseDynamoScan "SELECT * FROM Employees WHERE FirstName = \"Yan\""
+        let dynamoQuery = parseDynamoScanV1 "SELECT * FROM Employees WHERE FirstName = \"Yan\""
 
         match dynamoQuery with
         | GetScanReq req when req.TableName = "Employees" &&
@@ -155,7 +189,7 @@ type ``Given a DynamoScan`` () =
 
     [<Test>]
     member this.``when there are 3 attributes in filter it should return a ScanRequest with ScanFilter of 3`` () =
-        let dynamoQuery = parseDynamoScan "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND LastName != \"Cui\" AND Age >= 30"
+        let dynamoQuery = parseDynamoScanV1 "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND LastName != \"Cui\" AND Age >= 30"
 
         match dynamoQuery with
         | GetScanReq req when req.TableName = "Employees" &&
@@ -178,7 +212,7 @@ type ``Given a DynamoScan`` () =
         
     [<Test>]
     member this.``when the action is Count it should return a ScanRequest with Count set to true`` () =
-        let dynamoQuery = parseDynamoScan "COUNT * FROM Employees WHERE FirstName = \"Yan\""
+        let dynamoQuery = parseDynamoScanV1 "COUNT * FROM Employees WHERE FirstName = \"Yan\""
 
         match dynamoQuery with
         | GetScanReq req when req.TableName = "Employees" &&

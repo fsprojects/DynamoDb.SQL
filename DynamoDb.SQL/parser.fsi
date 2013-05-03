@@ -19,4 +19,7 @@ module internal Parser =
     val parseDynamoQueryV2  : string -> DynamoQuery
 
     /// Function to parse a string and return the corresponding DynamoScan
-    val parseDynamoScan     : string -> DynamoScan
+    val parseDynamoScanV1   : string -> DynamoScan
+
+    /// Function to parse a string and return the corresponding DynamoScan
+    val parseDynamoScanV2   : string -> DynamoScan

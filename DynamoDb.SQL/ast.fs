@@ -225,24 +225,26 @@ module Ast =
         | NoConsistentRead
         | QueryPageSize         of int
         | Index                 of string * bool // index name * all attributes
-        | NoReturnedCapacity
+        | QueryNoReturnedCapacity
         with
             override this.ToString () =
                 match this with
-                | NoConsistentRead      -> "NOCONSISTENTREAD"
-                | QueryPageSize n       -> sprintf "PAGESIZE(%d)" n
-                | Index(idx, allAttrs)  -> sprintf "INDEX(%s, %b)" idx allAttrs
-                | NoReturnedCapacity    -> "NORETURNEDCAPACITY"
+                | NoConsistentRead          -> "NOCONSISTENTREAD"
+                | QueryPageSize n           -> sprintf "PAGESIZE(%d)" n
+                | Index(idx, allAttrs)      -> sprintf "INDEX(%s, %b)" idx allAttrs
+                | QueryNoReturnedCapacity   -> "NORETURNEDCAPACITY"
 
             member private this.StructuredFormatDisplay = this.ToString()
 
     [<StructuredFormatDisplay("{StructuredFormatDisplay}")>]
     type ScanOption =
-        ScanPageSize        of int
+        | ScanPageSize        of int
+        | ScanNoReturnedCapacity
         with
             override this.ToString () =
                 match this with
-                | ScanPageSize n    -> sprintf "PAGESIZE(%d)" n
+                | ScanPageSize n            -> sprintf "PAGESIZE(%d)" n
+                | ScanNoReturnedCapacity    -> "NORETURNEDCAPACITY"
 
             member private this.StructuredFormatDisplay = this.ToString()
 

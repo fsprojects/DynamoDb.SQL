@@ -30,15 +30,15 @@ module LowLevel =
                     | Some(idxName, allAttributes) 
                         -> req.IndexName <- idxName
                            allAttributes
-                    | _ -> false
+                    | _ -> true
 
                // you cannot specify both AttributesToGet and SPECIFIC_ATTRIBUTES in Select
                // for more details, see http://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Query.html
-               let select = match isCount, attributes, allAttributes with
-                            | true, _, _         -> "COUNT"
-                            | false, null, false -> "ALL_PROJECTED_ATTRIBUTES"
-                            | false, null, true  -> "ALL_ATTRIBUTES"
-                            | false, _, _        -> "SPECIFIC_ATTRIBUTES"
+               req.Select <- match isCount, attributes, allAttributes with
+                             | true, _, _         -> "COUNT"
+                             | false, null, false -> "ALL_PROJECTED_ATTRIBUTES"
+                             | false, null, true  -> "ALL_ATTRIBUTES"
+                             | false, _, _        -> "SPECIFIC_ATTRIBUTES"
 
                keyConditions |> List.iter (fun (attrName, keyCond) -> req.KeyConditions.Add(attrName, keyCond.ToConditionV2()))
 
@@ -65,10 +65,10 @@ module LowLevel =
 
                // you cannot specify both AttributesToGet and SPECIFIC_ATTRIBUTES in Select
                // for more details, see http://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Scan.html
-               let select = match isCount, attributes with
-                            | true, _         -> "COUNT"
-                            | false, null     -> "ALL_ATTRIBUTES"
-                            | false, _        -> "SPECIFIC_ATTRIBUTES"
+               req.Select <- match isCount, attributes with
+                             | true, _         -> "COUNT"
+                             | false, null     -> "ALL_ATTRIBUTES"
+                             | false, _        -> "SPECIFIC_ATTRIBUTES"
 
                // optionally set the scan filters and limit
                match where with 
@@ -166,7 +166,7 @@ module ClientExt =
         member this.Query (query : string) = this.QueryAsync(query) |> Async.RunSynchronously
 
         member this.ScanAsync (query : string) =
-            let dynamoScan = parseDynamoScan query
+            let dynamoScan = parseDynamoScanV2 query
     
             match dynamoScan with
             | { Limit = Some(Limit n) } & GetScanReq req
