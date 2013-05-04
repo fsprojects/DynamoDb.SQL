@@ -15,9 +15,9 @@ let equal = FsUnit.equal
 type ``Given a V1 DynamoQuery`` () =
     [<Test>]
     member this.``when there is only a hash key equality filter it should be interpreted as a Query operation`` () =
-        let dynamoQuery = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey = \"Yan\""
+        let query = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey = \"Yan\""
 
-        match dynamoQuery with
+        match query with
         | { Where = Where(QueryV1Condition(S "Yan", None)) }
             -> true
         | _ -> false
@@ -25,157 +25,117 @@ type ``Given a V1 DynamoQuery`` () =
 
     [<Test>]
     member this.``when there is a hash key and a range key equality filter it should be interpreted as a Query operation`` () =
-        let dynamoQuery = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey = 30"
+        let query = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey = 30"
 
-        match dynamoQuery with
-        | { Where = Where(QueryV1Condition(S "Yan", Some(Equal (N 30.0)))) }
-            -> true
-        | _ -> false
-        |> should equal true
+        let (Where(QueryV1Condition(filter))) = query.Where
+        filter      |> should equal <| (S "Yan", Some(Equal (N 30.0)))
 
     [<Test>]
     member this.``when there is a hash key and a range key greater than filter it should be interpreted as a Query operation`` () =
-        let dynamoQuery = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey > 30"
+        let query = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey > 30"
 
-        match dynamoQuery with
-        | { Where = Where(QueryV1Condition(S "Yan", Some(GreaterThan (N 30.0)))) }
-            -> true
-        | _ -> false
-        |> should equal true
+        let (Where(QueryV1Condition(filter))) = query.Where
+        filter      |> should equal <| (S "Yan", Some(GreaterThan (N 30.0)))
 
     [<Test>]
     member this.``when there is a hash key and a range key between filter it should be interpreted as a Query operation`` () =
-        let dynamoQuery = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25"
+        let query = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey = \"Yan\" AND @RangeKey between 5 and 25"
 
-        match dynamoQuery with
-        | { Where = Where(QueryV1Condition(S "Yan", Some(Between (N 5.0, N 25.0)))) } 
-            -> true
-        | _ -> false
-        |> should equal true
+        let (Where(QueryV1Condition(filter))) = query.Where
+        filter      |> should equal <| (S "Yan", Some(Between (N 5.0, N 25.0)))
 
     [<Test>]
     [<ExpectedException(typeof<InvalidQueryFormat>)>]
     member this.``when there is no 'hashkey =' condition in where clause it should except`` () =
-        let dynamoQuery = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey > 30"
+        let query = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey > 30"
 
-        match dynamoQuery with 
+        match query with 
         | { Where = Where(QueryV1Condition _) } -> ()
         |> should throw typeof<InvalidQueryFormat>
 
     [<Test>]
     member this.``when there is only an asterisk (*) in the SELECT clause it should return null as attribtue values`` () =
-        let dynamoQuery = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey = \"Yan\""
+        let query = parseDynamoQueryV1 "SELECT * FROM Employees WHERE @HashKey = \"Yan\""
 
-        match dynamoQuery with
-        | { Action = Select(SelectAttributes(null)) }
-            -> true
-        | _ -> false
-        |> should equal true
+        let (Select(SelectAttributes(lst))) = query.Action
+        lst     |> should equal null
 
     [<Test>]
     member this.``when there is an asterisk (*) and other attribute names in the SELECT clause it should return null as attribtue values`` () =
-        let dynamoQuery = parseDynamoQueryV1 "SELECT *, Name, Age FROM Employees WHERE @HashKey = \"Yan\""
+        let query = parseDynamoQueryV1 "SELECT *, Name, Age FROM Employees WHERE @HashKey = \"Yan\""
 
-        match dynamoQuery with
-        | { Action = Select(SelectAttributes(null)) }
-            -> true
-        | _ -> false
-        |> should equal true
+        let (Select(SelectAttributes(lst))) = query.Action
+        lst     |> should equal null
 
     [<Test>]
     member this.``when there is no asterisk (*) in the SELECT clause it should return a list of attribtue values`` () =
-        let dynamoQuery = parseDynamoQueryV1 "SELECT Name, Age FROM Employees WHERE @HashKey = \"Yan\""
-
-        match dynamoQuery with
-        | { Action = Select(SelectAttributes(lst)) } when lst.Count = 2 && lst.[0] = "Name" && lst.[1] = "Age"
-            -> true
-        | _ -> false
-        |> should equal true
+        let query = parseDynamoQueryV1 "SELECT Name, Age FROM Employees WHERE @HashKey = \"Yan\""
+        
+        let (Select(SelectAttributes(lst))) = query.Action
+        lst     |> should equal [ "Name"; "Age" ]
 
 [<TestFixture>]
 type ``Given a V2 DynamoQuery`` () =
     [<Test>]
     member this.``when there is only a equality condition it should be captured in Where clause`` () =
-        let dynamoQuery = parseDynamoQueryV2 "SELECT * FROM Employees WHERE FirstName = \"Yan\""
+        let query = parseDynamoQueryV2 "SELECT * FROM Employees WHERE FirstName = \"Yan\""
 
-        match dynamoQuery with
-        | { Where = Where(QueryV2Condition([ "FirstName", Equal(S "Yan") ])) }
-            -> true
-        | _ -> false
-        |> should equal true
+        let (Where(QueryV2Condition(lst))) = query.Where
+        lst     |> should equal [ "FirstName", Equal(S "Yan") ]
 
     [<Test>]
     member this.``when there are multiple conditions they should all be captured in Where clause`` () =
-        let dynamoQuery = parseDynamoQueryV2 "SELECT * FROM Employees WHERE Title = \"Developer\" AND Age >= 30 AND FirstName BEGINS WITH \"Y\" AND Age BETWEEN 30 AND 40 "
+        let query = parseDynamoQueryV2 "SELECT * FROM Employees WHERE Title = \"Developer\" AND Age >= 30 AND FirstName BEGINS WITH \"Y\" AND Age BETWEEN 30 AND 40 "
 
-        match dynamoQuery with
-        | { Where = Where(QueryV2Condition([ ("Title",     Equal (S "Developer"));
-                                             ("Age",       GreaterThanOrEqual (N 30.0));
-                                             ("FirstName", BeginsWith (S "Y"));
-                                             ("Age",       Between (N 30.0, N 40.0)) ])) }
-            -> true
-        | _ -> false
-        |> should equal true
+        let (Where(QueryV2Condition(lst))) = query.Where
+        lst     |> should equal [ ("Title",     Equal (S "Developer"));
+                                  ("Age",       GreaterThanOrEqual (N 30.0));
+                                  ("FirstName", BeginsWith (S "Y"));
+                                  ("Age",       Between (N 30.0, N 40.0)) ]
 
     [<Test>]
     [<ExpectedException(typeof<InvalidQuery>)>]
     member this.``when there is no filter conditions it should except`` () =
-        let dynamoQuery = parseDynamoQueryV2 "SELECT * FROM Employees"
-
-        match dynamoQuery with 
-        | { Where = Where(QueryV2Condition _) } -> ()
-        |> should throw typeof<InvalidQuery>
+        parseDynamoQueryV2 "SELECT * FROM Employees" |> should throw typeof<InvalidQuery>
 
     [<Test>]
     [<ExpectedException(typeof<InvalidQueryFormat>)>]
     member this.``when there is no equality condition it should except`` () =
-        let dynamoQuery = parseDynamoQueryV2 "SELECT * FROM Employees WHERE Age > 30"
+        let query = parseDynamoQueryV2 "SELECT * FROM Employees WHERE Age > 30"
 
-        match dynamoQuery with 
+        match query with 
         | { Where = Where(QueryV2Condition _) } -> ()
         |> should throw typeof<InvalidQueryFormat>
 
     [<Test>]
     member this.``when there is only an asterisk (*) in the SELECT clause it should return null as attribtue values`` () =
-        let dynamoQuery = parseDynamoQueryV2 "SELECT * FROM Employees WHERE FirstName = \"Yan\""
+        let query = parseDynamoQueryV2 "SELECT * FROM Employees WHERE FirstName = \"Yan\""
 
-        match dynamoQuery with
-        | { Action = Select(SelectAttributes(null)) }
-            -> true
-        | _ -> false
-        |> should equal true
+        let (Select(SelectAttributes(lst))) = query.Action
+        lst     |> should equal null
 
     [<Test>]
     member this.``when there is an asterisk (*) and other attribute names in the SELECT clause it should return null as attribtue values`` () =
-        let dynamoQuery = parseDynamoQueryV2 "SELECT *, Name, Age FROM Employees WHERE FirstName = \"Yan\""
+        let query = parseDynamoQueryV2 "SELECT *, Name, Age FROM Employees WHERE FirstName = \"Yan\""
 
-        match dynamoQuery with
-        | { Action = Select(SelectAttributes(null)) }
-            -> true
-        | _ -> false
-        |> should equal true
+        let (Select(SelectAttributes(lst))) = query.Action
+        lst     |> should equal null
 
     [<Test>]
     member this.``when there is no asterisk (*) in the SELECT clause it should return a list of attribtue values`` () =
-        let dynamoQuery = parseDynamoQueryV2 "SELECT Name, Age FROM Employees WHERE FirstName = \"Yan\""
+        let query = parseDynamoQueryV2 "SELECT Name, Age FROM Employees WHERE FirstName = \"Yan\""
 
-        match dynamoQuery with
-        | { Action = Select(SelectAttributes(lst)) } when lst.Count = 2 && lst.[0] = "Name" && lst.[1] = "Age"
-            -> true
-        | _ -> false
-        |> should equal true
+        let (Select(SelectAttributes(lst))) = query.Action
+        lst     |> should equal [ "Name"; "Age" ]
                 
 [<TestFixture>]
 type ``Given a V1 DynamoScan`` () =
     [<Test>]
     member this.``when there are multiple attributes in filter it should be interpreted as a Scan operation`` () =
-        let dynamoScan = parseDynamoScanV1 "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND LastName != \"Cui\" AND Age >= 30"
+        let scan = parseDynamoScanV1 "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND LastName != \"Cui\" AND Age >= 30"
 
-        match dynamoScan with
-        | { Where = Some(Where(ScanCondition [ ("FirstName", Equal (S "Yan")); ("LastName", NotEqual (S "Cui")); ("Age", GreaterThanOrEqual (N 30.0)) ])) }
-            -> true
-        | _ -> false
-        |> should equal true
+        let (Some(Where(ScanCondition lst))) = scan.Where
+        lst         |> should equal <| [ ("FirstName", Equal (S "Yan")); ("LastName", NotEqual (S "Cui")); ("Age", GreaterThanOrEqual (N 30.0)) ]
 
 [<TestFixture>]
 type ``Given some array of query options`` () =

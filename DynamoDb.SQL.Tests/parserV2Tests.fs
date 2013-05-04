@@ -59,14 +59,12 @@ module V2Tests =
                             WHERE FirstName   =      \"Yan\"
                           LIMIT     5"
 
-            match parseDynamoQueryV2 select with
-            | { Action  = Select [ Attribute "Name"; Attribute "Age"; Attribute "Salary" ]
-                From    = From "Employees"
-                Where   = Where [ (Attribute "FirstName", Equal (S "Yan")) ]
-                Limit   = Some(Limit 5) }
-                -> true
-            | _ -> false
-            |> should equal true
+            let query = parseDynamoQueryV2 select
+
+            query.Action    |> should equal <| Select [ Attribute "Name"; Attribute "Age"; Attribute "Salary" ]
+            query.From      |> should equal <| From "Employees"
+            query.Where     |> should equal <| Where [ (Attribute "FirstName", Equal (S "Yan")) ]
+            query.Limit     |> should equal <| Some(Limit 5)
 
         [<Test>]
         member this.``when the SELECT, FROM, WHERE and LIMIT keywords are not in capitals they should still be parsed correctly`` () =
@@ -75,27 +73,23 @@ module V2Tests =
                           where FirstName = \"Yan\"
                           liMIt 5"
 
-            match parseDynamoQueryV2 select with
-            | { Action  = Select [ Attribute "Name"; Attribute "Age"; Attribute "Salary" ]
-                From    = From "Employees"
-                Where   = Where [ (Attribute "FirstName", Equal (S "Yan")) ]
-                Limit   = Some(Limit 5) }
-                -> true
-            | _ -> false
-            |> should equal true
+            let query = parseDynamoQueryV2 select
+
+            query.Action    |> should equal <| Select [ Attribute "Name"; Attribute "Age"; Attribute "Salary" ]
+            query.From      |> should equal <| From "Employees"
+            query.Where     |> should equal <| Where [ (Attribute "FirstName", Equal (S "Yan")) ]
+            query.Limit     |> should equal <| Some(Limit 5)
 
         [<Test>]
         member this.``when there are multiple conditions in the where clause they should all be parsed`` () =
             let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND LastName = \"Cui\""
 
-            match parseDynamoQueryV2 select with
-            | { Action  = Select [ Asterisk ]
-                From    = From "Employees"
-                Where   = Where [ (Attribute "FirstName", Equal(S "Yan")); (Attribute "LastName", Equal(S "Cui")) ]
-                Limit   = None }
-                -> true
-            | _ -> false
-            |> should equal true
+            let query = parseDynamoQueryV2 select
+
+            query.Action    |> should equal <| Select [ Asterisk ]
+            query.From      |> should equal <| From "Employees"
+            query.Where     |> should equal <| Where [ (Attribute "FirstName", Equal(S "Yan")); (Attribute "LastName", Equal(S "Cui")) ]
+            query.Limit     |> should equal <| None
 
         [<Test>]
         [<ExpectedException(typeof<InvalidQuery>)>]
@@ -107,53 +101,45 @@ module V2Tests =
         member this.``when < operator is used it should be parsed correctly`` () =
             let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND Age < 99"
 
-            match parseDynamoQueryV2 select with
-            | { Action  = Select [ Asterisk ]
-                From    = From "Employees"
-                Where   = Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "Age", LessThan (N 99.0)) ]
-                Limit   = None }
-                -> true
-            | _ -> false
-            |> should equal true
+            let query = parseDynamoQueryV2 select
+
+            query.Action    |> should equal <| Select [ Asterisk ]
+            query.From      |> should equal <| From "Employees"
+            query.Where     |> should equal <| Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "Age", LessThan (N 99.0)) ]
+            query.Limit     |> should equal <| None
 
         [<Test>]
         member this.``when <= operator is used it should be parsed correctly`` () =
             let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND Age <= 99"
 
-            match parseDynamoQueryV2 select with
-            | { Action  = Select [ Asterisk ]
-                From    = From "Employees"
-                Where   = Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "Age", LessThanOrEqual (N 99.0)) ]
-                Limit   = None }
-                -> true
-            | _ -> false
-            |> should equal true
+            let query = parseDynamoQueryV2 select
+
+            query.Action    |> should equal <| Select [ Asterisk ]
+            query.From      |> should equal <| From "Employees"
+            query.Where     |> should equal <| Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "Age", LessThanOrEqual (N 99.0)) ]
+            query.Limit     |> should equal <| None
 
         [<Test>]
         member this.``when > operator is used it should be parsed correctly`` () =
             let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND Age > 99"
 
-            match parseDynamoQueryV2 select with
-            | { Action  = Select [ Asterisk ]
-                From    = From "Employees"
-                Where   = Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "Age", GreaterThan (N 99.0)) ]
-                Limit   = None }
-                -> true
-            | _ -> false
-            |> should equal true
+            let query = parseDynamoQueryV2 select
+
+            query.Action    |> should equal <| Select [ Asterisk ]
+            query.From      |> should equal <| From "Employees"
+            query.Where     |> should equal <| Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "Age", GreaterThan (N 99.0)) ]
+            query.Limit     |> should equal <| None
 
         [<Test>]
         member this.``when >= operator is used it should be parsed correctly`` () =
             let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND Age >= 99"
 
-            match parseDynamoQueryV2 select with
-            | { Action  = Select [ Asterisk ]
-                From    = From "Employees"
-                Where   = Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "Age", GreaterThanOrEqual (N 99.0)) ]
-                Limit   = None }
-                -> true
-            | _ -> false
-            |> should equal true
+            let query = parseDynamoQueryV2 select
+
+            query.Action    |> should equal <| Select [ Asterisk ]
+            query.From      |> should equal <| From "Employees"
+            query.Where     |> should equal <| Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "Age", GreaterThanOrEqual (N 99.0)) ]
+            query.Limit     |> should equal <| None
 
         [<Test>]
         [<ExpectedException(typeof<InvalidQuery>)>]
@@ -171,27 +157,23 @@ module V2Tests =
         member this.``when the Begins With operator is used it should be parsed correctly`` () =
             let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND LastName BEGINS WITH \"Cui\""
 
-            match parseDynamoQueryV2 select with
-            | { Action  = Select [ Asterisk ]
-                From    = From "Employees"
-                Where   = Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "LastName", BeginsWith (S "Cui")) ]
-                Limit   = None }
-                -> true
-            | _ -> false
-            |> should equal true
+            let query = parseDynamoQueryV2 select
+
+            query.Action    |> should equal <| Select [ Asterisk ]
+            query.From      |> should equal <| From "Employees"
+            query.Where     |> should equal <| Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "LastName", BeginsWith (S "Cui")) ]
+            query.Limit     |> should equal <| None
     
         [<Test>]
         member this.``when the Between operator is used it should be parsed correctly`` () =
             let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND Age BETWEEN 10 AND 30"
 
-            match parseDynamoQueryV2 select with
-            | { Action  = Select [ Asterisk ]
-                From    = From "Employees"
-                Where   = Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "Age", Between ((N 10.0), (N 30.0))) ]
-                Limit   = None }
-                -> true
-            | _ -> false
-            |> should equal true
+            let query = parseDynamoQueryV2 select
+
+            query.Action    |> should equal <| Select [ Asterisk ]
+            query.From      |> should equal <| From "Employees"
+            query.Where     |> should equal <| Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "Age", Between ((N 10.0), (N 30.0))) ]
+            query.Limit     |> should equal <| None
 
         [<Test>]
         [<ExpectedException(typeof<InvalidQuery>)>]
@@ -215,56 +197,48 @@ module V2Tests =
         member this.``when limit clause is specified, it should be parsed correctly`` () =
             let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND Age >= 30 LIMIT 10"
 
-            match parseDynamoQueryV2 select with
-            | { Action  = Select [ Asterisk ]
-                From    = From "Employees"
-                Where   = Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "Age", GreaterThanOrEqual(N 30.0)) ]
-                Limit   = Some(Limit 10) }
-                -> true
-            | _ -> false
-            |> should equal true
+            let query = parseDynamoQueryV2 select
+            
+            query.Action    |> should equal <| Select [ Asterisk ]
+            query.From      |> should equal <| From "Employees"
+            query.Where     |> should equal <| Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "Age", GreaterThanOrEqual(N 30.0)) ]
+            query.Limit     |> should equal <| Some(Limit 10)
 
         [<Test>]
         member this.``when order asc is specified, it should be parsed correctly`` () =
             let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND Age >= 30 ORDER ASC LIMIT 10"
 
-            match parseDynamoQueryV2 select with
-            | { Action  = Select [ Asterisk ]
-                From    = From "Employees"
-                Where   = Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "Age", GreaterThanOrEqual(N 30.0)) ]
-                Limit   = Some(Limit 10);
-                Order   = Some(Asc) }
-                -> true
-            | _ -> false
-            |> should equal true
+            let query = parseDynamoQueryV2 select
+
+            query.Action    |> should equal <| Select [ Asterisk ]
+            query.From      |> should equal <| From "Employees"
+            query.Where     |> should equal <| Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "Age", GreaterThanOrEqual(N 30.0)) ]
+            query.Limit     |> should equal <| Some(Limit 10)
+            query.Order     |> should equal <| Some(Asc)
 
         [<Test>]
         member this.``when order desc is specified, it should be parsed correctly`` () =
             let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND Age >= 30 ORDER DESC LIMIT 10"
 
-            match parseDynamoQueryV2 select with
-            | { Action  = Select [ Asterisk ]
-                From    = From "Employees"
-                Where   = Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "Age", GreaterThanOrEqual(N 30.0)) ]
-                Limit   = Some(Limit 10);
-                Order   = Some(Desc) }
-                -> true
-            | _ -> false
-            |> should equal true
+            let query = parseDynamoQueryV2 select
+
+            query.Action    |> should equal <| Select [ Asterisk ]
+            query.From      |> should equal <| From "Employees"
+            query.Where     |> should equal <| Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "Age", GreaterThanOrEqual(N 30.0)) ]
+            query.Limit     |> should equal <| Some(Limit 10)
+            query.Order     |> should equal <| Some(Desc)
 
         [<Test>]
         member this.``when a count query is specified, it should be parsed correctly`` () =
             let count = "COUNT * FROM Employees WHERE FirstName = \"Yan\" AND Age >= 30 ORDER DESC LIMIT 10"
 
-            match parseDynamoQueryV2 count with
-            | { Action  = Count
-                From    = From "Employees"
-                Where   = Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "Age", GreaterThanOrEqual(N 30.0)) ]
-                Limit   = Some(Limit 10);
-                Order   = Some(Desc) }
-                -> true
-            | _ -> false
-            |> should equal true
+            let query = parseDynamoQueryV2 count
+
+            query.Action    |> should equal <| Count
+            query.From      |> should equal <| From "Employees"
+            query.Where     |> should equal <| Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "Age", GreaterThanOrEqual(N 30.0)) ]
+            query.Limit     |> should equal <| Some(Limit 10)
+            query.Order     |> should equal <| Some(Desc)
 
         [<Test>]
         [<ExpectedException(typeof<InvalidQuery>)>]
@@ -276,79 +250,80 @@ module V2Tests =
         member this.``when NoConsistentRead option is specified it should be captured in the Options clause`` () =
             let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" WITH (  nOConsiStentRead )"
         
-            match parseDynamoQueryV2 select with
-            | { Action  = Select [ Asterisk ]
-                From    = From "Employees"
-                Where   = Where [ (Attribute "FirstName", Equal (S "Yan")) ]
-                Options = Some [| NoConsistentRead |] }
-                -> true
-            | _ -> false
-            |> should equal true
+            let query = parseDynamoQueryV2 select
+
+            query.Action    |> should equal <| Select [ Asterisk ]
+            query.From      |> should equal <| From "Employees"
+            query.Where     |> should equal <| Where [ (Attribute "FirstName", Equal (S "Yan")) ]
+            query.Options   |> should equal <| Some [| NoConsistentRead |]
 
         [<Test>]
         member this.``when PageSize option is specified it should be captured in the Options clause`` () =
             let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" WITH (Pagesize(  10) )"
         
-            match parseDynamoQueryV2 select with
-            | { Action  = Select [ Asterisk ]
-                From    = From "Employees"
-                Where   = Where [ (Attribute "FirstName", Equal (S "Yan")) ]
-                Options = Some [| QueryPageSize 10 |] }
-                -> true
-            | _ -> false
-            |> should equal true
+            let query = parseDynamoQueryV2 select
+
+            query.Action    |> should equal <| Select [ Asterisk ]
+            query.From      |> should equal <| From "Employees"
+            query.Where     |> should equal <| Where [ (Attribute "FirstName", Equal (S "Yan")) ]
+            query.Options   |> should equal <| Some [| QueryPageSize 10 |]
 
         [<Test>]
         member this.``when Index option is specified with AllAttributes set to true it should be captured in the Options clause`` () =
             let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" WITH (Index( _M-y.1nd3x ,  true) )"
         
-            match parseDynamoQueryV2 select with
-            | { Action  = Select [ Asterisk ]
-                From    = From "Employees"
-                Where   = Where [ (Attribute "FirstName", Equal (S "Yan")) ]
-                Options = Some [| Index("_M-y.1nd3x", true) |] }
-                -> true
-            | _ -> false
-            |> should equal true
+            let query = parseDynamoQueryV2 select
+
+            query.Action    |> should equal <| Select [ Asterisk ]
+            query.From      |> should equal <| From "Employees"
+            query.Where     |> should equal <| Where [ (Attribute "FirstName", Equal (S "Yan")) ]
+            query.Options   |> should equal <| Some [| Index("_M-y.1nd3x", true) |]
 
         [<Test>]
         member this.``when Index option is specified with AllAttributes set to false it should be captured in the Options clause`` () =
             let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" WITH (Index( _M-y.1nd3x ,  false) )"
         
-            let res = parseDynamoQueryV2 select
+            let query = parseDynamoQueryV2 select
 
-            match parseDynamoQueryV2 select with
-            | { Action  = Select [ Asterisk ]
-                From    = From "Employees"
-                Where   = Where [ (Attribute "FirstName", Equal (S "Yan")) ]
-                Options = Some [| Index("_M-y.1nd3x", false) |] }
-                -> true
-            | _ -> false
-            |> should equal true
+            query.Action    |> should equal <| Select [ Asterisk ]
+            query.From      |> should equal <| From "Employees"
+            query.Where     |> should equal <| Where [ (Attribute "FirstName", Equal (S "Yan")) ]
+            query.Options   |> should equal <| Some [| Index("_M-y.1nd3x", false) |]
 
         [<Test>]
         member this.``when NoReturnedCapacity option is specified it should be captured in the Options clause`` () =
             let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" WITH ( NoReturnedCapacity)"
         
-            match parseDynamoQueryV2 select with
-            | { Action  = Select [ Asterisk ]
-                From    = From "Employees"
-                Where   = Where [ (Attribute "FirstName", Equal (S "Yan")) ]
-                Options = Some [| NoReturnedCapacity |] }
-                -> true
-            | _ -> false
-            |> should equal true
+            let query = parseDynamoQueryV2 select
+
+            query.Action    |> should equal <| Select [ Asterisk ]
+            query.From      |> should equal <| From "Employees"
+            query.Where     |> should equal <| Where [ (Attribute "FirstName", Equal (S "Yan")) ]
+            query.Options   |> should equal <| Some [| QueryNoReturnedCapacity |]
 
         [<Test>]
         member this.``when both NoConsistentRead and PageSize options are specified they should be captured in the Options clause`` () =
             let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" WITH ( NOconsistentRead, Pagesize(  10) )"
         
-            match parseDynamoQueryV2 select with
-            | { Action  = Select [ Asterisk ]
-                From    = From "Employees"
-                Where   = Where [ (Attribute "FirstName", Equal (S "Yan")) ]
-                Options = Some [| NoConsistentRead; QueryPageSize 10 |] }
-                -> true
-            | _ -> false
-            |> should equal true
+            let query = parseDynamoQueryV2 select
 
+            query.Action    |> should equal <| Select [ Asterisk ]
+            query.From      |> should equal <| From "Employees"
+            query.Where     |> should equal <| Where [ (Attribute "FirstName", Equal (S "Yan")) ]
+            query.Options   |> should equal <| Some [| NoConsistentRead; QueryPageSize 10 |]
+            
+    /// NOTE: there's very little difference between V1 and V2 scan, only an additional scan option, so don't repeat
+    /// existing V1 tests, only test the new option ScanNoReturnedCapacity
+    [<TestFixture>]
+    type ``Given a V2 scan`` () =
+        [<Test>]
+        member this.``when NoReturnedCapacity option is specified it should be captured in the Options clause`` () =
+            let select = "SELECT * FROM Employees WITH ( NoReturnedCapacity)"
+        
+            let scan = parseDynamoScanV2 select
+
+            scan.Action     |> should equal <| Select [ Asterisk ]
+            scan.From       |> should equal <| From "Employees"
+            scan.Where      |> should equal None
+            scan.Limit      |> should equal None
+            scan.Options    |> should equal <| Some [| ScanNoReturnedCapacity |]
