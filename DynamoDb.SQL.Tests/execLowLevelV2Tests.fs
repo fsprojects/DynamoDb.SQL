@@ -16,7 +16,7 @@ let equal = FsUnit.equal
 [<TestFixture>]
 type ``Given a V2 DynamoQuery`` () =
     [<Test>]
-    member this.``when there is only an equality filter it should it a single key condition`` () =
+    member this.``when there is only an equality filter then KeyConditions should contain a single key condition`` () =
         let (GetQueryReq req) = parseDynamoQueryV2 "SELECT * FROM Employees WHERE FirstName = \"Yan\""
 
         req.TableName                                            |> should equal "Employees"
