@@ -52,9 +52,8 @@ module Common =
 
     // only allow explicit attribute name and asterisk in select
     let selectAttributes = choice [ asterisk; attribute ]
-    let pselect = 
-        skipStringCI_ws "select" 
-        >>. (sepBy1 selectAttributes (pstring_ws ",") |>> Select)
+    let pselect = skipStringCI_ws "select" 
+                  >>. (sepBy1 selectAttributes (pstring_ws ",") |>> Select)
 
     // count action cannot specify a list of attributes
     let pcount = stringCIReturn_ws "count *" Count

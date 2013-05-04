@@ -294,12 +294,12 @@ module V1Tests =
         member this.``when there is no where clause it should be parsed correctly`` () =
             let select = "SELECT * FROM Employees"
 
-            let query = parseDynamoScanV1 select
+            let scan = parseDynamoScanV1 select
 
-            query.Action    |> should equal <| Select [ Asterisk ]
-            query.From      |> should equal <| From "Employees"
-            query.Where     |> should equal <| None
-            query.Limit     |> should equal <| None
+            scan.Action     |> should equal <| Select [ Asterisk ]
+            scan.From       |> should equal <| From "Employees"
+            scan.Where      |> should equal <| None
+            scan.Limit      |> should equal <| None
 
         [<Test>]
         [<ExpectedException(typeof<InvalidScan>)>]
@@ -315,12 +315,12 @@ module V1Tests =
                             WHERE FirstName   =      \"Yan\"
                           LIMIT     5"
 
-            let query = parseDynamoScanV1 select
+            let scan = parseDynamoScanV1 select
 
-            query.Action    |> should equal <| Select [ Attribute "Name"; Attribute "Age"; Attribute "Salary" ]
-            query.From      |> should equal <| From "Employees"
-            query.Where     |> should equal <| Some(Where [ (Attribute "FirstName", Equal (S "Yan")) ])
-            query.Limit     |> should equal <| Some(Limit 5)
+            scan.Action     |> should equal <| Select [ Attribute "Name"; Attribute "Age"; Attribute "Salary" ]
+            scan.From       |> should equal <| From "Employees"
+            scan.Where      |> should equal <| Some(Where [ (Attribute "FirstName", Equal (S "Yan")) ])
+            scan.Limit      |> should equal <| Some(Limit 5)
 
         [<Test>]
         member this.``when the SELECT, FROM, WHERE and LIMIT keywords are not in capitals they should still be parsed correctly`` () =
@@ -329,12 +329,12 @@ module V1Tests =
                           where FirstName = \"Yan\"
                           liMIt 5"
 
-            let query = parseDynamoScanV1 select
+            let scan = parseDynamoScanV1 select
 
-            query.Action    |> should equal <| Select [ Attribute "Name"; Attribute "Age"; Attribute "Salary" ]
-            query.From      |> should equal <| From "Employees"
-            query.Where     |> should equal <| Some(Where [ (Attribute "FirstName", Equal (S "Yan")) ])
-            query.Limit     |> should equal <| Some(Limit 5)
+            scan.Action     |> should equal <| Select [ Attribute "Name"; Attribute "Age"; Attribute "Salary" ]
+            scan.From       |> should equal <| From "Employees"
+            scan.Where      |> should equal <| Some(Where [ (Attribute "FirstName", Equal (S "Yan")) ])
+            scan.Limit      |> should equal <| Some(Limit 5)
 
         [<Test>]
         [<ExpectedException(typeof<InvalidScan>)>]
@@ -352,23 +352,23 @@ module V1Tests =
         member this.``when an attribute name is included in a filter condition it should be parsed correctly`` () =
             let select = "SELECT * FROM Employees WHERE Age = 30"
 
-            let query = parseDynamoScanV1 select
+            let scan = parseDynamoScanV1 select
 
-            query.Action    |> should equal <| Select [ Asterisk ]
-            query.From      |> should equal <| From "Employees"
-            query.Where     |> should equal <| Some(Where [ (Attribute "Age", Equal (N 30.0)) ])
-            query.Limit     |> should equal <| None
+            scan.Action     |> should equal <| Select [ Asterisk ]
+            scan.From       |> should equal <| From "Employees"
+            scan.Where      |> should equal <| Some(Where [ (Attribute "Age", Equal (N 30.0)) ])
+            scan.Limit      |> should equal <| None
 
         [<Test>]
         member this.``when the != operator is used it should be parsed correctly`` () =
             let select = "SELECT * FROM Employees WHERE FirstName != \"Yan\""
         
-            let query = parseDynamoScanV1 select
+            let scan = parseDynamoScanV1 select
 
-            query.Action    |> should equal <| Select [ Asterisk ]
-            query.From      |> should equal <| From "Employees"
-            query.Where     |> should equal <| Some(Where [ (Attribute "FirstName", NotEqual (S "Yan")) ])
-            query.Limit     |> should equal <| None
+            scan.Action     |> should equal <| Select [ Asterisk ]
+            scan.From       |> should equal <| From "Employees"
+            scan.Where      |> should equal <| Some(Where [ (Attribute "FirstName", NotEqual (S "Yan")) ])
+            scan.Limit      |> should equal <| None
 
         [<Test>]
         member this.``when <, <=, >, >= operators are used they should be parsed correctly`` () =
@@ -378,114 +378,114 @@ module V1Tests =
                           AND   Age <= 99
                           AND   Age < 90"
 
-            let query = parseDynamoScanV1 select
+            let scan = parseDynamoScanV1 select
 
-            query.Action    |> should equal <| Select [ Asterisk ]
-            query.From      |> should equal <| From "Employees"
-            query.Where     |> should equal <| Some(Where [ (Attribute "Age", GreaterThanOrEqual(N 10.0))
+            scan.Action     |> should equal <| Select [ Asterisk ]
+            scan.From       |> should equal <| From "Employees"
+            scan.Where      |> should equal <| Some(Where [ (Attribute "Age", GreaterThanOrEqual(N 10.0))
                                                             (Attribute "Age", GreaterThan(N 20.0))
                                                             (Attribute "Age", LessThanOrEqual(N 99.0))
                                                             (Attribute "Age", LessThan(N 90.0)) ])
-            query.Limit     |> should equal <| None
+            scan.Limit      |> should equal <| None
 
         [<Test>]
         member this.``when the Contains operator is used it should be parsed correctly`` () =
             let select = "SELECT * FROM Employees WHERE FirstName CONTAINS \"Yan\""
         
-            let query = parseDynamoScanV1 select
+            let scan = parseDynamoScanV1 select
 
-            query.Action    |> should equal <| Select [ Asterisk ]
-            query.From      |> should equal <| From "Employees"
-            query.Where     |> should equal <| Some(Where [ (Attribute "FirstName", Contains(S "Yan")) ])
-            query.Limit     |> should equal <| None
+            scan.Action     |> should equal <| Select [ Asterisk ]
+            scan.From       |> should equal <| From "Employees"
+            scan.Where      |> should equal <| Some(Where [ (Attribute "FirstName", Contains(S "Yan")) ])
+            scan.Limit      |> should equal <| None
 
         [<Test>]
         member this.``when the NotContains operator is used it should be parsed correctly`` () =
             let select = "SELECT * FROM Employees WHERE FirstName NOT CONTAINS \"Yan\""
         
-            let query = parseDynamoScanV1 select
+            let scan = parseDynamoScanV1 select
 
-            query.Action    |> should equal <| Select [ Asterisk ]
-            query.From      |> should equal <| From "Employees"
-            query.Where     |> should equal <| Some(Where [ (Attribute "FirstName", NotContains(S "Yan")) ])
-            query.Limit     |> should equal <| None
+            scan.Action     |> should equal <| Select [ Asterisk ]
+            scan.From       |> should equal <| From "Employees"
+            scan.Where      |> should equal <| Some(Where [ (Attribute "FirstName", NotContains(S "Yan")) ])
+            scan.Limit      |> should equal <| None
 
         [<Test>]
         member this.``when the Begins With operator is used it should be parsed correctly`` () =
             let select = "SELECT * FROM Employees WHERE FirstName BEGINS WITH \"Yan\""
 
-            let query = parseDynamoScanV1 select
+            let scan = parseDynamoScanV1 select
 
-            query.Action    |> should equal <| Select [ Asterisk ]
-            query.From      |> should equal <| From "Employees"
-            query.Where     |> should equal <| Some(Where [ (Attribute "FirstName", BeginsWith (S "Yan")) ])
-            query.Limit     |> should equal <| None
+            scan.Action     |> should equal <| Select [ Asterisk ]
+            scan.From       |> should equal <| From "Employees"
+            scan.Where      |> should equal <| Some(Where [ (Attribute "FirstName", BeginsWith (S "Yan")) ])
+            scan.Limit      |> should equal <| None
     
         [<Test>]
         member this.``when the Between operator is used it should be parsed correctly`` () =
             let select = "SELECT * FROM Employees WHERE Age BETWEEN 10 AND 30"
 
-            let query = parseDynamoScanV1 select
+            let scan = parseDynamoScanV1 select
 
-            query.Action    |> should equal <| Select [ Asterisk ]
-            query.From      |> should equal <| From "Employees"
-            query.Where     |> should equal <| Some(Where [ (Attribute "Age", Between ((N 10.0), (N 30.0))) ])
-            query.Limit     |> should equal <| None
+            scan.Action     |> should equal <| Select [ Asterisk ]
+            scan.From       |> should equal <| From "Employees"
+            scan.Where      |> should equal <| Some(Where [ (Attribute "Age", Between ((N 10.0), (N 30.0))) ])
+            scan.Limit      |> should equal <| None
 
         [<Test>]
         member this.``when the In operator is used it should be parsed correctly`` () =
             let select = "SELECT * FROM Employees WHERE Age IN (10, 30, 50)"
         
-            let query = parseDynamoScanV1 select
+            let scan = parseDynamoScanV1 select
 
-            query.Action    |> should equal <| Select [ Asterisk ]
-            query.From      |> should equal <| From "Employees"
-            query.Where     |> should equal <| Some(Where [ (Attribute "Age", In [ N 10.0; N 30.0; N 50.0 ]) ])
-            query.Limit     |> should equal <| None
+            scan.Action     |> should equal <| Select [ Asterisk ]
+            scan.From       |> should equal <| From "Employees"
+            scan.Where      |> should equal <| Some(Where [ (Attribute "Age", In [ N 10.0; N 30.0; N 50.0 ]) ])
+            scan.Limit      |> should equal <| None
 
         [<Test>]
         member this.``when the Is Null operator is used it should be parsed correctly`` () =
             let select = "SELECT * FROM Employees WHERE LastName IS NULL"
         
-            let query = parseDynamoScanV1 select
+            let scan = parseDynamoScanV1 select
 
-            query.Action    |> should equal <| Select [ Asterisk ]
-            query.From      |> should equal <| From "Employees"
-            query.Where     |> should equal <| Some(Where [ (Attribute "LastName", Null) ])
-            query.Limit     |> should equal <| None
+            scan.Action     |> should equal <| Select [ Asterisk ]
+            scan.From       |> should equal <| From "Employees"
+            scan.Where      |> should equal <| Some(Where [ (Attribute "LastName", Null) ])
+            scan.Limit      |> should equal <| None
 
         [<Test>]
         member this.``when the Is Not Null operator is used it should be parsed correctly`` () =
             let select = "SELECT * FROM Employees WHERE LastName IS NOT NULL"
         
-            let query = parseDynamoScanV1 select
+            let scan = parseDynamoScanV1 select
 
-            query.Action    |> should equal <| Select [ Asterisk ]
-            query.From      |> should equal <| From "Employees"
-            query.Where     |> should equal <| Some(Where [ (Attribute "LastName", NotNull) ])
-            query.Limit     |> should equal <| None
+            scan.Action     |> should equal <| Select [ Asterisk ]
+            scan.From       |> should equal <| From "Employees"
+            scan.Where      |> should equal <| Some(Where [ (Attribute "LastName", NotNull) ])
+            scan.Limit      |> should equal <| None
 
         [<Test>]
         member this.``when limit clause is specified, it should be parsed correctly`` () =
             let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND Age >= 30 LIMIT 10"
 
-            let query = parseDynamoScanV1 select
+            let scan = parseDynamoScanV1 select
 
-            query.Action    |> should equal <| Select [ Asterisk ]
-            query.From      |> should equal <| From "Employees"
-            query.Where     |> should equal <| Some(Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "Age", GreaterThanOrEqual(N 30.0)) ])
-            query.Limit     |> should equal <| Some(Limit 10)
+            scan.Action     |> should equal <| Select [ Asterisk ]
+            scan.From       |> should equal <| From "Employees"
+            scan.Where      |> should equal <| Some(Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "Age", GreaterThanOrEqual(N 30.0)) ])
+            scan.Limit      |> should equal <| Some(Limit 10)
 
         [<Test>]
         member this.``when a count query is specified, it should be parsed correctly`` () =
             let count = "COUNT * FROM Employees WHERE FirstName = \"Yan\" AND Age >= 30 LIMIT 10"
 
-            let query = parseDynamoScanV1 count
+            let scan = parseDynamoScanV1 count
 
-            query.Action    |> should equal <| Count
-            query.From      |> should equal <| From "Employees"
-            query.Where     |> should equal <| Some(Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "Age", GreaterThanOrEqual(N 30.0)) ])
-            query.Limit     |> should equal <| Some(Limit 10)
+            scan.Action     |> should equal <| Count
+            scan.From       |> should equal <| From "Employees"
+            scan.Where      |> should equal <| Some(Where [ (Attribute "FirstName", Equal (S "Yan")); (Attribute "Age", GreaterThanOrEqual(N 30.0)) ])
+            scan.Limit      |> should equal <| Some(Limit 10)
 
         [<Test>]
         [<ExpectedException(typeof<InvalidScan>)>]
@@ -497,10 +497,10 @@ module V1Tests =
         member this.``when PageSize option is specified it should be parsed correctly`` () =
             let select = "SELECT * FROM Employees WITH (Pagesize(  10) )"
         
-            let query = parseDynamoScanV1 select
+            let scan = parseDynamoScanV1 select
 
-            query.Action    |> should equal <| Select [ Asterisk ]
-            query.From      |> should equal <| From "Employees"
-            query.Where     |> should equal <| None
-            query.Limit     |> should equal <| None
-            query.Options   |> should equal <| Some [| ScanPageSize 10 |]
+            scan.Action     |> should equal <| Select [ Asterisk ]
+            scan.From       |> should equal <| From "Employees"
+            scan.Where      |> should equal <| None
+            scan.Limit      |> should equal <| None
+            scan.Options    |> should equal <| Some [| ScanPageSize 10 |]
