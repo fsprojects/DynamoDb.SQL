@@ -33,10 +33,10 @@ module Cxt =
 
                // you cannot specify both AttributesToGet and SPECIFIC_ATTRIBUTES in Select
                // for more details, see http://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Query.html
-               let select = match attributes, allAttributes with
-                            | null, false -> "ALL_PROJECTED_ATTRIBUTES"
-                            | null, true  -> "ALL_ATTRIBUTES"
-                            | _, _        -> "SPECIFIC_ATTRIBUTES"
+               config.Select <- match attributes, allAttributes with
+                                | null, false -> SelectValues.AllProjectedAttributes
+                                | null, true  -> SelectValues.AllAttributes
+                                | _, _        -> SelectValues.SpecificAttributes
                
                let queryFilter = new QueryFilter()
                keyConditions |> List.iter (fun (attr, cond) -> queryFilter.AddCondition(attr, cond.ToConditionV2()))
@@ -49,7 +49,7 @@ module Cxt =
 
                config.ConsistentRead <- isConsistentRead opts
                match tryGetQueryPageSize opts with | Some n -> config.Limit <- n | _ -> ()
-
+               
                config
         | { Action = Count } -> raise <| NotSupportedException("Count is not supported by DynamoDBContext")
         
