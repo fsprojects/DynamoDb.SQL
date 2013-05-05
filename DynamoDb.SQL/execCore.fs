@@ -63,7 +63,7 @@ module Core =
         | _ -> true
 
     /// Returns whether consumed capacity count is not returned
-    let returnConsumedCapacity (opts : QueryOption[] option) =
+    let returnQueryConsumedCapacity (opts : QueryOption[] option) =
         match opts with
         | Some arr -> 
             arr 
@@ -82,6 +82,15 @@ module Core =
         match opts with
         | Some arr -> arr |> Array.tryPick (fun opt -> match opt with | Index(name, allAttrs) -> Some(name, allAttrs) | _ -> None)
         | _ -> None
+    
+    /// Returns whether consumed capacity count is not returned
+    let returnScanConsumedCapacity (opts : ScanOption[] option) =
+        match opts with
+        | Some arr -> 
+            arr 
+            |> Array.exists (fun opt -> match opt with | ScanNoReturnedCapacity -> true | _ -> false)
+            |> not
+        | _ -> true
 
     /// Try to get the page size option from the specified scan options
     let tryGetScanPageSize (opts : ScanOption[] option) =

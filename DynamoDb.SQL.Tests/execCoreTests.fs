@@ -129,7 +129,7 @@ type ``Given a V2 DynamoQuery`` () =
         lst     |> should equal [ "Name"; "Age" ]
                 
 [<TestFixture>]
-type ``Given a V1 DynamoScan`` () =
+type ``Given a DynamoScan`` () =
     [<Test>]
     member this.``when there are multiple attributes in filter it should be interpreted as a Scan operation`` () =
         let scan = parseDynamoScanV1 "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND LastName != \"Cui\" AND Age >= 30"
@@ -162,26 +162,26 @@ type ``Given some array of query options`` () =
 
     // #endregion
 
-    // #region NoReturnedCapacity
+    // #region QueryNoReturnedCapacity
 
     [<Test>]
-    member this.``when there is a NoReturnedCapacity option specified 'returnConsumedCapacity' should return false`` () =
-        returnConsumedCapacity (Some [| QueryNoReturnedCapacity; NoConsistentRead |]) 
+    member this.``when there is a NoReturnedCapacity option specified 'returnQueryConsumedCapacity' should return false`` () =
+        returnQueryConsumedCapacity (Some [| QueryNoReturnedCapacity; NoConsistentRead |]) 
         |> should equal false
 
     [<Test>]
-    member this.``when there are multiple NoReturnedCapacity options specified 'returnConsumedCapacity' should return false`` () =
-        returnConsumedCapacity (Some [| QueryNoReturnedCapacity; NoConsistentRead; QueryNoReturnedCapacity |]) 
+    member this.``when there are multiple NoReturnedCapacity options specified 'returnQueryConsumedCapacity' should return false`` () =
+        returnQueryConsumedCapacity (Some [| QueryNoReturnedCapacity; NoConsistentRead; QueryNoReturnedCapacity |]) 
         |> should equal false
 
     [<Test>]
-    member this.``when no NoReturnedCapacity option is specified 'returnConsumedCapacity' should return true`` () =
-        returnConsumedCapacity (Some [| NoConsistentRead |]) 
+    member this.``when no NoReturnedCapacity option is specified 'returnQueryConsumedCapacity' should return true`` () =
+        returnQueryConsumedCapacity (Some [| NoConsistentRead |]) 
         |> should equal true
 
     [<Test>]
-    member this.``when there are no query options specified 'returnConsumedCapacity' should return true`` () =
-        returnConsumedCapacity None 
+    member this.``when there are no query options specified 'returnQueryConsumedCapacity' should return true`` () =
+        returnQueryConsumedCapacity None 
         |> should equal true
 
     // #endregion
@@ -236,6 +236,30 @@ type ``Given some array of query options`` () =
     member this.``when there are no query options specified 'tryGetQueryIndex' should return None`` () =
         tryGetQueryIndex None 
         |> should equal None
+
+    // #endregion
+    
+    // #region ScanNoReturnedCapacity
+
+    [<Test>]
+    member this.``when there is a NoReturnedCapacity option specified 'returnScanConsumedCapacity' should return false`` () =
+        returnScanConsumedCapacity (Some [| ScanNoReturnedCapacity |]) 
+        |> should equal false
+
+    [<Test>]
+    member this.``when there are multiple NoReturnedCapacity options specified 'returnScanConsumedCapacity' should return false`` () =
+        returnScanConsumedCapacity (Some [| ScanNoReturnedCapacity; ScanNoReturnedCapacity |]) 
+        |> should equal false
+
+    [<Test>]
+    member this.``when no NoReturnedCapacity option is specified 'returnScanConsumedCapacity' should return true`` () =
+        returnScanConsumedCapacity (Some [| |]) 
+        |> should equal true
+
+    [<Test>]
+    member this.``when there are no query options specified 'returnScanConsumedCapacity' should return true`` () =
+        returnScanConsumedCapacity None 
+        |> should equal true
 
     // #endregion
     
