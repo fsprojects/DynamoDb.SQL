@@ -46,7 +46,9 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Script.fsx" />
+    <Compile Include="Common.fs" />
+    <None Include="V1Examples.fsx" />
+    <None Include="V2Examples.fsx" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

@@ -21,7 +21,6 @@ type ``Given a V1 DynamoQuery`` () =
 
         req.TableName           |> should equal "Employees" 
         req.HashKeyValue.S      |> should equal "Yan"
-        req.Limit               |> should equal 0 
         req.RangeKeyCondition   |> should equal null
         req.AttributesToGet     |> should equal null
         req.Count               |> should equal false
@@ -32,7 +31,6 @@ type ``Given a V1 DynamoQuery`` () =
 
         req.TableName                                   |> should equal "Employees"
         req.HashKeyValue.S                              |> should equal "Yan"
-        req.Limit                                       |> should equal 0
         req.RangeKeyCondition.ComparisonOperator        |> should equal "EQ"
         req.RangeKeyCondition.AttributeValueList.Count  |> should equal 1
         req.RangeKeyCondition.AttributeValueList.[0].N  |> should equal "30"
@@ -45,7 +43,6 @@ type ``Given a V1 DynamoQuery`` () =
 
         req.TableName                                   |> should equal "Employees"
         req.HashKeyValue.S                              |> should equal "Yan"
-        req.Limit                                       |> should equal 0
         req.RangeKeyCondition.ComparisonOperator        |> should equal "GT"
         req.RangeKeyCondition.AttributeValueList.Count  |> should equal 1
         req.RangeKeyCondition.AttributeValueList.[0].N  |> should equal "30"
@@ -58,7 +55,6 @@ type ``Given a V1 DynamoQuery`` () =
 
         req.TableName                                   |> should equal "Employees"
         req.HashKeyValue.S                              |> should equal "Yan"
-        req.Limit                                       |> should equal 0
         req.RangeKeyCondition.ComparisonOperator        |> should equal "BETWEEN"
         req.RangeKeyCondition.AttributeValueList.Count  |> should equal 2
         req.RangeKeyCondition.AttributeValueList.[0].N  |> should equal "5"
@@ -86,7 +82,6 @@ type ``Given a V1 DynamoQuery`` () =
 
         req.TableName                                   |> should equal "Employees"
         req.HashKeyValue.S                              |> should equal "Yan"
-        req.Limit                                       |> should equal 0
         req.RangeKeyCondition.ComparisonOperator        |> should equal "BETWEEN"
         req.RangeKeyCondition.AttributeValueList.Count  |> should equal 2
         req.RangeKeyCondition.AttributeValueList.[0].N  |> should equal "5"
@@ -100,7 +95,6 @@ type ``Given a V1 DynamoQuery`` () =
 
         req.TableName                                   |> should equal "Employees"
         req.HashKeyValue.S                              |> should equal "Yan"
-        req.Limit                                       |> should equal 0
         req.RangeKeyCondition.ComparisonOperator        |> should equal "BETWEEN"
         req.RangeKeyCondition.AttributeValueList.Count  |> should equal 2
         req.RangeKeyCondition.AttributeValueList.[0].N  |> should equal "5"
@@ -115,7 +109,6 @@ type ``Given a V1 DynamoQuery`` () =
 
         req.TableName                                   |> should equal "Employees"
         req.HashKeyValue.S                              |> should equal "Yan"
-        req.Limit                                       |> should equal 0 
         req.RangeKeyCondition.ComparisonOperator        |> should equal "BETWEEN"
         req.RangeKeyCondition.AttributeValueList.Count  |> should equal 2
         req.RangeKeyCondition.AttributeValueList.[0].N  |> should equal "5"
