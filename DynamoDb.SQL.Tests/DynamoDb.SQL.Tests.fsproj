@@ -42,16 +42,20 @@
   <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="(!Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets')) And (!Exists('$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets')) And (Exists('$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets'))" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <ItemGroup>
-    <Compile Include="parserTests.fs" />
+    <Compile Include="astTests.fs" />
+    <Compile Include="parserV1Tests.fs" />
+    <Compile Include="parserV2Tests.fs" />
     <Compile Include="execCoreTests.fs" />
-    <Compile Include="execLowLevelTests.fs" />
-    <Compile Include="execCxtTests.fs" />
+    <Compile Include="execLowLevelV1Tests.fs" />
+    <Compile Include="execLowLevelV2Tests.fs" />
+    <Compile Include="execCxtV1Tests.fs" />
+    <Compile Include="execCxtV2Tests.fs" />
     <None Include="packages.config" />
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="AWSSDK">
-      <HintPath>..\packages\AWSSDK.1.5.16.1\lib\AWSSDK.dll</HintPath>
+      <HintPath>..\packages\AWSSDK.1.5.19.0\lib\AWSSDK.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="FsUnit.NUnit">
