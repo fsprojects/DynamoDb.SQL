@@ -18,8 +18,8 @@
     I WILL NOT BE LIABLE FOR ANY AWS COSTS YOU INCUR WHILE RUNNING THESE EXAMPLES.
 *)
 
-#r @"bin\Debug\AWSSDK.dll"
-#r @"bin\Debug\DynamoDb.SQL.dll"
+#r @"bin\Release\AWSSDK.dll"
+#r @"bin\Release\DynamoDb.SQL.dll"
 
 #load "Common.fs"
 open Common
@@ -341,3 +341,14 @@ module ScanExamples =
                    "Replies should have some items"
         assertThat (replies |> Seq.forall (fun reply -> reply.PostedBy.StartsWith "J"))
                    "Reply.PostedBy should all start with \"J\""
+
+QueryExamples.queryByHashKey()
+QueryExamples.queryByHashAndRangeKey()
+QueryExamples.queryWithOrderByAndLimit()
+QueryExamples.queryWithNoConsistentRead()
+QueryExamples.throttlingWithQueryPageSize()
+QueryExamples.selectSpecificAttributes()
+
+ScanExamples.basicScan()
+ScanExamples.scanWithLimit()
+ScanExamples.throttlingWithScanPageSize()

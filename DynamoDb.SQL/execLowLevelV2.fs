@@ -49,7 +49,7 @@ module LowLevel =
                | _          -> ()
 
                req.ConsistentRead <- isConsistentRead opts
-               req.ReturnConsumedCapacity <- match returnConsumedCapacity opts with 
+               req.ReturnConsumedCapacity <- match returnQueryConsumedCapacity opts with 
                                              | true -> "TOTAL"
                                              | _    -> "NONE"
                req.Limit <- match tryGetQueryPageSize opts with 
@@ -80,8 +80,11 @@ module LowLevel =
                     req.ScanFilter <- new Dictionary<string, Condition>(dict scanFilters)
                | _ -> ()
 
+               req.ReturnConsumedCapacity <- match returnScanConsumedCapacity opts with 
+                                             | true -> "TOTAL"
+                                             | _    -> "NONE"
                match tryGetScanPageSize opts with | Some n -> req.Limit <- n | _ -> ()
-               
+
                req
 
     /// Merges a QueryResponse into an aggregate QueryResponse
@@ -90,7 +93,14 @@ module LowLevel =
         | Some aggr ->
             aggr.QueryResult.Items.AddRange(res.QueryResult.Items)
             aggr.QueryResult.Count                          <- aggr.QueryResult.Count + res.QueryResult.Count
-            aggr.QueryResult.ConsumedCapacity.CapacityUnits <- aggr.QueryResult.ConsumedCapacity.CapacityUnits + res.QueryResult.ConsumedCapacity.CapacityUnits
+
+            // in the V2 API, we MIGHT NOT get any consumed capacity back if the NoReturnedCapacity 
+            // query option is specified, so need to handle that case
+            match aggr.QueryResult.ConsumedCapacity, res.QueryResult.ConsumedCapacity with
+            | null, null | _, null -> ()
+            | null, x -> aggr.QueryResult.ConsumedCapacity  <- x
+            | x, y    -> x.CapacityUnits                    <- x.CapacityUnits + y.CapacityUnits
+
             aggr.QueryResult.LastEvaluatedKey               <- res.QueryResult.LastEvaluatedKey
             aggr.ResponseMetadata                           <- res.ResponseMetadata
             aggr
@@ -112,7 +122,13 @@ module LowLevel =
         let newCount = min maxResults res.ScanResult.Count
         aggr.ScanResult.Count                           <- aggr.ScanResult.Count + newCount
 
-        aggr.ScanResult.ConsumedCapacity.CapacityUnits  <- aggr.ScanResult.ConsumedCapacity.CapacityUnits + res.ScanResult.ConsumedCapacity.CapacityUnits
+        // in the V2 API, we MIGHT NOT get any consumed capacity back if the NoReturnedCapacity 
+        // query option is specified, so need to handle that case
+        match aggr.ScanResult.ConsumedCapacity, res.ScanResult.ConsumedCapacity with
+        | null, null | _, null -> ()
+        | null, x -> aggr.ScanResult.ConsumedCapacity   <- x
+        | x, y    -> x.CapacityUnits                    <- x.CapacityUnits + y.CapacityUnits
+
         aggr.ScanResult.ScannedCount                    <- aggr.ScanResult.ScannedCount + res.ScanResult.ScannedCount
         aggr.ScanResult.LastEvaluatedKey                <- res.ScanResult.LastEvaluatedKey
         aggr.ResponseMetadata                           <- res.ResponseMetadata

@@ -34,13 +34,16 @@ module internal Core =
     val isConsistentRead        : QueryOption[] option -> bool
 
     /// Returns whether consumed capacity count is not returned
-    val returnConsumedCapacity  : QueryOption[] option -> bool
+    val returnQueryConsumedCapacity : QueryOption[] option -> bool
 
     /// Try to get the page size option from the specified query options
     val tryGetQueryPageSize     : QueryOption[] option -> int option
 
     /// Try to get the local secondary index name and whether to use all attributes
     val tryGetQueryIndex        : QueryOption[] option -> (string * bool) option
+        
+    /// Returns whether consumed capacity count is not returned
+    val returnScanConsumedCapacity  : ScanOption[] option -> bool
 
     /// Try to get the page size option from the specified scan options
     val tryGetScanPageSize      : ScanOption[] option -> int option
