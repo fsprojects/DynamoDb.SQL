@@ -25,6 +25,10 @@ The extension methods defined in this library are written in a way that makes th
 
 For more details on using this library, please refer to the [**Wiki**](https://github.com/theburningmonk/DynamoDb.SQL/wiki).
 
+### Local Secondary Index support
+
+Support for LSI is available from version 1.2.1. For more details, please read [this post](http://theburningmonk.com/2013/05/dynamodb-sql-1-2-1-now-supports-local-secondary-index/).
+
 ### Nuget
 
 Download and install **DynamoDb.SQL** using [NuGet](https://nuget.org/packages/DynamoDb.SQL).
