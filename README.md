@@ -23,7 +23,11 @@ A copy of the Simplified BSD license that FParsec is distributed under is includ
 
 The extension methods defined in this library are written in a way that makes them usable from your C# code too! In practice, you just need to reference the `DynamoDb.SQL.dll` dll in your project and open the `DynamoDb.SQL.Execution` namespace and you'll have access to the extension methods on the `AmazonDynamoDBClient` and `DynamoDBContext` classes.
 
-For more details on using this library, please refer to the [**Getting Started**](https://github.com/theburningmonk/DynamoDb.SQL/wiki/Getting-Started) wiki page.
+For more details on using this library, please refer to the [**Wiki**](https://github.com/theburningmonk/DynamoDb.SQL/wiki).
+
+### Local Secondary Index support
+
+Support for LSI is available from version 1.2.1. For more details, please read [this post](http://theburningmonk.com/2013/05/dynamodb-sql-1-2-1-now-supports-local-secondary-index/).
 
 ### Nuget
 
