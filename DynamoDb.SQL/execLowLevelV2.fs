@@ -58,7 +58,23 @@ module LowLevel =
 
                req
 
-    let (|GetScanReq|) (scan : DynamoScan) = 
+    type ScanRequest with
+        member this.SplitIntoSegments () =
+            let makeSegment n =
+                new ScanRequest(TableName               = this.TableName, 
+                                AttributesToGet         = this.AttributesToGet,
+                                Select                  = this.Select,
+                                ScanFilter              = this.ScanFilter,
+                                ReturnConsumedCapacity  = this.ReturnConsumedCapacity,
+                                Limit                   = this.Limit,
+                                TotalSegments           = this.TotalSegments,
+                                Segment                 = n)
+
+            [| 1..this.TotalSegments |] |> Array.map (fun n -> makeSegment n)
+
+    let (|GetScanReqs|) (scan : DynamoScan) = 
+        let getReq table attributes select scanFilter returnConsumedCapacity = ()
+
         match scan with
         | { From    = From table
             Where   = where
@@ -84,8 +100,9 @@ module LowLevel =
                                              | true -> "TOTAL"
                                              | _    -> "NONE"
                match tryGetScanPageSize opts with | Some n -> req.Limit <- n | _ -> ()
+               req.TotalSegments <- getScanSegments opts
 
-               req
+               req.SplitIntoSegments()
 
     /// Merges a QueryResponse into an aggregate QueryResponse
     let mergeQueryResponses (res : QueryResponse) (aggrRes : QueryResponse option) = 
@@ -107,9 +124,7 @@ module LowLevel =
         | _ -> res
         
     /// Merges a ScanResponse into an aggregate ScanResponse
-    let mergeScanResponses (res : ScanResponse) maxResults (aggrRes : ScanResponse option) = 
-        let aggr = defaultArg aggrRes (new ScanResponse())
-
+    let mergeScanResponses maxResults (aggrRes : ScanResponse) (res : ScanResponse) = 
         match res.ScanResult.Items with
         | null -> ()
         | lst  -> 
@@ -117,22 +132,22 @@ module LowLevel =
             // IEnumerable.Take is used here instead of Seq.take because Seq.take excepts
             // when there are insufficient number of items which is not desirable here
             let newItems = lst.Take maxResults |> Seq.toArray
-            aggr.ScanResult.Items.AddRange(newItems)
+            aggrRes.ScanResult.Items.AddRange(newItems)
 
         let newCount = min maxResults res.ScanResult.Count
-        aggr.ScanResult.Count                           <- aggr.ScanResult.Count + newCount
+        aggrRes.ScanResult.Count                            <- aggrRes.ScanResult.Count + newCount
 
         // in the V2 API, we MIGHT NOT get any consumed capacity back if the NoReturnedCapacity 
         // query option is specified, so need to handle that case
-        match aggr.ScanResult.ConsumedCapacity, res.ScanResult.ConsumedCapacity with
+        match aggrRes.ScanResult.ConsumedCapacity, res.ScanResult.ConsumedCapacity with
         | null, null | _, null -> ()
-        | null, x -> aggr.ScanResult.ConsumedCapacity   <- x
-        | x, y    -> x.CapacityUnits                    <- x.CapacityUnits + y.CapacityUnits
+        | null, x -> aggrRes.ScanResult.ConsumedCapacity    <- x
+        | x, y    -> x.CapacityUnits                        <- x.CapacityUnits + y.CapacityUnits
 
-        aggr.ScanResult.ScannedCount                    <- aggr.ScanResult.ScannedCount + res.ScanResult.ScannedCount
-        aggr.ScanResult.LastEvaluatedKey                <- res.ScanResult.LastEvaluatedKey
-        aggr.ResponseMetadata                           <- res.ResponseMetadata
-        aggr
+        aggrRes.ScanResult.ScannedCount                    <- aggrRes.ScanResult.ScannedCount + res.ScanResult.ScannedCount
+        aggrRes.ScanResult.LastEvaluatedKey                <- res.ScanResult.LastEvaluatedKey
+        aggrRes.ResponseMetadata                           <- res.ResponseMetadata
+        aggrRes
 
     /// Recursively make query requests and merge results into an aggregate response
     let rec queryLoop (client : AmazonDynamoDBClient) maxResults (req : QueryRequest) (aggrRes : QueryResponse option) =
@@ -161,13 +176,15 @@ module LowLevel =
     /// For more details, please refer to the official API doc:
     /// http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/API_Query.html
     /// http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/API_Scan.html
-    let rec scanLoop (client : AmazonDynamoDBClient) maxResults (req : ScanRequest) (aggrRes : ScanResponse option) =
+    let rec scanLoop (client : AmazonDynamoDBClient) maxResults (aggrRes : ScanResponse option) (req : ScanRequest) =
         async {
             // don't set the limit using the maxResults for a scan, because unlike a query, limit is the max number of
             // items scanned rather than max number of items to return
             let! res = client.ScanAsync req
 
-            let aggrRes = mergeScanResponses res maxResults aggrRes
+            let aggrRes = match aggrRes with 
+                          | Some aggrRes -> mergeScanResponses maxResults aggrRes res
+                          | _            -> res
 
             match res.ScanResult.LastEvaluatedKey with
             | null -> return aggrRes
@@ -175,7 +192,7 @@ module LowLevel =
             | _ when res.ScanResult.Count >= maxResults
                    -> return aggrRes
             | key  -> req.ExclusiveStartKey <- key
-                      return! scanLoop client (maxResults - res.ScanResult.Count) req (Some aggrRes)
+                      return! scanLoop client (maxResults - res.ScanResult.Count) (Some aggrRes) req 
         }
 
 [<AutoOpen>]
@@ -194,15 +211,18 @@ module ClientExt =
         member this.Query (query : string) = this.QueryAsync(query) |> Async.RunSynchronously
 
         member this.ScanAsync (query : string) =
-            let dynamoScan = parseDynamoScanV2 query
+            let dynamoScan  = parseDynamoScanV2 query
+            let maxResults  = match dynamoScan.Limit with | Some(Limit n) -> n | _ -> Int32.MaxValue
     
-            match dynamoScan with
-            | { Limit = Some(Limit n) } & GetScanReq req
-                -> scanLoop this n req None
-            | GetScanReq req 
-                -> scanLoop this Int32.MaxValue req None
-            | _ -> raise <| InvalidScan (sprintf "Not a valid scan request : %s" query)
-
+            let scanReqs    = match dynamoScan with 
+                              | GetScanReqs reqs -> reqs 
+                              | _ -> raise <| InvalidScan (sprintf "Not a valid scan request : %s" query)
+            
+            async {
+                let! scanResponses = scanReqs |> Array.map (scanLoop this maxResults None) |> Async.Parallel
+                return scanResponses |> Array.reduce (mergeScanResponses maxResults)
+            }
+            
         member this.Scan (query : string) = this.ScanAsync(query) |> Async.RunSynchronously
 
 [<Extension>]

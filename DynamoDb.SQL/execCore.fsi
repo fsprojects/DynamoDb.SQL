@@ -47,3 +47,6 @@ module internal Core =
 
     /// Try to get the page size option from the specified scan options
     val tryGetScanPageSize      : ScanOption[] option -> int option
+
+    /// Get the page size option from the specified scan options, default is 1
+    val getScanSegments         : ScanOption[] option -> int

@@ -495,7 +495,7 @@ module V1Tests =
 
         [<Test>]
         member this.``when PageSize option is specified it should be parsed correctly`` () =
-            let select = "SELECT * FROM Employees WITH (Pagesize(  10) )"
+            let select = "SELECT * FROM Employees WITH (Pagesize( 10 ) )"
         
             let scan = parseDynamoScanV1 select
 
