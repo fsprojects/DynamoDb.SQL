@@ -209,6 +209,16 @@ type ``Given a V2 DynamoScan`` () =
         req.Limit       |> should equal 5
 
     [<Test>]
+    member this.``when the ScanSegments option is specified to be 15 then the number of requests should be 15`` () =
+        let (GetScanReqs reqs) = parseDynamoScanV2 "SELECT * FROM Employees WITH ( SEGMENTS ( 15 ) )"
+
+        reqs.Length                 |> should equal 15
+
+        for n = 0 to 14 do
+            reqs.[n].Segment        |> should equal (n + 1)
+            reqs.[n].TotalSegments  |> should equal 15
+        
+    [<Test>]
     member this.``when the scan is a Count scan then Select should be set to 'COUNT'`` () =
         let (GetScanReqs reqs) = parseDynamoScanV2 "COUNT * FROM Employees"
 

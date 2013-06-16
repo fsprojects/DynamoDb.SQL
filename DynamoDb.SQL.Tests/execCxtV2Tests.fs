@@ -178,6 +178,15 @@ type ``Given a V2 DynamoScan`` () =
         config.Filter.ToConditions().["Title"].AttributeValueList.[1].S     |> should equal "Developer"
     
     [<Test>]
+    member this.``when a segments option (15) is specified then number of configs should be 15`` () =
+        let (GetScanConfigs configs) = parseDynamoScanV2 "SELECT * FROM Employees WITH ( SEGMENTS ( 15 ) )"
+
+        configs.Length                  |> should equal 15        
+        for n = 0 to 14 do
+            configs.[n].Segment         |> should equal (n + 1)
+            configs.[n].TotalSegments   |> should equal 15
+
+    [<Test>]
     [<ExpectedException(typeof<NotSupportedException>)>]
     member this.``when the action is Count then it should except with NotSupportedException`` () =
         let scan = parseDynamoScanV2 "COUNT * FROM Employees with (pagesize(100))"
