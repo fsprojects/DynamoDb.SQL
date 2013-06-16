@@ -14,11 +14,12 @@ open Amazon.DynamoDBv2.Model
 
 [<AutoOpen>]
 module internal LowLevel =
-    /// Active pattern for getting the query request object out of a DynamoQuery
+    /// Active pattern for getting the query request object out of a DynamoQuery value
     val (|GetQueryReq|) : DynamoQuery -> QueryRequest
 
-    /// Active pattern for getting the scan request object out of a DynamoScan
-    val (|GetScanReq|)  : DynamoScan  -> ScanRequest
+    /// Active pattern for getting the scan request objects (one for each segment) out of 
+    /// a DynamoScan value
+    val (|GetScanReqs|) : DynamoScan  -> ScanRequest[]
 
 /// Extension methods for the low level DynamoDB client to be used in F#
 [<AutoOpen>]

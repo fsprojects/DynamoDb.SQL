@@ -78,7 +78,8 @@ module internal Ast =
         | QueryNoReturnedCapacity
 
     type ScanOption =
-        | ScanPageSize        of int
+        | ScanPageSize          of int
+        | ScanSegments          of int
         | ScanNoReturnedCapacity
 
     type DynamoQuery =
