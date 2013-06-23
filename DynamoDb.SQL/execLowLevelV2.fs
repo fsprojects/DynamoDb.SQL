@@ -70,7 +70,7 @@ module LowLevel =
                                 TotalSegments           = this.TotalSegments,
                                 Segment                 = n)
 
-            [| 1..this.TotalSegments |] |> Array.map (fun n -> makeSegment n)
+            [| 0..this.TotalSegments - 1 |] |> Array.map (fun n -> makeSegment n)
 
     let (|GetScanReqs|) (scan : DynamoScan) = 
         let getReq table attributes select scanFilter returnConsumedCapacity = ()
@@ -99,7 +99,9 @@ module LowLevel =
                req.ReturnConsumedCapacity <- match returnScanConsumedCapacity opts with 
                                              | true -> "TOTAL"
                                              | _    -> "NONE"
-               match tryGetScanPageSize opts with | Some n -> req.Limit <- n | _ -> ()
+               req.Limit <- match tryGetScanPageSize opts with 
+                            | Some n -> n 
+                            | _ -> Int32.MaxValue
                req.TotalSegments <- getScanSegments opts
 
                req.SplitIntoSegments()
@@ -184,7 +186,7 @@ module LowLevel =
 
             let aggrRes = match aggrRes with 
                           | Some aggrRes -> mergeScanResponses maxResults aggrRes res
-                          | _            -> res
+                          | _            -> mergeScanResponses maxResults (new ScanResponse()) res
 
             match res.ScanResult.LastEvaluatedKey with
             | null -> return aggrRes
@@ -220,7 +222,7 @@ module ClientExt =
             
             async {
                 let! scanResponses = scanReqs |> Array.map (scanLoop this maxResults None) |> Async.Parallel
-                return scanResponses |> Array.reduce (mergeScanResponses maxResults)
+                return scanResponses |> Seq.reduce (mergeScanResponses maxResults)
             }
             
         member this.Scan (query : string) = this.ScanAsync(query) |> Async.RunSynchronously

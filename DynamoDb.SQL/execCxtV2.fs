@@ -62,7 +62,7 @@ module Cxt =
                                         TotalSegments           = this.TotalSegments,
                                         Segment                 = n)
 
-            [| 1..this.TotalSegments |] |> Array.map (fun n -> makeSegment n)
+            [| 0..this.TotalSegments - 1 |] |> Array.map (fun n -> makeSegment n)
 
     let (|GetScanConfigs|) (scan : DynamoScan) =
         match scan with
@@ -109,14 +109,20 @@ module ContextExt =
             let scanConfigs = match dynamoScan with 
                               | GetScanConfigs configs -> configs
                               | _ -> raise <| InvalidScan (sprintf "Not a valid scan operation : %s" query)
-            let scanResults = scanConfigs |> Seq.collect this.FromScan
                         
+            let results =
+                scanConfigs 
+                |> Seq.map (fun config -> async { return (this.FromScan config).Take maxResults })
+                |> Async.Parallel
+                |> Async.RunSynchronously
+                |> Seq.collect id
+
             // NOTE: the reason the Enumerable.Take is needed here is that the limit set in the 
             // Scan operation limit is 'per page', and DynamoDBContext lazy-loads all results
             // see https://forums.aws.amazon.com/thread.jspa?messageID=375136&#375136.
             // Additionally, Seq.take excepts when there are insufficient number of elements, but
             // Enumerable.Take (from LINQ) does not and is the desired behaviour here.
-            scanResults.Take maxResults
+            results.Take maxResults
 
 [<Extension>]
 [<AbstractClass>]
