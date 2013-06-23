@@ -5,6 +5,7 @@
 
 module DynamoDbV2.SQL.Execution.LowLevel.Tests
 
+open System
 open FsUnit
 open NUnit.Framework
 open DynamoDb.SQL
@@ -148,32 +149,40 @@ type ``Given a V2 DynamoQuery`` () =
 type ``Given a V2 DynamoScan`` () =
     [<Test>]
     member this.``when there is no where clause it should return a ScanRequest with empty ScanFilter`` () =
-        let (GetScanReq req) = parseDynamoScanV2 "SELECT * FROM Employees"
-               
-        req.TableName                                            |> should equal "Employees"
-        req.Limit                                                |> should equal 0
-        req.AttributesToGet                                      |> should equal null
-        req.ScanFilter.Count                                     |> should equal 0
+        let (GetScanReqs reqs) = parseDynamoScanV2 "SELECT * FROM Employees"
+              
+        reqs.Length          |> should equal 1
+        let req = reqs.[0]
+        req.TableName        |> should equal "Employees"
+        req.Limit            |> should equal Int32.MaxValue
+        req.AttributesToGet  |> should equal null
+        req.ScanFilter.Count |> should equal 0
 
     [<Test>]
     member this.``when asterisk is used then Select should default to 'ALL_ATTRIBUTES'`` () =
-        let (GetScanReq req) = parseDynamoScanV2 "SELECT * FROM Employees"
+        let (GetScanReqs reqs) = parseDynamoScanV2 "SELECT * FROM Employees"
 
-        req.TableName                                            |> should equal "Employees"
-        req.Select                                               |> should equal "ALL_ATTRIBUTES"
+        reqs.Length     |> should equal 1
+        let req = reqs.[0]
+        req.TableName   |> should equal "Employees"
+        req.Select      |> should equal "ALL_ATTRIBUTES"
 
     [<Test>]
     member this.``when a number of attributes were specified in the SELECT clause then they should be captured in AttributesToGet and Select should be set to 'SPECIFIC_ATTRIBUTES'`` () =
-        let (GetScanReq req) = parseDynamoScanV2 "SELECT FirstName, LastName, Age FROM Employees"
+        let (GetScanReqs reqs) = parseDynamoScanV2 "SELECT FirstName, LastName, Age FROM Employees"
 
-        req.TableName                                            |> should equal "Employees"
-        req.Select                                               |> should equal "SPECIFIC_ATTRIBUTES"
+        reqs.Length     |> should equal 1
+        let req = reqs.[0]
+        req.TableName   |> should equal "Employees"
+        req.Select      |> should equal "SPECIFIC_ATTRIBUTES"
 
     [<Test>]
     member this.``when filter conditions are specified they should all be captured in ScanFilter`` () =
-        let (GetScanReq req) = parseDynamoScanV2 "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND Age BETWEEN 30 AND 40 And LastName BEGINS WITH \"C\""
+        let (GetScanReqs reqs) = parseDynamoScanV2 "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND Age BETWEEN 30 AND 40 And LastName BEGINS WITH \"C\""
 
-        req.TableName                                               |> should equal "Employees"
+        reqs.Length                                              |> should equal 1
+        let req = reqs.[0]
+        req.TableName                                            |> should equal "Employees"
         req.ScanFilter.Count                                     |> should equal 3
 
         req.ScanFilter.ContainsKey("FirstName")                  |> should equal true
@@ -193,14 +202,28 @@ type ``Given a V2 DynamoScan`` () =
 
     [<Test>]
     member this.``when the ScanPageSize option is specified to be 5 then Limit should be set to 5`` () =
-        let (GetScanReq req) = parseDynamoScanV2 "SELECT * FROM Employees WITH (PageSize(5))"
+        let (GetScanReqs reqs) = parseDynamoScanV2 "SELECT * FROM Employees WITH (PageSize(5))"
 
+        reqs.Length     |> should equal 1
+        let req = reqs.[0]
         req.TableName   |> should equal "Employees"
         req.Limit       |> should equal 5
 
     [<Test>]
-    member this.``when the scan is a Count scan then Select should be set to 'COUNT'`` () =
-        let (GetScanReq req) = parseDynamoScanV2 "COUNT * FROM Employees"
+    member this.``when the ScanSegments option is specified to be 15 then the number of requests should be 15`` () =
+        let (GetScanReqs reqs) = parseDynamoScanV2 "SELECT * FROM Employees WITH ( SEGMENTS ( 15 ) )"
 
+        reqs.Length                 |> should equal 15
+
+        for n = 0 to 14 do
+            reqs.[n].Segment        |> should equal n
+            reqs.[n].TotalSegments  |> should equal 15
+        
+    [<Test>]
+    member this.``when the scan is a Count scan then Select should be set to 'COUNT'`` () =
+        let (GetScanReqs reqs) = parseDynamoScanV2 "COUNT * FROM Employees"
+
+        reqs.Length     |> should equal 1
+        let req = reqs.[0]
         req.TableName   |> should equal "Employees"
         req.Select      |> should equal "COUNT"

@@ -120,30 +120,38 @@ type ``Given a V2 DynamoQuery`` () =
 type ``Given a V2 DynamoScan`` () =
     [<Test>]
     member this.``when there is no where clause Filter.ToConditions() should be empty`` () =
-        let (GetScanConfig config) = parseDynamoScanV2 "SELECT * FROM Employees"
+        let (GetScanConfigs configs) = parseDynamoScanV2 "SELECT * FROM Employees"
 
+        configs.Length                      |> should equal 1
+        let config = configs.[0]
         config.AttributesToGet              |> should equal null
         config.Filter.ToConditions().Count  |> should equal 0
 
     [<Test>]
     member this.``when a number of attributes are specified then AttributesToGet should contain those attribute names`` () =
-        let (GetScanConfig config) = parseDynamoScanV2 "SELECT FirstName, LastName, Age FROM Employees"
+        let (GetScanConfigs configs) = parseDynamoScanV2 "SELECT FirstName, LastName, Age FROM Employees"
 
+        configs.Length                      |> should equal 1
+        let config = configs.[0]
         config.AttributesToGet.Count        |> should equal 3
         config.AttributesToGet.ToArray()    |> should equal [| "FirstName"; "LastName"; "Age" |]
 
     [<Test>]
     member this.``when a page size option (100) is specified then Limit should be set to 100`` () =
-        let (GetScanConfig config) = parseDynamoScanV2 "SELECT * FROM Employees with (pagesize(100))"
+        let (GetScanConfigs configs) = parseDynamoScanV2 "SELECT * FROM Employees with (pagesize(100))"
 
+        configs.Length                      |> should equal 1
+        let config = configs.[0]
         config.AttributesToGet              |> should equal null
         config.Limit                        |> should equal 100
         config.Filter.ToConditions().Count  |> should equal 0
 
     [<Test>]
     member this.``when there are filter conditions then they should be captured in the Filter`` () =
-        let (GetScanConfig config) = parseDynamoScanV2 "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND LastName != \"Cui\" AND Age BETWEEN 30 AND 40 AND Title IN (\"Dev\", \"Developer\")"
+        let (GetScanConfigs configs) = parseDynamoScanV2 "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND LastName != \"Cui\" AND Age BETWEEN 30 AND 40 AND Title IN (\"Dev\", \"Developer\")"
 
+        configs.Length                      |> should equal 1
+        let config = configs.[0]
         config.AttributesToGet |> should equal null
         config.Filter.ToConditions().Count |> should equal 4
 
@@ -170,10 +178,19 @@ type ``Given a V2 DynamoScan`` () =
         config.Filter.ToConditions().["Title"].AttributeValueList.[1].S     |> should equal "Developer"
     
     [<Test>]
+    member this.``when a segments option (15) is specified then number of configs should be 15`` () =
+        let (GetScanConfigs configs) = parseDynamoScanV2 "SELECT * FROM Employees WITH ( SEGMENTS ( 15 ) )"
+
+        configs.Length                  |> should equal 15        
+        for n = 0 to 14 do
+            configs.[n].Segment         |> should equal n
+            configs.[n].TotalSegments   |> should equal 15
+
+    [<Test>]
     [<ExpectedException(typeof<NotSupportedException>)>]
     member this.``when the action is Count then it should except with NotSupportedException`` () =
         let scan = parseDynamoScanV2 "COUNT * FROM Employees with (pagesize(100))"
 
         match scan with
-        | GetScanConfig _ -> ()
+        | GetScanConfigs _ -> ()
         |> should throw typeof<NotSupportedException>

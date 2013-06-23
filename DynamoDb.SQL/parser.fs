@@ -27,8 +27,8 @@ module Common =
     let skipStringCI_ws s       = skipStringCI s .>> ws
     let stringReturn_ws s r     = stringReturn s r .>> ws
     let stringCIReturn_ws s r   = stringCIReturn s r .>> ws
-    let pfloat_ws               = pfloat
-    let pint32_ws               = pint32
+    let pfloat_ws               = pfloat .>> ws
+    let pint32_ws               = pint32 .>> ws
 
     open FParsec.Internals
 
@@ -266,9 +266,10 @@ module Parser =
         let pwhere = ws >>. skipStringCI_ws "where" >>. (filterConditions |>> Where) .>> ws
 
         let scanPageSize        = skipStringCI_ws "pagesize" >>. openParentheses >>. pint32_ws .>> closeParentheses |>> ScanPageSize
+        let scanSegments        = skipStringCI_ws "segments" >>. openParentheses >>. pint32_ws .>> closeParentheses |>> ScanSegments
         let noReturnedCapacity  = stringCIReturn_ws "NoReturnedCapacity" ScanNoReturnedCapacity
 
-        let scanOption          = choice [ scanPageSize; noReturnedCapacity ]
+        let scanOption          = choice [ scanPageSize; scanSegments; noReturnedCapacity ]
         let scanOptions         = sepBy1 scanOption comma |>> List.toArray
 
         let pwith = ws >>. skipStringCI_ws "with" >>. openParentheses >>. scanOptions .>> closeParentheses
