@@ -183,7 +183,7 @@ type ``Given a V2 DynamoScan`` () =
 
         configs.Length                  |> should equal 15        
         for n = 0 to 14 do
-            configs.[n].Segment         |> should equal (n + 1)
+            configs.[n].Segment         |> should equal n
             configs.[n].TotalSegments   |> should equal 15
 
     [<Test>]

@@ -6,6 +6,7 @@
 module Common
 
 open System
+open System.Diagnostics
 open Amazon.DynamoDB
 open Amazon.DynamoDB.DataModel
 open Amazon.DynamoDBv2
@@ -124,3 +125,10 @@ let seedData () =
 
 let assertThat conditionMet errorMsg =
     if not conditionMet then failwithf "%s" errorMsg
+
+let time f =
+    let stopwatch = new Stopwatch()
+    stopwatch.Start()
+    f()
+    stopwatch.Stop()
+    printfn "Execution took %A" stopwatch.Elapsed

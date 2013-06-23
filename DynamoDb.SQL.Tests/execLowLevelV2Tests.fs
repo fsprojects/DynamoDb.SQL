@@ -5,6 +5,7 @@
 
 module DynamoDbV2.SQL.Execution.LowLevel.Tests
 
+open System
 open FsUnit
 open NUnit.Framework
 open DynamoDb.SQL
@@ -153,7 +154,7 @@ type ``Given a V2 DynamoScan`` () =
         reqs.Length          |> should equal 1
         let req = reqs.[0]
         req.TableName        |> should equal "Employees"
-        req.Limit            |> should equal 0
+        req.Limit            |> should equal Int32.MaxValue
         req.AttributesToGet  |> should equal null
         req.ScanFilter.Count |> should equal 0
 
@@ -215,7 +216,7 @@ type ``Given a V2 DynamoScan`` () =
         reqs.Length                 |> should equal 15
 
         for n = 0 to 14 do
-            reqs.[n].Segment        |> should equal (n + 1)
+            reqs.[n].Segment        |> should equal n
             reqs.[n].TotalSegments  |> should equal 15
         
     [<Test>]
