@@ -318,7 +318,7 @@ module V2Tests =
     type ``Given a V2 scan`` () =
         [<Test>]
         member this.``when NoReturnedCapacity option is specified it should be captured in the Options clause`` () =
-            let select = "SELECT * FROM Employees WITH ( NoReturnedCapacity)"
+            let select = "SELECT * FROM Employees WITH ( NoReturnedCapacity )"
         
             let scan = parseDynamoScanV2 select
 
@@ -327,3 +327,15 @@ module V2Tests =
             scan.Where      |> should equal None
             scan.Limit      |> should equal None
             scan.Options    |> should equal <| Some [| ScanNoReturnedCapacity |]
+
+        [<Test>]
+        member this.``when ScanSegments option is specified it should be parsed correctly`` () =
+            let select = "SELECT * FROM Employees WITH (Segments( 15 ) )"
+        
+            let scan = parseDynamoScanV2 select
+
+            scan.Action     |> should equal <| Select [ Asterisk ]
+            scan.From       |> should equal <| From "Employees"
+            scan.Where      |> should equal <| None
+            scan.Limit      |> should equal <| None
+            scan.Options    |> should equal <| Some [| ScanSegments 15 |]

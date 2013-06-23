@@ -18,8 +18,8 @@
     I WILL NOT BE LIABLE FOR ANY AWS COSTS YOU INCUR WHILE RUNNING THESE EXAMPLES.
 *)
 
-#r @"bin\Release\AWSSDK.dll"
-#r @"bin\Release\DynamoDb.SQL.dll"
+#r @"bin\AWSSDK.dll"
+#r @"bin\DynamoDb.SQL.dll"
 
 #load "Common.fs"
 open Common
@@ -355,6 +355,8 @@ module ScanExamples =
         (* ---------------- query using AmazonDynamoDBClient ---------------- *)
         printfn "(AmazonDynamoDBClient) Running basic scan :\n\t\t%s" selectQuery
         let response = clientV2.Scan(selectQuery)
+        printfn "Found %d results" response.ScanResult.Count
+
         assertThat (response.ScanResult.Count > 0) 
                    "Response should have found some results"
         assertThat (response.ScanResult.Items.Count > 0)
@@ -365,6 +367,8 @@ module ScanExamples =
         (* ---------------- query using DynamoDBContext ---------------- *)
         printfn "(DynamoDBContext) Running basic scan :\n\t\t%s" selectQuery
         let replies  = cxtV2.ExecScan<Reply>(selectQuery) |> Seq.toArray
+        printfn "Found %d results" response.ScanResult.Count
+
         assertThat (replies.Length > 0) 
                    "Replies should have some items"
         assertThat (replies |> Seq.forall (fun reply -> reply.PostedBy.StartsWith "J"))
@@ -377,6 +381,8 @@ module ScanExamples =
 
         printfn "(AmazonDynamoDBClient) Running basic scan count :\n\t\t%s" countQuery
         let countResponse = clientV2.Scan(countQuery)
+        printfn "Found %d results" response.ScanResult.Count
+
         assertThat (countResponse.ScanResult.Count > 0)
                    "Count response should have found some results"
 
@@ -392,6 +398,8 @@ module ScanExamples =
         (* ---------------- query using AmazonDynamoDBClient ---------------- *)
         printfn "(AmazonDynamoDBClient) Running scan with LIMIT :\n\t\t%s" selectQuery
         let response = clientV2.Scan(selectQuery)
+        printfn "Found %d results" response.ScanResult.Count
+
         assertThat (response.ScanResult.Count = 10) 
                    (sprintf "Response has incorrect Count : %d %d" response.ScanResult.Count 10)
         assertThat (response.ScanResult.Items.Count > 0)
@@ -402,6 +410,8 @@ module ScanExamples =
         (* ---------------- query using DynamoDBContext ---------------- *)
         printfn "(DynamoDBContext) Running scan with LIMIT :\n\t\t%s" selectQuery
         let replies  = cxtV2.ExecScan<Reply>(selectQuery) |> Seq.toArray
+        printfn "Found %d results" response.ScanResult.Count
+
         assertThat (replies.Length = 10) 
                    (sprintf "Replies have incorrect length : %d %d" replies.Length 10)
         assertThat (replies |> Seq.forall (fun reply -> reply.PostedBy.StartsWith "J"))
@@ -415,6 +425,8 @@ module ScanExamples =
         
         printfn "(AmazonDynamoDBClient) Running scan count with LIMIT :\n\t\t%s" countQuery
         let countResponse = clientV2.Scan(countQuery)
+        printfn "Found %d results" response.ScanResult.Count
+
         assertThat (countResponse.ScanResult.Count = 10) 
                    (sprintf "Count response has incorrect Count : %d %d" countResponse.ScanResult.Count 10)
 
@@ -432,6 +444,8 @@ module ScanExamples =
         (* ---------------- query using AmazonDynamoDBClient ---------------- *)
         printfn "(AmazonDynamoDBClient) Running basic scan with PageSize :\n\t\t%s" selectQuery
         let response = clientV2.Scan(selectQuery)
+        printfn "Found %d results" response.ScanResult.Count
+
         assertThat (response.ScanResult.Count > 0) 
                    "Response should have found some results"
         assertThat (response.ScanResult.Items.Count > 0)
@@ -442,6 +456,41 @@ module ScanExamples =
         (* ---------------- query using DynamoDBContext ---------------- *)
         printfn "(DynamoDBContext) Running basic scan with PageSize :\n\t\t%s" selectQuery
         let replies  = cxtV2.ExecScan<Reply>(selectQuery) |> Seq.toArray
+        printfn "Found %d results" response.ScanResult.Count
+
+        assertThat (replies.Length > 0) 
+                   "Replies should have some items"
+        assertThat (replies |> Seq.forall (fun reply -> reply.PostedBy.StartsWith "J"))
+                   "Reply.PostedBy should all start with \"J\""
+    
+    /// You can use Scan segments to carry out scans in multiple segments simultaneously
+    let scanWithScanPageSizeAndSegments () =
+        // this scan should return the same results as the basic example, but 
+        //  - requires more requests
+        //  - less capacity consumed per request
+        //  - takes longer
+        let selectQuery = "SELECT * FROM Reply 
+                           WHERE Id >= 900 
+                           AND PostedBy BEGINS WITH \"J\"
+                           WITH (PageSize(20), Segments(2))"
+
+        (* ---------------- query using AmazonDynamoDBClient ---------------- *)
+        printfn "(AmazonDynamoDBClient) Running basic scan with PageSize :\n\t\t%s" selectQuery
+        let response = clientV2.Scan(selectQuery)
+        printfn "Found %d results" response.ScanResult.Count
+
+        assertThat (response.ScanResult.Count > 0) 
+                   "Response should have found some results"
+        assertThat (response.ScanResult.Items.Count > 0)
+                   "Response should have some items"
+        assertThat (response.ScanResult.Items |> Seq.forall (fun attrs -> attrs.["PostedBy"].S.StartsWith "J"))
+                   "PostedBy should all start with \"J\""
+
+        (* ---------------- query using DynamoDBContext ---------------- *)
+        printfn "(DynamoDBContext) Running basic scan with PageSize :\n\t\t%s" selectQuery
+        let replies  = cxtV2.ExecScan<Reply>(selectQuery) |> Seq.toArray
+        printfn "Found %d results" response.ScanResult.Count
+
         assertThat (replies.Length > 0) 
                    "Replies should have some items"
         assertThat (replies |> Seq.forall (fun reply -> reply.PostedBy.StartsWith "J"))
@@ -459,6 +508,8 @@ module ScanExamples =
         (* ---------------- query using AmazonDynamoDBClient ---------------- *)
         printfn "(AmazonDynamoDBClient) Running basic scan with NoReturnedCapacity :\n\t\t%s" selectQuery
         let response = clientV2.Scan(selectQuery)
+        printfn "Found %d results" response.ScanResult.Count
+
         assertThat (response.ScanResult.Count > 0) 
                    "Response should have found some results"
         assertThat (response.ScanResult.Items.Count > 0)
@@ -468,17 +519,18 @@ module ScanExamples =
         assertThat (response.ScanResult.ConsumedCapacity = null)
                    "ConsumedCapacity should not be returned"
 
-QueryExamples.queryByHashKey()
-QueryExamples.queryByHashAndRangeKey()
-QueryExamples.queryWithOrderByAndLimit()
-QueryExamples.queryWithNoConsistentRead()
-QueryExamples.throttlingWithQueryPageSize()
-QueryExamples.selectSpecificAttributes()
-QueryExamples.queryWithNoReturnedConsumedCapacity()
-QueryExamples.queryWithIndexAllAttributes()
-QueryExamples.queryWithIndexProjectedAttributes()
+time <| QueryExamples.queryByHashKey
+time <| QueryExamples.queryByHashAndRangeKey
+time <| QueryExamples.queryWithOrderByAndLimit
+time <| QueryExamples.queryWithNoConsistentRead
+time <| QueryExamples.throttlingWithQueryPageSize
+time <| QueryExamples.selectSpecificAttributes
+time <| QueryExamples.queryWithNoReturnedConsumedCapacity
+time <| QueryExamples.queryWithIndexAllAttributes
+time <| QueryExamples.queryWithIndexProjectedAttributes
 
-ScanExamples.basicScan()
-ScanExamples.scanWithLimit()
-ScanExamples.throttlingWithScanPageSize()
-ScanExamples.scanWithNoReturnedConsumedCapacity()
+time <| ScanExamples.basicScan
+time <| ScanExamples.scanWithLimit
+time <| ScanExamples.throttlingWithScanPageSize
+time <| ScanExamples.scanWithScanPageSizeAndSegments
+time <| ScanExamples.scanWithNoReturnedConsumedCapacity

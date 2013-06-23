@@ -238,12 +238,14 @@ module Ast =
 
     [<StructuredFormatDisplay("{StructuredFormatDisplay}")>]
     type ScanOption =
-        | ScanPageSize        of int
+        | ScanPageSize          of int
+        | ScanSegments          of int
         | ScanNoReturnedCapacity
         with
             override this.ToString () =
                 match this with
                 | ScanPageSize n            -> sprintf "PAGESIZE(%d)" n
+                | ScanSegments n            -> sprintf "SEGMENTS(%d)" n
                 | ScanNoReturnedCapacity    -> "NORETURNEDCAPACITY"
 
             member private this.StructuredFormatDisplay = this.ToString()

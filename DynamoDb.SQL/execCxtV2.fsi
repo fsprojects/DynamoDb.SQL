@@ -13,11 +13,12 @@ open Amazon.DynamoDBv2.DocumentModel
 
 [<AutoOpen>]
 module internal Cxt =
-    /// Active pattern for getting the query operation config out of a DynamoQuery
+    /// Active pattern for getting the query operation config out of a DynamoQuery value
     val (|GetQueryConfig|) : DynamoQuery -> QueryOperationConfig
     
-    /// Active pattern for getting the scan operation config out of a DynamoScan
-    val (|GetScanConfig|)  : DynamoScan  -> ScanOperationConfig
+    /// Active pattern for getting the scan operation configs (one for each segment)
+    /// out of a DynamoScan value
+    val (|GetScanConfigs|) : DynamoScan  -> ScanOperationConfig[]
 
 /// Extension methods for the DynamoDBContext class to be used in F#
 [<AutoOpen>]

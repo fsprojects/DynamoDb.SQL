@@ -58,7 +58,7 @@ module Core =
         match opts with
         | Some arr ->
             arr 
-            |> Array.exists (fun opt -> match opt with | NoConsistentRead -> true | _ -> false)
+            |> Array.exists (function | NoConsistentRead -> true | _ -> false)
             |> not
         | _ -> true
 
@@ -67,20 +67,20 @@ module Core =
         match opts with
         | Some arr -> 
             arr 
-            |> Array.exists (fun opt -> match opt with | QueryNoReturnedCapacity -> true | _ -> false)
+            |> Array.exists (function | QueryNoReturnedCapacity -> true | _ -> false)
             |> not
         | _ -> true
 
     /// Try to get the page size option from the specified query options
     let tryGetQueryPageSize (opts : QueryOption[] option) =
         match opts with
-        | Some arr -> arr |> Array.tryPick (fun opt -> match opt with | QueryPageSize n -> Some n | _ -> None)
+        | Some arr -> arr |> Array.tryPick (function | QueryPageSize n -> Some n | _ -> None)
         | _ -> None
 
     /// Try to get the local secondary index name and whether to use all attributes
     let tryGetQueryIndex (opts : QueryOption[] option) =
         match opts with
-        | Some arr -> arr |> Array.tryPick (fun opt -> match opt with | Index(name, allAttrs) -> Some(name, allAttrs) | _ -> None)
+        | Some arr -> arr |> Array.tryPick (function | Index(name, allAttrs) -> Some(name, allAttrs) | _ -> None)
         | _ -> None
     
     /// Returns whether consumed capacity count is not returned
@@ -88,12 +88,18 @@ module Core =
         match opts with
         | Some arr -> 
             arr 
-            |> Array.exists (fun opt -> match opt with | ScanNoReturnedCapacity -> true | _ -> false)
+            |> Array.exists (function | ScanNoReturnedCapacity -> true | _ -> false)
             |> not
         | _ -> true
 
     /// Try to get the page size option from the specified scan options
     let tryGetScanPageSize (opts : ScanOption[] option) =
         match opts with
-        | Some arr -> arr |> Array.tryPick (fun opt -> match opt with | ScanPageSize n -> Some n | _ -> None)
+        | Some arr -> arr |> Array.tryPick (function | ScanPageSize n -> Some n | _ -> None)
         | _ -> None
+
+    /// Get the scan segments option from the specified scan options, default is 1
+    let getScanSegments (opts : ScanOption[] option) =
+        match opts with
+        | Some arr -> arr |> Array.map (function | ScanSegments n -> n | _ -> 1) |> Array.max
+        | _ -> 1
