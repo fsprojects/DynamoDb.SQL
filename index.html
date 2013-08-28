@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Dynamodb.sql by theburningmonk</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Dynamodb.sql</h1>
+        <p>SQL-like external DSL for querying and scanning Amazon DynamoDB</p>
+
+        <p class="view"><a href="https://github.com/theburningmonk/DynamoDb.SQL">View the Project on GitHub <small>theburningmonk/DynamoDb.SQL</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/theburningmonk/DynamoDb.SQL/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/theburningmonk/DynamoDb.SQL/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/theburningmonk/DynamoDb.SQL">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <p>This library gives you the ability to execute <a href="http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/API_Query.html"><strong>query</strong></a> and <a href="http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/API_Scan.html"><strong>scan</strong></a> operations against <a href="http://aws.amazon.com/dynamodb/"><strong>Amazon DynamoDB</strong></a> using a <strong>SQL</strong>-like syntax by extending the existing functionalities of <code>AmazonDynamoDBClient</code> and <code>DynamoDBContext</code> classes found in the standard .Net AWS SDK.</p>
+
+<h3>
+<a name="syntax" class="anchor" href="#syntax"><span class="octicon octicon-link"></span></a>Syntax</h3>
+
+<p>A <strong>Query</strong> request is <em>only permitted</em> if your table defines both a hash and a range key. A <code>Query</code> allows you to specify the hash key value and optionally specify at most one comparison against the range key value, if no range key comparison is specified then all available range keys will be returned.</p>
+
+<p>The basic format of a <code>Query</code> can be expressed as:</p>
+
+<pre><code>SELECT AttributeName1, AttributeName2, ..., AttributeNameN
+FROM   TableName
+WHERE  HashKeyAttributeName = HashKeyValue
+AND    RangeKeyAttributeName operator RangeKeyValue(s)
+ORDER DESC
+LIMIT  N
+WITH   (NoConsistentRead, PageSize(n), NoReturnedCapacity, 
+        Index(IndexName, AllAttributesFlag))
+</code></pre>
+
+<p>A <strong>Scan</strong> request on the other hand is more permissive but also more expensive to run (both in terms of latency and read units consumed which translates directly to running cost). A 'Scan' allows you to filter on arbitrary fields in your data using a wide range of comparison operators.</p>
+
+<p>The basic format of a <code>Scan</code> can be expressed as:</p>
+
+<pre><code>SELECT AttributeName1, AttributeName2, ..., AttributeNameN
+FROM   TableName
+WHERE  AttributeName1 operator1 AttributeValue1
+AND    AttributeName2 operator2 AttributeValue2
+AND    ...
+AND    AttributeNameN operatorN AttributeValueN
+LIMIT  N
+WITH   (PageSize(n), NoReturnedCapacity, Segments(m))
+</code></pre>
+
+<p>For more details on the valid operators and explanation of the various <code>with</code> options for each type of request, please refer to the <a href="https://github.com/theburningmonk/DynamoDb.SQL/wiki/Getting-Started-V2"><strong>Getting Started</strong></a> guide.</p>
+
+<p>If all you want to find out is the number of matching items rather than the actual items themselves, then you can also use the <code>COUNT</code> keyword in place of <code>SELECT</code>.</p>
+
+<p>For instance, for a <a href="http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/QueryAndScan.html#Count">query count</a>:</p>
+
+<pre><code>COUNT  * 
+FROM   TableName
+WHERE  HashKeyAttributeName = HashKeyValue
+AND    RangeKeyAttributeName operator RangeKeyValue(s)
+LIMIT  N
+</code></pre>
+
+<p>or a <a href="http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/QueryAndScan.html#Count">scan count</a>:</p>
+
+<pre><code>COUNT  * 
+FROM   TableName
+WHERE  AttributeName1 operator1 AttributeValue1
+AND    AttributeName2 operator2 AttributeValue2
+AND    ...
+AND    AttributeNameN operatorN AttributeValueN
+LIMIT  N
+</code></pre>
+
+<p>Please note that <code>DynamoDB</code> <strong>does not</strong> allow attribute names to be specified when performing a count operation, so a valid count query will <strong>always</strong> start with <code>COUNT * FROM ...</code>.</p>
+
+<h3>
+<a name="local-secondary-index-lsi" class="anchor" href="#local-secondary-index-lsi"><span class="octicon octicon-link"></span></a>Local Secondary Index (LSI)</h3>
+
+<p>Querying using LSI is supported using the <strong>Index</strong> query option, more details <a href="http://theburningmonk.com/2013/05/dynamodb-sql-1-2-1-now-supports-local-secondary-index/">here</a>.</p>
+
+<h3>
+<a name="parallel-scans" class="anchor" href="#parallel-scans"><span class="octicon octicon-link"></span></a>Parallel Scans</h3>
+
+<p>Scanning using parallel scans is supported using the <strong>Segments</strong> scan option, example <a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/master/ExampleFs/V2Examples.fsx#L466-L497">here</a>.</p>
+
+<h3>
+<a name="nuget" class="anchor" href="#nuget"><span class="octicon octicon-link"></span></a>Nuget</h3>
+
+<p>Download and install <strong>DynamoDb.SQL</strong> using <a href="https://nuget.org/packages/DynamoDb.SQL">NuGet</a>.</p>
+
+<p><a href="https://nuget.org/packages/DynamoDb.SQL"><img src="http://theburningmonk.com/images/dynamodb.sql-nuget-install.png" alt="NuGet package"></a></p>
+
+<p>You can view the release notes <a href="https://github.com/theburningmonk/DynamoDb.SQL/wiki/Release-Notes">here</a>.</p>
+
+<h3>
+<a name="keep-in-touch" class="anchor" href="#keep-in-touch"><span class="octicon octicon-link"></span></a>Keep in touch</h3>
+
+<p>Please follow the official twitter account <a href="https://twitter.com/DynamoDbSQL">@DynamoDbSQL</a> for updates, and feel free to send me any feedbacks or questions you have about the project :-)</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/theburningmonk">theburningmonk</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
