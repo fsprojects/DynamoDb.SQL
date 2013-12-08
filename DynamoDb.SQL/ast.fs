@@ -8,15 +8,9 @@ namespace DynamoDb.SQL
 module Ast =
     open System
     open System.Collections.Generic
-
-    type AttributeValueV1 = Amazon.DynamoDB.Model.AttributeValue
-    type AttributeValueV2 = Amazon.DynamoDBv2.Model.AttributeValue
-
-    type PrimitiveV1 = Amazon.DynamoDB.DocumentModel.Primitive
-    type PrimitiveV2 = Amazon.DynamoDBv2.DocumentModel.Primitive
-
-    type ConditionV1 = Amazon.DynamoDB.Model.Condition
-    type ConditionV2 = Amazon.DynamoDBv2.Model.Condition
+    open Amazon.DynamoDBv2
+    open Amazon.DynamoDBv2.Model
+    open Amazon.DynamoDBv2.DocumentModel
 
     module Utils = 
         let inline appendIfSome f someOption appendee = 
@@ -56,25 +50,15 @@ module Ast =
                 | S(str)    -> str
                 | N(n)      -> n.ToString()
 
-            member this.ToAttributeValueV1() =
+            member this.ToAttributeValue() =
                 match this with
-                | S(str) -> new AttributeValueV1(S = str)
-                | N(n)   -> new AttributeValueV1(N = string n)
+                | S(str) -> new AttributeValue(S = str)
+                | N(n)   -> new AttributeValue(N = string n)
 
-            member this.ToAttributeValueV2() =
+            member this.ToPrimitive() =
                 match this with
-                | S(str) -> new AttributeValueV2(S = str)
-                | N(n)   -> new AttributeValueV2(N = string n)
-
-            member this.ToPrimitiveV1() =
-                match this with
-                | S(str) -> new PrimitiveV1(str)
-                | N(n)   -> new PrimitiveV1(string n, true)
-
-            member this.ToPrimitiveV2() =
-                match this with
-                | S(str) -> new PrimitiveV2(str)
-                | N(n)   -> new PrimitiveV2(string n, true)
+                | S(str) -> new Primitive(str)
+                | N(n)   -> new Primitive(string n, true)
 
             member private this.StructuredFormatDisplay = this.ToString()
 
@@ -121,45 +105,25 @@ module Ast =
                     -> true
                 | _ -> false
 
-            /// returns a corresponding Condition (from the Amazon SDK)
-            member this.ToConditionV1() =
-                let operator, attrVals = 
-                    match this with
-                    | Equal(op)              -> "EQ",           seq { yield op.ToAttributeValueV1() }
-                    | NotEqual(op)           -> "NE",           seq { yield op.ToAttributeValueV1() }
-                    | GreaterThan(op)        -> "GT",           seq { yield op.ToAttributeValueV1() }
-                    | GreaterThanOrEqual(op) -> "GE",           seq { yield op.ToAttributeValueV1() }
-                    | LessThan(op)           -> "LT",           seq { yield op.ToAttributeValueV1() }
-                    | LessThanOrEqual(op)    -> "LE",           seq { yield op.ToAttributeValueV1() }
-                    | NotNull                -> "NOT_NULL",     Seq.empty
-                    | Null                   -> "NULL",         Seq.empty
-                    | Contains(op)           -> "CONTAINS",     seq { yield op.ToAttributeValueV1() }
-                    | NotContains(op)        -> "NOT_CONTAINS", seq { yield op.ToAttributeValueV1() }
-                    | BeginsWith(op)         -> "BEGINS_WITH",  seq { yield op.ToAttributeValueV1() }
-                    | Between(op1, op2)      -> "BETWEEN",      seq { yield op1.ToAttributeValueV1(); yield op2.ToAttributeValueV1() }
-                    | In(opLst)              -> "IN",           opLst |> Seq.map (fun op -> op.ToAttributeValueV1())
-
-                new ConditionV1(ComparisonOperator = operator, AttributeValueList = new List<AttributeValueV1>(attrVals))
-
             /// returns a corresponding V2 Condition (from the Amazon SDK >= 1.5.18.0)
-            member this.ToConditionV2() =
+            member this.ToCondition() =
                 let operator, attrVals = 
                     match this with
-                    | Equal(op)              -> "EQ",           seq { yield op.ToAttributeValueV2() }
-                    | NotEqual(op)           -> "NE",           seq { yield op.ToAttributeValueV2() }
-                    | GreaterThan(op)        -> "GT",           seq { yield op.ToAttributeValueV2() }
-                    | GreaterThanOrEqual(op) -> "GE",           seq { yield op.ToAttributeValueV2() }
-                    | LessThan(op)           -> "LT",           seq { yield op.ToAttributeValueV2() }
-                    | LessThanOrEqual(op)    -> "LE",           seq { yield op.ToAttributeValueV2() }
-                    | NotNull                -> "NOT_NULL",     Seq.empty
-                    | Null                   -> "NULL",         Seq.empty
-                    | Contains(op)           -> "CONTAINS",     seq { yield op.ToAttributeValueV2() }
-                    | NotContains(op)        -> "NOT_CONTAINS", seq { yield op.ToAttributeValueV2() }
-                    | BeginsWith(op)         -> "BEGINS_WITH",  seq { yield op.ToAttributeValueV2() }
-                    | Between(op1, op2)      -> "BETWEEN",      seq { yield op1.ToAttributeValueV2(); yield op2.ToAttributeValueV2() }
-                    | In(opLst)              -> "IN",           opLst |> Seq.map (fun op -> op.ToAttributeValueV2())
+                    | Equal(op)              -> ComparisonOperator.EQ,           seq { yield op.ToAttributeValue() }
+                    | NotEqual(op)           -> ComparisonOperator.NE,           seq { yield op.ToAttributeValue() }
+                    | GreaterThan(op)        -> ComparisonOperator.GT,           seq { yield op.ToAttributeValue() }
+                    | GreaterThanOrEqual(op) -> ComparisonOperator.GE,           seq { yield op.ToAttributeValue() }
+                    | LessThan(op)           -> ComparisonOperator.LT,           seq { yield op.ToAttributeValue() }
+                    | LessThanOrEqual(op)    -> ComparisonOperator.LE,           seq { yield op.ToAttributeValue() }
+                    | NotNull                -> ComparisonOperator.NOT_NULL,     Seq.empty
+                    | Null                   -> ComparisonOperator.NULL,         Seq.empty
+                    | Contains(op)           -> ComparisonOperator.CONTAINS,     seq { yield op.ToAttributeValue() }
+                    | NotContains(op)        -> ComparisonOperator.NOT_CONTAINS, seq { yield op.ToAttributeValue() }
+                    | BeginsWith(op)         -> ComparisonOperator.BEGINS_WITH,  seq { yield op.ToAttributeValue() }
+                    | Between(op1, op2)      -> ComparisonOperator.BETWEEN,      seq { yield op1.ToAttributeValue(); yield op2.ToAttributeValue() }
+                    | In(opLst)              -> ComparisonOperator.IN,           opLst |> Seq.map (fun op -> op.ToAttributeValue())
 
-                new ConditionV2(ComparisonOperator = operator, AttributeValueList = new List<AttributeValueV2>(attrVals))
+                new Condition(ComparisonOperator = operator, AttributeValueList = new List<AttributeValue>(attrVals))
 
     [<StructuredFormatDisplay("{StructuredFormatDisplay}")>]     
     type OrderDirection =

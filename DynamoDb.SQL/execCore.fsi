@@ -11,13 +11,9 @@ exception InvalidQueryFormat    of string
 
 [<AutoOpen>]
 module internal Core =
-    /// Active pattern to match the query v1 conditions out of a list of filters
+    /// Active pattern to match the query conditions out of a list of filters
     /// See http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/API_Query.html
-    val (|QueryV1Condition|)    : Filter list -> (Operant * FilterCondition option)
-
-    /// Active pattern to match the query v2 conditions out of a list of filters
-    /// See http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/API_Query.html
-    val (|QueryV2Condition|)    : Filter list -> (string * FilterCondition) list
+    val (|QueryCondition|)      : Filter list -> (string * FilterCondition) list
 
     /// Active pattern to match the scan conditions out of a list of filters
     /// See http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/API_Scan.html

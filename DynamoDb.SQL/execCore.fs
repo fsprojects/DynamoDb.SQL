@@ -6,22 +6,12 @@
 namespace DynamoDb.SQL
 
 open System.Collections.Generic
-open Amazon.DynamoDB.Model
+open Amazon.DynamoDBv2.Model
 
 exception InvalidQueryFormat    of string
 
 module Core =
-    let (|QueryV1Condition|) (conditions : Filter list) = 
-        let hKey     = conditions |> List.tryPick (function | (HashKey, Equal(op)) -> Some(op) | _ -> None)
-        let rndConds = conditions |> List.choose (function | (RangeKey, cond) when cond.IsAllowedInQuery -> Some(cond) | _ -> None)
-
-        // if a hash key value is specified and there is at most one filter condition then this is a Query
-        match hKey, rndConds with
-        | Some(hOp), [] -> hOp, None
-        | Some(hOp), [ cond ] -> hOp, Some cond
-        | _ -> raise <| InvalidQueryFormat "Query should specify a '@haskey =' clause and at most one @rangekey filter"
-
-    let (|QueryV2Condition|) (conditions : Filter list) = 
+    let (|QueryCondition|) (conditions : Filter list) = 
         // only attribute names are allowed by the parser, so safe to assume Attribute clause here
         let filters = conditions |> List.map (fun (Attribute name, cond) -> name, cond)
 

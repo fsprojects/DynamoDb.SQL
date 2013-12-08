@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Amazon.DynamoDB;
-using Amazon.DynamoDB.DataModel;
-using Amazon.DynamoDB.DocumentModel;
-using Amazon.DynamoDB.Model;
+using Amazon;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DataModel;
+using Amazon.DynamoDBv2.DocumentModel;
+using Amazon.DynamoDBv2.Model;
 
-using DynamoDb.SQL.Execution;
+using DynamoDbV2.SQL.Execution;
 
 namespace DynamoClientApiTest
 {
@@ -17,7 +18,7 @@ namespace DynamoClientApiTest
     {
         static void Main(string[] args)
         {
-            var client = new AmazonDynamoDBClient();
+            var client = new AmazonDynamoDBClient(RegionEndpoint.USEast1);
             var cxt = new DynamoDBContext(client);
 
             // put the test data there to run the test with

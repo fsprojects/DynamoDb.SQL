@@ -7,14 +7,8 @@ namespace DynamoDb.SQL
 
 [<AutoOpen>]
 module internal Ast =
-    type AttributeValueV1 = Amazon.DynamoDB.Model.AttributeValue
-    type AttributeValueV2 = Amazon.DynamoDBv2.Model.AttributeValue
-
-    type PrimitiveV1 = Amazon.DynamoDB.DocumentModel.Primitive
-    type PrimitiveV2 = Amazon.DynamoDBv2.DocumentModel.Primitive
-
-    type ConditionV1 = Amazon.DynamoDB.Model.Condition
-    type ConditionV2 = Amazon.DynamoDBv2.Model.Condition
+    open Amazon.DynamoDBv2.Model
+    open Amazon.DynamoDBv2.DocumentModel
 
     type Identifier = 
         | HashKey
@@ -26,11 +20,8 @@ module internal Ast =
         | S     of string
         | N     of double
 
-        member ToAttributeValueV1   : unit -> AttributeValueV1
-        member ToAttributeValueV2   : unit -> AttributeValueV2
-
-        member ToPrimitiveV1        : unit -> PrimitiveV1
-        member ToPrimitiveV2        : unit -> PrimitiveV2
+        member ToAttributeValue   : unit -> AttributeValue
+        member ToPrimitive        : unit -> Primitive
 
     type FilterCondition = 
         | Equal                 of Operant
@@ -48,9 +39,7 @@ module internal Ast =
         | In                    of Operant list
 
         member IsAllowedInQuery : bool
-
-        member ToConditionV1    : unit -> ConditionV1
-        member ToConditionV2    : unit -> ConditionV2
+        member ToCondition    : unit -> Condition
 
     type OrderDirection =
         | Asc
