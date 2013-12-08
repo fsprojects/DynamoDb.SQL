@@ -101,44 +101,9 @@ module Common =
         .>> ws
 
 module Parser =
-    /// Query V1 - supports only query by hash and range key
-    [<RequireQualifiedAccess>]
-    module QueryV1Parser =
-        // allow @hashkey, @rangekey in the Where clause for a QUERY
-        let whereAttributes     = choice [ hashkey; rangekey ]
-
-        // parsers for binary/between conditions allowed in a QUERY
-        let binaryOperators     = choice [ stringReturn_ws "="  Equal
-                                           stringReturn_ws ">=" GreaterThanOrEqual
-                                           stringReturn_ws ">"  GreaterThan
-                                           stringReturn_ws "<=" LessThanOrEqual
-                                           stringReturn_ws "<"  LessThan
-                                           stringCIReturn_ws "begins with" BeginsWith ]
-        let binaryCondition     = pipe3 whereAttributes binaryOperators operant (fun id op v -> id, op v)
-
-        let between             = stringCIReturn_ws "between" Between
-        let and'                = skipStringCI_ws "and"
-        let betweenCondition    = pipe5 whereAttributes between operant and' operant (fun id op v1 _ v2 -> id, op(v1, v2))
-
-        let pcondition          = choice [ attempt binaryCondition; attempt betweenCondition ]
-        let filterConditions    = sepBy1 (ws >>. pcondition .>> ws) (ws >>. and')
-        let pwhere = ws >>. skipStringCI_ws "where" >>. (filterConditions |>> Where) .>> ws
-
-        let consistentRead      = stringCIReturn_ws "noconsistentread" NoConsistentRead
-        let queryPageSize       = skipStringCI_ws "pagesize" >>. openParentheses >>. pint32_ws .>> closeParentheses |>> QueryPageSize
-        let queryOption         = choice [ consistentRead; queryPageSize ]
-        let queryOptions        = sepBy1 queryOption comma |>> List.toArray
-        let pwith = ws >>. skipStringCI_ws "with" >>. openParentheses >>. queryOptions .>> closeParentheses
-
-        // parser for a query
-        let pquery : Parser<DynamoQuery, unit> = 
-            tuple6 paction pfrom pwhere (opt porder) (opt plimit) (opt pwith)
-            |>> (fun (action, from, where, order, limit, with') -> 
-                    { Action = action; From = from; Where = where; Limit = limit; Order = order; Options = with' })
-
     /// Query V2 - supports the use of Local Secondary Index, but due to API changes no longer supports the use of @HashKey and @RangeKey
     [<RequireQualifiedAccess>]
-    module QueryV2Parser =
+    module QueryParser =
         let whereAttributes     = attribute
 
         // parsers for binary/between conditions allowed in a QUERY
@@ -186,52 +151,7 @@ module Parser =
                     { Action = action; From = from; Where = where; Limit = limit; Order = order; Options = with' })
 
     [<RequireQualifiedAccess>]
-    module ScanV1Parser = 
-        // only allow attributes in the Where clause for a SCAN
-        let whereAttributes     = attribute
-
-        // parsers for binary/unary/between conditions allowed in a SCAN
-        let binaryOperators     = choice [ stringReturn_ws "="  Equal
-                                           stringReturn_ws "!=" NotEqual
-                                           stringReturn_ws ">=" GreaterThanOrEqual
-                                           stringReturn_ws ">"  GreaterThan
-                                           stringReturn_ws "<=" LessThanOrEqual
-                                           stringReturn_ws "<"  LessThan
-                                           stringCIReturn_ws "contains" Contains
-                                           stringCIReturn_ws "not contains" NotContains
-                                           stringCIReturn_ws "begins with" BeginsWith ]
-        let binaryCondition     = pipe3 whereAttributes binaryOperators operant (fun id op v -> id, op v)
-
-        let unaryOperators      = choice [ stringCIReturn_ws "is null" Null; 
-                                           stringCIReturn_ws "is not null" NotNull ]
-        let unaryCondition      = pipe2 whereAttributes unaryOperators (fun id op -> id, op)
-
-        let between             = stringCIReturn_ws "between" Between
-        let and'                = skipStringCI_ws "and"
-        let betweenCondition    = pipe5 whereAttributes between operant and' operant (fun id op v1 _ v2 -> id, op(v1, v2))
-
-        let in'                 = stringCIReturn_ws "in" In    
-        let operantLst          = sepBy1 operant (ws >>. skipString_ws ",")
-        let inCondition         = pipe5 whereAttributes in' openParentheses operantLst closeParentheses (fun id op _ lst _ -> id, op(lst))
-
-        let pcondition          = choice [ attempt unaryCondition;   attempt binaryCondition;
-                                           attempt betweenCondition; inCondition ]
-        let filterConditions    = sepBy1 (ws >>. pcondition .>> ws) (ws >>. and')
-
-        let pwhere = ws >>. skipStringCI_ws "where" >>. (filterConditions |>> Where) .>> ws
-
-        let scanPageSize        = skipStringCI_ws "pagesize" >>. openParentheses >>. pint32_ws .>> closeParentheses |>> ScanPageSize
-        let scanOptions         = sepBy1 scanPageSize comma |>> List.toArray
-
-        let pwith = ws >>. skipStringCI_ws "with" >>. openParentheses >>. scanOptions .>> closeParentheses
-
-        // parser for a scan
-        let pscan = tuple5 paction pfrom (opt pwhere) (opt plimit) (opt pwith)
-                    |>> (fun (action, from, where, limit, with') -> 
-                            { Action = action; From = from; Where = where; Limit = limit; Options = with' })
-
-    [<RequireQualifiedAccess>]
-    module ScanV2Parser = 
+    module ScanParser = 
         // only allow attributes in the Where clause for a SCAN
         let whereAttributes     = attribute
 
@@ -279,18 +199,10 @@ module Parser =
                     |>> (fun (action, from, where, limit, with') -> 
                             { Action = action; From = from; Where = where; Limit = limit; Options = with' })
 
-    let parseDynamoQueryV1 str = match run QueryV1Parser.pquery str with
-                                 | Success(result, _, _) -> result
-                                 | Failure(errStr, _, _) -> raise <| InvalidQuery errStr
+    let parseDynamoQuery str = match run QueryParser.pquery str with
+                               | Success(result, _, _) -> result
+                               | Failure(errStr, _, _) -> raise <| InvalidQuery errStr
 
-    let parseDynamoQueryV2 str = match run QueryV2Parser.pquery str with
-                                 | Success(result, _, _) -> result
-                                 | Failure(errStr, _, _) -> raise <| InvalidQuery errStr
-
-    let parseDynamoScanV1 str = match run ScanV1Parser.pscan str with
-                                | Success(result, _, _) -> result
-                                | Failure(errStr, _, _) -> raise <| InvalidScan errStr
-
-    let parseDynamoScanV2 str = match run ScanV2Parser.pscan str with
-                                | Success(result, _, _) -> result
-                                | Failure(errStr, _, _) -> raise <| InvalidScan errStr
+    let parseDynamoScan str = match run ScanParser.pscan str with
+                              | Success(result, _, _) -> result
+                              | Failure(errStr, _, _) -> raise <| InvalidScan errStr

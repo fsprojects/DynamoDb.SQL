@@ -7,44 +7,25 @@ module Common
 
 open System
 open System.Diagnostics
-open Amazon.DynamoDB
-open Amazon.DynamoDB.DataModel
+open System.Collections.Generic
 open Amazon.DynamoDBv2
 open Amazon.DynamoDBv2.DataModel
-open DynamoDb.SQL.Execution
+open Amazon.DynamoDBv2.DocumentModel
+open Amazon.DynamoDBv2.Model
 open DynamoDbV2.SQL.Execution
-
-type AmazonDynamoDBClientV1 = Amazon.DynamoDB.AmazonDynamoDBClient
-type DynamoDBContextV1      = Amazon.DynamoDB.DataModel.DynamoDBContext
-
-type AmazonDynamoDBClientV2 = Amazon.DynamoDBv2.AmazonDynamoDBClient
-type DynamoDBContextV2      = Amazon.DynamoDBv2.DataModel.DynamoDBContext
-
-type DynamoDBTableV1        = Amazon.DynamoDB.DataModel.DynamoDBTableAttribute
-type DynamoDBHashKeyV1      = Amazon.DynamoDB.DataModel.DynamoDBHashKeyAttribute
-type DynamoDBRangeKeyV1     = Amazon.DynamoDB.DataModel.DynamoDBRangeKeyAttribute
-
-type DynamoDBTableV2        = Amazon.DynamoDBv2.DataModel.DynamoDBTableAttribute
-type DynamoDBHashKeyV2      = Amazon.DynamoDBv2.DataModel.DynamoDBHashKeyAttribute
-type DynamoDBRangeKeyV2     = Amazon.DynamoDBv2.DataModel.DynamoDBRangeKeyAttribute
+open DynamoDbV2.SQL.Execution
 
 let awsKey, awsSecret = "PUT_YOUR_AWS_KEY_HERE", "PUT_YOUR_AWS_SECRET_HERE"
 
-let clientV1 = new AmazonDynamoDBClientV1(awsKey, awsSecret)
-let cxtV1 = new DynamoDBContextV1(clientV1)
+let client = new AmazonDynamoDBClient(awsKey, awsSecret)
+let cxt = new DynamoDBContext(client)
 
-let clientV2 = new AmazonDynamoDBClientV2(awsKey, awsSecret)
-let cxtV2 = new DynamoDBContextV2(clientV2)
-
-[<DynamoDBTableV1("Reply")>]
-[<DynamoDBTableV2("Reply")>]
+[<DynamoDBTable("Reply")>]
 type Reply () =
-    [<DynamoDBHashKeyV1>]
-    [<DynamoDBHashKeyV2>]
+    [<DynamoDBHashKey>]
     member val Id = 0 with get, set
 
-    [<DynamoDBRangeKeyV1>]
-    [<DynamoDBRangeKeyV2>]
+    [<DynamoDBRangeKey>]
     member val ReplyDateTime = DateTime.MinValue with get, set
             
     member val Message = "" with get, set
@@ -54,47 +35,47 @@ type Reply () =
 
 let createTable () = 
     let mutable req = new Amazon.DynamoDBv2.Model.CreateTableRequest()
-    req <- req.WithTableName "Reply"
+    req.TableName <- "Reply"
 
     let hashKey = new Amazon.DynamoDBv2.Model.KeySchemaElement()
-    hashKey.KeyType         <- "HASH"
+    hashKey.KeyType         <- KeyType.HASH
     hashKey.AttributeName   <- "Id"
     let rangeKey = new Amazon.DynamoDBv2.Model.KeySchemaElement()
-    rangeKey.KeyType        <- "RANGE"
+    rangeKey.KeyType        <- KeyType.RANGE
     rangeKey.AttributeName  <- "ReplyDateTime"
-    req <- req.WithKeySchema(hashKey, rangeKey)
+    req.KeySchema           <- new List<KeySchemaElement>([| hashKey; rangeKey |])
     
     let hashKeyDef = new Amazon.DynamoDBv2.Model.AttributeDefinition()
     hashKeyDef.AttributeName    <- "Id"
-    hashKeyDef.AttributeType    <- "N"
+    hashKeyDef.AttributeType    <- ScalarAttributeType.N
     let rangeKeyDef = new Amazon.DynamoDBv2.Model.AttributeDefinition()
     rangeKeyDef.AttributeName   <- "ReplyDateTime"
-    rangeKeyDef.AttributeType   <- "S"
+    rangeKeyDef.AttributeType   <- ScalarAttributeType.S
     let postedByDef = new Amazon.DynamoDBv2.Model.AttributeDefinition()
     postedByDef.AttributeName   <- "PostedBy"
-    postedByDef.AttributeType   <- "S"
-    req <- req.WithAttributeDefinitions(hashKeyDef, rangeKeyDef, postedByDef)
+    postedByDef.AttributeType   <- ScalarAttributeType.S
+    req.AttributeDefinitions    <- new List<AttributeDefinition>([| hashKeyDef; rangeKeyDef; postedByDef |])
 
     let throughput = new Amazon.DynamoDBv2.Model.ProvisionedThroughput()
     throughput.ReadCapacityUnits    <- 50L
     throughput.WriteCapacityUnits   <- 50L
-    req <- req.WithProvisionedThroughput(throughput)
+    req.ProvisionedThroughput       <- throughput
 
     let mutable index = new Amazon.DynamoDBv2.Model.LocalSecondaryIndex()
     index.IndexName <- "PosterIndex"
     
     let postedByKey = new Amazon.DynamoDBv2.Model.KeySchemaElement()
-    postedByKey.KeyType        <- "RANGE"
-    postedByKey.AttributeName  <- "PostedBy"
-    index <- index.WithKeySchema(hashKey, postedByKey)
+    postedByKey.KeyType         <- KeyType.RANGE
+    postedByKey.AttributeName   <- "PostedBy"
+    index.KeySchema             <-new List<KeySchemaElement>([| hashKey; postedByKey |])
 
     let projection = new Amazon.DynamoDBv2.Model.Projection()
-    projection.ProjectionType  <- "KEYS_ONLY"
-    index <- index.WithProjection projection
+    projection.ProjectionType   <- ProjectionType.KEYS_ONLY
+    index.Projection            <-projection
 
-    req <- req.WithLocalSecondaryIndexes(index)
+    req.LocalSecondaryIndexes   <- new List<LocalSecondaryIndex>([| index |])
 
-    clientV2.CreateTable(req) |> ignore
+    client.CreateTable(req) |> ignore
 
 let seedData () =
     let getPoster =
@@ -111,7 +92,7 @@ let seedData () =
                       Message = "Test", 
                       PostedBy = getPoster())))
 
-    let batchWrite = cxtV2.CreateBatchWrite()
+    let batchWrite = cxt.CreateBatchWrite()
 
     printfn "Adding 10,000 replies..."
 

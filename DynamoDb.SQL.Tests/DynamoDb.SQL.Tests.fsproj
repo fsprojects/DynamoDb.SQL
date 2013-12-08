@@ -43,19 +43,16 @@
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <ItemGroup>
     <Compile Include="astTests.fs" />
-    <Compile Include="parserV1Tests.fs" />
-    <Compile Include="parserV2Tests.fs" />
+    <Compile Include="parserTests.fs" />
     <Compile Include="execCoreTests.fs" />
-    <Compile Include="execLowLevelV1Tests.fs" />
-    <Compile Include="execLowLevelV2Tests.fs" />
-    <Compile Include="execCxtV1Tests.fs" />
-    <Compile Include="execCxtV2Tests.fs" />
+    <Compile Include="execLowLevelTests.fs" />
+    <Compile Include="execCxtTests.fs" />
     <None Include="packages.config" />
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="AWSSDK">
-      <HintPath>..\packages\AWSSDK.1.5.25.0\lib\AWSSDK.dll</HintPath>
+      <HintPath>..\packages\AWSSDK.2.0.2.4\lib\net35\AWSSDK.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="FsUnit.NUnit">

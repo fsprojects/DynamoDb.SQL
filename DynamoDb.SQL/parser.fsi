@@ -12,14 +12,8 @@ exception InvalidScan       of string
 
 [<AutoOpen>]
 module internal Parser =
-    /// Function to parse a V1 query string and return the corresponding DynamoQuery
-    val parseDynamoQueryV1  : string -> DynamoQuery
-
-    /// Function to parse a V2 query string and return the corresponding DynamoQuery
-    val parseDynamoQueryV2  : string -> DynamoQuery
+    /// Function to parse a query string and return the corresponding DynamoQuery
+    val parseDynamoQuery  : string -> DynamoQuery
 
     /// Function to parse a string and return the corresponding DynamoScan
-    val parseDynamoScanV1   : string -> DynamoScan
-
-    /// Function to parse a string and return the corresponding DynamoScan
-    val parseDynamoScanV2   : string -> DynamoScan
+    val parseDynamoScan   : string -> DynamoScan
