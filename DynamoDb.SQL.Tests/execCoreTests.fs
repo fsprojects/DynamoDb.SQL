@@ -9,7 +9,7 @@ open FsUnit
 open NUnit.Framework
 open DynamoDb.SQL
 
-let equal = FsUnit.equal
+let equal = FsUnit.TopLevelOperators.equal
 
 [<TestFixture>]
 type ``Given a DynamoQuery`` () =

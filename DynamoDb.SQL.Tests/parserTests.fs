@@ -11,7 +11,7 @@ open DynamoDb.SQL
 open DynamoDb.SQL.Parser
 
 module Tests = 
-    let equal = FsUnit.equal
+    let equal = FsUnit.TopLevelOperators.equal
 
     [<TestFixture>]
     type ``Given a V2 query`` () =

@@ -13,7 +13,7 @@ open DynamoDb.SQL.Parser
 open DynamoDbV2.SQL.Execution
 open Amazon.DynamoDBv2
 
-let equal = FsUnit.equal
+let equal = FsUnit.TopLevelOperators.equal
 
 [<TestFixture>]
 type ``Given a V2 DynamoQuery`` () =

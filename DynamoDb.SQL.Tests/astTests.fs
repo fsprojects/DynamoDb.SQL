@@ -14,7 +14,7 @@ open DynamoDb.SQL
 open DynamoDb.SQL.Parser
 open DynamoDbV2.SQL.Execution
 
-let equal = FsUnit.equal
+let equal = FsUnit.TopLevelOperators.equal
 
 [<TestFixture>]
 type ``Given an Operant`` () =
