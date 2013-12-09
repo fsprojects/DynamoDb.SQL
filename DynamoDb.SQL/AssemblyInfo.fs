@@ -1,18 +1,14 @@
-﻿namespace DynamoDb.SQL
-
+﻿namespace System
 open System.Reflection
 open System.Runtime.CompilerServices
-open System.Runtime.InteropServices
 
-[<assembly: ComVisible(false)>]
-
-[<assembly: AssemblyTitle("DynamoDb.SQL")>]
-[<assembly: AssemblyDescription("Provides a SQL like external DSL to query against DynamoDB")>]
-
-[<assembly: AssemblyProduct("DynamoDb.SQL")>]
-[<assembly: AssemblyCopyright("Copyright @ Yan Cui 2012")>]
-[<assembly: AssemblyVersion("1.3.1")>]
-[<assembly: AssemblyFileVersion("1.3.1")>]
-[<assembly: InternalsVisibleTo("DynamoDb.SQL.Tests")>]
-
+[<assembly: AssemblyTitleAttribute("DynamoDb.SQL")>]
+[<assembly: AssemblyProductAttribute("DynamoDb.SQL")>]
+[<assembly: AssemblyDescriptionAttribute("A SQL-like external DSL for querying and scanning data in Amazon DynamoDB.")>]
+[<assembly: AssemblyVersionAttribute("2.0.0")>]
+[<assembly: AssemblyFileVersionAttribute("2.0.0")>]
+[<assembly: InternalsVisibleToAttribute("DynamoDb.SQL.Tests")>]
 do ()
+
+module internal AssemblyVersionInformation =
+    let [<Literal>] Version = "2.0.0"

@@ -14,7 +14,7 @@ open DynamoDbV2.SQL.Execution
 open Amazon.DynamoDBv2
 open Amazon.DynamoDBv2.DocumentModel
 
-let equal = FsUnit.equal
+let equal = FsUnit.TopLevelOperators.equal
 
 [<TestFixture>]
 type ``Given a DynamoQuery`` () =
