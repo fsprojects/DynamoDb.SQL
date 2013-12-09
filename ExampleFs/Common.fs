@@ -8,6 +8,7 @@ module Common
 open System
 open System.Diagnostics
 open System.Collections.Generic
+open Amazon
 open Amazon.DynamoDBv2
 open Amazon.DynamoDBv2.DataModel
 open Amazon.DynamoDBv2.DocumentModel
@@ -17,7 +18,7 @@ open DynamoDbV2.SQL.Execution
 
 let awsKey, awsSecret = "PUT_YOUR_AWS_KEY_HERE", "PUT_YOUR_AWS_SECRET_HERE"
 
-let client = new AmazonDynamoDBClient(awsKey, awsSecret)
+let client = new AmazonDynamoDBClient(awsKey, awsSecret, RegionEndpoint.USEast1)
 let cxt = new DynamoDBContext(client)
 
 [<DynamoDBTable("Reply")>]
