@@ -8,7 +8,7 @@
 		<owners>theburningmonk</owners>
         <licenseUrl>https://github.com/theburningmonk/DynamoDb.SQL/blob/master/LICENSE</licenseUrl>
         <projectUrl>https://github.com/theburningmonk/DynamoDb.SQL</projectUrl>
-        <iconUrl>http://theburningmonk.com/images/DynamoDbSQL%20logo-small.png</iconUrl>
+        <iconUrl>https://raw.github.com/theburningmonk/DynamoDb.SQL/master/misc/logo.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <summary>@summary@</summary>
 		<description>@description@</description>
