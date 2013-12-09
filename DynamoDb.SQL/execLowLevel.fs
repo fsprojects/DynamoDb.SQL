@@ -162,12 +162,12 @@ module LowLevel =
             let aggrRes = mergeQueryResponses res aggrRes
 
             match res.LastEvaluatedKey with
-            | null -> return aggrRes
+            | null                           -> return aggrRes
+            | key when key.Count = 0         -> return aggrRes
             // short circuit if we have managed to find as many results as we wanted
-            | _ when res.Count >= maxResults 
-                   -> return aggrRes
-            | key  -> req.ExclusiveStartKey <- key
-                      return! queryLoop client (maxResults - res.Count) req (Some aggrRes)
+            | _ when res.Count >= maxResults -> return aggrRes
+            | key -> req.ExclusiveStartKey <- key
+                     return! queryLoop client (maxResults - res.Count) req (Some aggrRes)
         }
 
     /// Recursively make scan requests and merge results into an aggregate response
@@ -189,10 +189,10 @@ module LowLevel =
                           | _            -> mergeScanResponses maxResults (new ScanResponse()) res
 
             match res.LastEvaluatedKey with
-            | null -> return aggrRes
+            | null                           -> return aggrRes
+            | key when key.Count = 0         -> return aggrRes
             // short circuit if we have managed to find as many results as we wanted
-            | _ when res.Count >= maxResults
-                   -> return aggrRes
+            | _ when res.Count >= maxResults -> return aggrRes
             | key  -> req.ExclusiveStartKey <- key
                       return! scanLoop client (maxResults - res.Count) (Some aggrRes) req 
         }
