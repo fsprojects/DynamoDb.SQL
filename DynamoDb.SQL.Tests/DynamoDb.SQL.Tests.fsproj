@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>DynamoDb.SQL.Tests</RootNamespace>
     <AssemblyName>DynamoDb.SQL.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <Name>DynamoDb.SQL.Tests</Name>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
@@ -53,9 +53,9 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="AWSSDK">
-      <HintPath>..\packages\AWSSDK.2.0.2.4\lib\net35\AWSSDK.dll</HintPath>
+      <HintPath>..\packages\AWSSDK.2.0.4.1\lib\net45\AWSSDK.dll</HintPath>
     </Reference>
-    <Reference Include="FSharp.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <Reference Include="FSharp.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="FsUnit.NUnit">
       <HintPath>..\packages\FsUnit.1.2.1.0\Lib\Net40\FsUnit.NUnit.dll</HintPath>
     </Reference>

@@ -11,7 +11,6 @@ open System.Runtime.CompilerServices
 open Amazon.DynamoDBv2.DataModel
 open Amazon.DynamoDBv2.DocumentModel
 open DynamoDb.SQL
-open DynamoDb.SQL.Extensions
 
 [<AutoOpen>]
 module Cxt =

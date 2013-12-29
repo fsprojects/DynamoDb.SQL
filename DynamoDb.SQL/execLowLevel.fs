@@ -10,7 +10,6 @@ open System.Collections.Generic
 open System.Linq
 open System.Runtime.CompilerServices
 open DynamoDb.SQL
-open DynamoDb.SQL.Extensions
 open Amazon.DynamoDBv2
 open Amazon.DynamoDBv2.Model
 open Amazon.DynamoDBv2.DataModel
@@ -157,7 +156,7 @@ module LowLevel =
             // the request limit (max number of items to return) should not exceed the max number of results we want
             // to return in total
             req.Limit <- min maxResults req.Limit
-            let! res = client.QueryAsync req
+            let! res = client.QueryAsync req |> Async.AwaitTask
 
             let aggrRes = mergeQueryResponses res aggrRes
 
@@ -182,7 +181,7 @@ module LowLevel =
         async {
             // don't set the limit using the maxResults for a scan, because unlike a query, limit is the max number of
             // items scanned rather than max number of items to return
-            let! res = client.ScanAsync req
+            let! res = client.ScanAsync req |> Async.AwaitTask
 
             let aggrRes = match aggrRes with 
                           | Some aggrRes -> mergeScanResponses maxResults aggrRes res

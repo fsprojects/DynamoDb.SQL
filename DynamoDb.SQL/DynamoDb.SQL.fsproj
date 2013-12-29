@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>DynamoDb.SQL</RootNamespace>
     <AssemblyName>DynamoDb.SQL</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <Name>DynamoDb.SQL</Name>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
@@ -47,7 +47,6 @@
     <Compile Include="ast.fs" />
     <Compile Include="parser.fsi" />
     <Compile Include="parser.fs" />
-    <Compile Include="extensions.fs" />
     <Compile Include="execCore.fsi" />
     <Compile Include="execCore.fs" />
     <Compile Include="execLowLevel.fsi" />
@@ -58,7 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="AWSSDK">
-      <HintPath>..\packages\AWSSDK.2.0.2.4\lib\net35\AWSSDK.dll</HintPath>
+      <HintPath>..\packages\AWSSDK.2.0.4.1\lib\net45\AWSSDK.dll</HintPath>
     </Reference>
     <Reference Include="FParsec">
       <HintPath>..\packages\FParsec.1.0.1\lib\net40-client\FParsec.dll</HintPath>
