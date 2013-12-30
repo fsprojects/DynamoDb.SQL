@@ -2,7 +2,7 @@
 // FAKE build script 
 // --------------------------------------------------------------------------------------
 
-#r "packages/FAKE.2.2.22.0/tools/FakeLib.dll"
+#r "packages/FAKE/tools/FakeLib.dll"
 
 open System
 open System.IO
@@ -137,12 +137,9 @@ Target "NuGet" (fun _ ->
             ToolPath = nugetPath
             AccessKey = getBuildParamOrDefault "nugetkey" ""
             Publish = hasBuildParam "nugetkey"
-            DependenciesByFramework =
-                [ { FrameworkVersion  = "net40"
-                    Dependencies = 
+            Dependencies = 
                         [ "AWSSDK",  GetPackageVersion "packages" "AWSSDK"
-                          "FParsec", GetPackageVersion "packages" "FParsec" ] }
-                ] })
+                          "FParsec", GetPackageVersion "packages" "FParsec" ] })
         "nuget/DynamoDb.SQL.nuspec"
 )
 
