@@ -13,7 +13,7 @@ open Amazon.DynamoDBv2.DocumentModel
 open DynamoDb.SQL
 
 [<AutoOpen>]
-module Cxt =
+module Ctx =
     let (|GetQueryConfig|) (query : DynamoQuery) = 
         match query with
         | { From    = From(table) 
@@ -128,7 +128,7 @@ module ContextExt =
 [<Sealed>]
 type DynamoDBContextExt =
     [<Extension>]
-    static member ExecQuery (cxt : DynamoDBContext, query : string) = cxt.ExecQuery(query)
+    static member ExecQuery (ctx : DynamoDBContext, query : string) = ctx.ExecQuery(query)
 
     [<Extension>]
-    static member ExecScan (cxt : DynamoDBContext, query : string) = cxt.ExecScan(query)
+    static member ExecScan (ctx : DynamoDBContext, query : string) = ctx.ExecScan(query)

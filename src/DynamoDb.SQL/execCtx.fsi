@@ -12,7 +12,7 @@ open Amazon.DynamoDBv2.DataModel
 open Amazon.DynamoDBv2.DocumentModel
 
 [<AutoOpen>]
-module internal Cxt =
+module internal Ctx =
     /// Active pattern for getting the query operation config out of a DynamoQuery value
     val (|GetQueryConfig|) : DynamoQuery -> QueryOperationConfig
     

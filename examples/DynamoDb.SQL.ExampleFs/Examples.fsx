@@ -76,7 +76,7 @@ module QueryExamples =
 
         (* ---------------- query using DynamoDBContext ---------------- *)
         printfn "(DynamoDBContext) Running basic hash key query :\n\t\t%s" selectQuery
-        let gameScores = cxt.ExecQuery<GameScore>(selectQuery) |> Seq.toArray
+        let gameScores = ctx.ExecQuery<GameScore>(selectQuery) |> Seq.toArray
         gameScores |> assertGameScores 5 userId |> ignore
 
         (* --------------------------------------------------------------- *)        
@@ -104,7 +104,7 @@ module QueryExamples =
 
         (* ---------------- query using DynamoDBContext ---------------- *)
         printfn "(DynamoDBContext) Running hash key and range key query:\n\t\t%s" selectQuery
-        let gameScores = cxt.ExecQuery<GameScore>(selectQuery) |> Seq.toArray
+        let gameScores = ctx.ExecQuery<GameScore>(selectQuery) |> Seq.toArray
         gameScores |> assertGameScores 2 userId |> ignore
 
         assertThat (gameScores |> Seq.forall (fun gameScore -> gameScore.GameTitle.StartsWith "A"))
@@ -133,7 +133,7 @@ module QueryExamples =
 
         (* ---------------- query using DynamoDBContext ---------------- *)
         printfn "(DynamoDBContext) Running query with ORDER ASC and LIMIT :\n\t\t%s" selectQuery
-        let gameScores = cxt.ExecQuery<GameScore>(selectQuery) |> Seq.toArray
+        let gameScores = ctx.ExecQuery<GameScore>(selectQuery) |> Seq.toArray
         gameScores |> assertGameScores 3 userId |> ignore
 
         assertThat (gameScores |> Seq.forall (fun gameScore -> gameScore.GameTitle < meteorBlasters))
@@ -152,7 +152,7 @@ module QueryExamples =
 
         (* ---------------- query using DynamoDBContext ---------------- *)
         printfn "(DynamoDBContext) Running query with ORDER DESC and LIMIT :\n\t\t%s" selectQuery
-        let gameScores = cxt.ExecQuery<GameScore>(selectQuery) |> Seq.toArray
+        let gameScores = ctx.ExecQuery<GameScore>(selectQuery) |> Seq.toArray
         gameScores |> assertGameScores 3 userId |> ignore
 
         assertThat (gameScores |> Seq.forall (fun gameScore -> gameScore.GameTitle > attackShips))
@@ -171,7 +171,7 @@ module QueryExamples =
 
         (* ---------------- query using DynamoDBContext ---------------- *)
         printfn "(DynamoDBContext) Running query with NoConsistentRead :\n\t\t%s" selectQuery
-        let gameScores = cxt.ExecQuery<GameScore>(selectQuery) |> Seq.toArray
+        let gameScores = ctx.ExecQuery<GameScore>(selectQuery) |> Seq.toArray
         gameScores |> assertGameScores 5 userId |> ignore
 
     /// AWS Guideline says that you should avoid sudden bursts of read activity:
@@ -189,7 +189,7 @@ module QueryExamples =
 
         (* ---------------- query using DynamoDBContext ---------------- *)
         printfn "(DynamoDBContext) Running query with PageSize :\n\t\t%s" selectQuery
-        let gameScores = cxt.ExecQuery<GameScore>(selectQuery) |> Seq.toArray
+        let gameScores = ctx.ExecQuery<GameScore>(selectQuery) |> Seq.toArray
         gameScores |> assertGameScores 3 userId |> ignore
 
     /// Rather than always getting all the attributes back, you can also choose a specific subset of 
@@ -208,7 +208,7 @@ module QueryExamples =
 
         (* ---------------- query using DynamoDBContext ---------------- *)
         printfn "(DynamoDBContext) Running query with speicifc attributes :\n\t\t%s" selectQuery
-        let gameScores  = cxt.ExecQuery<GameScore>(selectQuery) |> Seq.toArray
+        let gameScores  = ctx.ExecQuery<GameScore>(selectQuery) |> Seq.toArray
         gameScores |> assertGameScores 5 userId |> ignore
 
         assertThat (gameScores |> Seq.forall (fun gs -> gs.UserId.Length > 0 && gs.GameTitle.Length > 0 && gs.Wins > 0 && 
@@ -260,7 +260,7 @@ module QueryExamples =
 
         (* ---------------- query using DynamoDBContext ---------------- *)
         printfn "(DynamoDBContext) Running query with Index (all attributes) :\n\t\t%s" selectQuery
-        let gameScores = cxt.ExecQuery<GameScore>(selectQuery) |> Seq.toArray
+        let gameScores = ctx.ExecQuery<GameScore>(selectQuery) |> Seq.toArray
 
         assertThat (gameScores.Length > 0) 
                    "Game scores should have some items"
@@ -315,7 +315,7 @@ module QueryExamples =
 
         (* ---------------- query using DynamoDBContext ---------------- *)
         printfn "(DynamoDBContext) Running query with Index (index attributes only) :\n\t\t%s" selectQuery
-        let gameScores = cxt.ExecQuery<GameScore>(selectQuery) |> Seq.toArray
+        let gameScores = ctx.ExecQuery<GameScore>(selectQuery) |> Seq.toArray
 
         assertThat (gameScores.Length > 0) 
                    "Game scores should have some items"
@@ -359,7 +359,7 @@ module QueryExamples =
 
         (* ---------------- query using DynamoDBContext ---------------- *)
         printfn "(DynamoDBContext) Running query with Index (all attributes) :\n\t\t%s" selectQuery
-        let gameScores = cxt.ExecQuery<GameScore>(selectQuery) |> Seq.toArray
+        let gameScores = ctx.ExecQuery<GameScore>(selectQuery) |> Seq.toArray
 
         assertThat (gameScores.Length > 0) 
                    "Game scores should have some items"
@@ -422,7 +422,7 @@ module ScanExamples =
 
         (* ---------------- query using DynamoDBContext ---------------- *)
         printfn "(DynamoDBContext) Running basic scan :\n\t\t%s" selectQuery
-        let gameScores = cxt.ExecScan<GameScore>(selectQuery) |> Seq.toArray
+        let gameScores = ctx.ExecScan<GameScore>(selectQuery) |> Seq.toArray
         gameScores |> assertGameScores 1000 starshipX |> ignore
 
         (* --------------------------------------------------------------- *)
@@ -445,7 +445,7 @@ module ScanExamples =
 
         (* ---------------- query using DynamoDBContext ---------------- *)
         printfn "(DynamoDBContext) Running scan with LIMIT :\n\t\t%s" selectQuery
-        let gameScores = cxt.ExecScan<GameScore>(selectQuery) |> Seq.toArray
+        let gameScores = ctx.ExecScan<GameScore>(selectQuery) |> Seq.toArray
         gameScores |> assertGameScores 10 starshipX |> ignore
 
         (* --------------------------------------------------------------- *)
@@ -470,7 +470,7 @@ module ScanExamples =
 
         (* ---------------- query using DynamoDBContext ---------------- *)
         printfn "(DynamoDBContext) Running basic scan with PageSize :\n\t\t%s" selectQuery
-        let gameScores = cxt.ExecScan<GameScore>(selectQuery) |> Seq.toArray
+        let gameScores = ctx.ExecScan<GameScore>(selectQuery) |> Seq.toArray
         gameScores |> assertGameScores 1000 starshipX |> ignore
     
     /// You can use Scan segments to carry out scans in multiple segments simultaneously
@@ -488,7 +488,7 @@ module ScanExamples =
 
         (* ---------------- query using DynamoDBContext ---------------- *)
         printfn "(DynamoDBContext) Running basic scan with PageSize and 2 segments :\n\t\t%s" selectQuery
-        let gameScores = cxt.ExecScan<GameScore>(selectQuery) |> Seq.toArray
+        let gameScores = ctx.ExecScan<GameScore>(selectQuery) |> Seq.toArray
         gameScores |> assertGameScores 1000 starshipX |> ignore
     
     /// Whilst I'm not sure of the rationale behind this decision, but you can now optionally set the flag in

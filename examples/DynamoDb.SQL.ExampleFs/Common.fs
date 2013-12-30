@@ -20,7 +20,7 @@ let awsSecret   = "AWS-SECRET"
 let region      = RegionEndpoint.USEast1
 
 let client = new AmazonDynamoDBClient(awsKey, awsSecret, region)
-let cxt = new DynamoDBContext(client)
+let ctx = new DynamoDBContext(client)
 
 [<DynamoDBTable("GameScores")>]
 type GameScore () =
@@ -118,7 +118,7 @@ let seedData () =
             
             gs))
 
-    let batchWrite = cxt.CreateBatchWrite()
+    let batchWrite = ctx.CreateBatchWrite()
 
     printfn "Adding %d replies..." gameScores.Length
 

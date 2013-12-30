@@ -38,8 +38,8 @@ namespace DynamoClientApiTest
 
         static void Main(string[] args)
         {
-            var awsKey = "AKIAIJP66H5CFKU5DETQ";
-            var awsSecret = "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";
+            var awsKey = "AWS-Key";
+            var awsSecret = "AWS-SECRET";
             var client = new AmazonDynamoDBClient(awsKey, awsSecret, RegionEndpoint.USEast1);
             var ctx = new DynamoDBContext(client);
 
