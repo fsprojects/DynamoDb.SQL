@@ -11,6 +11,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "project", "project", "{28252BEF-D159-4E80-A569-88A9B2462F9B}"
 	ProjectSection(SolutionItems) = preProject
 		build.fsx = build.fsx
+		nuget\DynamoDb.SQL.nuspec = nuget\DynamoDb.SQL.nuspec
 		RELEASE_NOTES.md = RELEASE_NOTES.md
 	EndProjectSection
 EndProject
