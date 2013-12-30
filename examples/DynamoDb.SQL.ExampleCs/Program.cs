@@ -7,15 +7,6 @@
     This script contains query and scan examples using the V2 API (with Index support).
     For more details on the query index, please check the Wiki page:
         https://github.com/theburningmonk/DynamoDb.SQL/wiki
-
-    If you want to run these examples, please provide the AWS key and secret for your AWS 
-    account and run the following functions from the 'Common'
-    module first:
-        createTable()   - creates a new table with 50 read and 50 write capacity
-        seedData()      - seed the table with 5k items
-
-    PLEASE DON'T FORGET TO DELETE THE TABLE AFTER RUNNING THE EXAMPLES. 
-    I WILL NOT BE LIABLE FOR ANY AWS COSTS YOU INCUR WHILE RUNNING THESE EXAMPLES.
 */
 
 using System;
@@ -38,9 +29,11 @@ namespace DynamoClientApiTest
 
         static void Main(string[] args)
         {
-            var awsKey = "AWS-Key";
-            var awsSecret = "AWS-SECRET";
-            var client = new AmazonDynamoDBClient(awsKey, awsSecret, RegionEndpoint.USEast1);
+            var awsKey = "my-aws-key";
+            var awsSecret = "my-aws-secret";
+            var config = new AmazonDynamoDBConfig { ServiceURL = "http://localhost:8000" };
+
+            var client = new AmazonDynamoDBClient(awsKey, awsSecret, config);
             var ctx = new DynamoDBContext(client);
 
             var userId = "theburningmonk-1";

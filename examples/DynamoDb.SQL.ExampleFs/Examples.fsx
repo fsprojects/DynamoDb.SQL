@@ -4,18 +4,29 @@
 // Blog   : http://theburningmonk.com
 
 (*
-    This script contains query and scan examples using the V2 API (with Index support).
+    This script contains query and scan examples using the V2 API (with Local and Global
+    Secondary Index support).
     For more details on the query index, please check the Wiki page:
         https://github.com/theburningmonk/DynamoDb.SQL/wiki
 
-    If you want to run these examples, please provide the AWS key and secret for your AWS 
-    account and run the following functions from the 'Common'
-    module first:
-        createTable()   - creates a new table with 50 read and 50 write capacity
-        seedData()      - seed the table with 5k items
+    This script does not execute against Amazon DynamoDB but executes against the
+    DynamoDBLocal instead. For more detais, please see:
+        http://aws.typepad.com/aws/2013/09/dynamodb-local-for-desktop-development.html
+        http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Tools.DynamoDBLocal.html    
+*)
 
-    PLEASE DON'T FORGET TO DELETE THE TABLE AFTER RUNNING THE EXAMPLES. 
-    I WILL NOT BE LIABLE FOR ANY AWS COSTS YOU INCUR WHILE RUNNING THESE EXAMPLES.
+(*
+
+RUNNING INSTRUCTIONS
+
+In order for this script to run, you need to have version 7 of the Java Runtime Environement 
+installed, which you can download from: 
+    http://java.com/en/
+
+Before you start running the scripts, please double click the 
+    lib/start_dynamodb_local.bat
+file to start an instance of the DynamoDBLocal database for testing.
+
 *)
 
 #r @"bin\AWSSDK.dll"
@@ -505,6 +516,16 @@ module ScanExamples =
 
         assertThat (response.ConsumedCapacity = null)
                    "ConsumedCapacity should not be returned"
+
+// you don't need to run these.
+//let cmdFile = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..\..\lib\start_dynamodb_local.bat")
+//let jarFile = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..\..\lib\dynamodb_local_2013-12-12/DynamoDBLocal.jar")
+//let dynamoDbLocal = startDynamoDBLocal cmdFile jarFile
+
+// uncomment these to create the table and seed the test data if you need to build the local DynamoDB table from scratch
+//deleteTable()
+//createTable()
+//seedData()
 
 time <| QueryExamples.queryByHashKey
 time <| QueryExamples.queryByHashAndRangeKey
