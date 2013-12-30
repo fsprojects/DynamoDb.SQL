@@ -77,5 +77,5 @@ For example:
 * Updated `AWSSDK` to `v1.5.25.0`.
 
 #### 2.0.0 - December 9 2013
-* Updated `AWSSDK` to `v2.0.2.4`.
+* Updated `AWSSDK` to `v2.0.4.1`.
 * Removed support for the v1 query syntax (e.g. the use of @HashKey and @RangeKey).

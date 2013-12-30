@@ -9,9 +9,14 @@ open System
 open FParsec
 open DynamoDb.SQL
 
-exception InvalidTableName  of string
-exception InvalidQuery      of string
-exception InvalidScan       of string
+type InvalidTableNameException (tableName) = 
+    inherit Exception("Invalid table name : " + tableName)
+
+type InvalidQueryException (errString) = 
+    inherit Exception(errString)
+
+type InvalidScanException (errString) = 
+    inherit Exception(errString)
 
 [<AutoOpen>]
 module Common =
@@ -68,9 +73,9 @@ module Common =
         >>. skipStringCI_ws "from"
         >>. ((many1SatisfyL isTableName "table name")             
             |>> (function | name when name.Equals("where", StringComparison.CurrentCultureIgnoreCase)
-                                    -> raise <| InvalidTableName name
+                                    -> raise <| InvalidTableNameException name
                           | name when name.Equals("limit", StringComparison.CurrentCultureIgnoreCase)
-                                    -> raise <| InvalidTableName name
+                                    -> raise <| InvalidTableNameException name
                           | name -> From name))
         .>> ws
 
@@ -201,8 +206,8 @@ module Parser =
 
     let parseDynamoQuery str = match run QueryParser.pquery str with
                                | Success(result, _, _) -> result
-                               | Failure(errStr, _, _) -> raise <| InvalidQuery errStr
+                               | Failure(errStr, _, _) -> raise <| InvalidQueryException errStr
 
     let parseDynamoScan str = match run ScanParser.pscan str with
                               | Success(result, _, _) -> result
-                              | Failure(errStr, _, _) -> raise <| InvalidScan errStr
+                              | Failure(errStr, _, _) -> raise <| InvalidScanException errStr

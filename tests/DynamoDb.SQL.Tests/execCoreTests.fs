@@ -31,18 +31,18 @@ type ``Given a DynamoQuery`` () =
                                   ("Age",       Between (N 30.0, N 40.0)) ]
 
     [<Test>]
-    [<ExpectedException(typeof<InvalidQuery>)>]
+    [<ExpectedException(typeof<InvalidQueryException>)>]
     member this.``when there is no filter conditions it should except`` () =
-        parseDynamoQuery "SELECT * FROM Employees" |> should throw typeof<InvalidQuery>
+        parseDynamoQuery "SELECT * FROM Employees" |> should throw typeof<InvalidQueryException>
 
     [<Test>]
-    [<ExpectedException(typeof<InvalidQueryFormat>)>]
+    [<ExpectedException(typeof<InvalidQueryFormatException>)>]
     member this.``when there is no equality condition it should except`` () =
         let query = parseDynamoQuery "SELECT * FROM Employees WHERE Age > 30"
 
         match query with 
         | { Where = Where(QueryCondition _) } -> ()
-        |> should throw typeof<InvalidQueryFormat>
+        |> should throw typeof<InvalidQueryFormatException>
 
     [<Test>]
     member this.``when there is only an asterisk (*) in the SELECT clause it should return null as attribtue values`` () =

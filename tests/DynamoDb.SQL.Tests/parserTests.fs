@@ -14,42 +14,42 @@ module Tests =
     let equal = FsUnit.TopLevelOperators.equal
 
     [<TestFixture>]
-    type ``Given a V2 query`` () =
+    type ``Given a query`` () =
         [<Test>]
-        [<ExpectedException(typeof<InvalidQuery>)>]
+        [<ExpectedException(typeof<InvalidQueryException>)>]
         member this.``when there is no attributes in the select clause it should except`` () =
             let select = "SELECT FROM Employees WHERE FirstName = \"Yan\""
-            parseDynamoQuery select |> should throw typeof<InvalidQuery>
+            parseDynamoQuery select |> should throw typeof<InvalidQueryException>
 
         [<Test>]
-        [<ExpectedException(typeof<InvalidTableName>)>]
+        [<ExpectedException(typeof<InvalidTableNameException>)>]
         member this.``when there is no table name in the from clause it should except`` () =
             let select = "SELECT * FROM WHERE FirstName = \"Yan\""
-            parseDynamoQuery select |> should throw typeof<InvalidTableName>
+            parseDynamoQuery select |> should throw typeof<InvalidTableNameException>
 
         [<Test>]
-        [<ExpectedException(typeof<InvalidQuery>)>]
+        [<ExpectedException(typeof<InvalidQueryException>)>]
         member this.``when there is no where clause it should except`` () =
             let select = "SELECT * FROM Employees"
-            parseDynamoQuery select |> should throw typeof<InvalidQuery>
+            parseDynamoQuery select |> should throw typeof<InvalidQueryException>
 
         [<Test>]
-        [<ExpectedException(typeof<InvalidQuery>)>]
+        [<ExpectedException(typeof<InvalidQueryException>)>]
         member this.``when there is no filter conditions in the where clause it should except`` () =
             let select = "SELECT * FROM Employees WHERE"
-            parseDynamoQuery select |> should throw typeof<InvalidQuery>
+            parseDynamoQuery select |> should throw typeof<InvalidQueryException>
 
         [<Test>]
-        [<ExpectedException(typeof<InvalidQuery>)>]
+        [<ExpectedException(typeof<InvalidQueryException>)>]
         member this.``when there is a HashKey keyword in the where clause it should except`` () =
             let select = "SELECT * FROM Employees WHERE @HashKey = \"Yan\""
-            parseDynamoQuery select |> should throw typeof<InvalidQuery>
+            parseDynamoQuery select |> should throw typeof<InvalidQueryException>
 
         [<Test>]
-        [<ExpectedException(typeof<InvalidQuery>)>]
+        [<ExpectedException(typeof<InvalidQueryException>)>]
         member this.``when there is a RangeKey keyword in the where clause it should except`` () =
             let select = "SELECT * FROM Employees WHERE @RangeKey = \"Yan\""
-            parseDynamoQuery select |> should throw typeof<InvalidQuery>
+            parseDynamoQuery select |> should throw typeof<InvalidQueryException>
 
         [<Test>]
         member this.``when there is white spaces around the attribute names and table name they should be ignored`` () =
@@ -92,10 +92,10 @@ module Tests =
             query.Limit     |> should equal <| None
 
         [<Test>]
-        [<ExpectedException(typeof<InvalidQuery>)>]
+        [<ExpectedException(typeof<InvalidQueryException>)>]
         member this.``when the != operator is used it should except`` () =
             let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND Age != 30"
-            parseDynamoQuery select |> should throw typeof<InvalidQuery>
+            parseDynamoQuery select |> should throw typeof<InvalidQueryException>
 
         [<Test>]
         member this.``when < operator is used it should be parsed correctly`` () =
@@ -142,16 +142,16 @@ module Tests =
             query.Limit     |> should equal <| None
 
         [<Test>]
-        [<ExpectedException(typeof<InvalidQuery>)>]
+        [<ExpectedException(typeof<InvalidQueryException>)>]
         member this.``when the Contains operator is used it should except`` () =
             let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND LastName CONTAINS \"Cui\""
-            parseDynamoQuery select |> should throw typeof<InvalidQuery>
+            parseDynamoQuery select |> should throw typeof<InvalidQueryException>
 
         [<Test>]
-        [<ExpectedException(typeof<InvalidQuery>)>]
+        [<ExpectedException(typeof<InvalidQueryException>)>]
         member this.``when the NotContains operator is used it except`` () =
             let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND LastName NOT CONTAINS \"Cui\""
-            parseDynamoQuery select |> should throw typeof<InvalidQuery>
+            parseDynamoQuery select |> should throw typeof<InvalidQueryException>
 
         [<Test>]
         member this.``when the Begins With operator is used it should be parsed correctly`` () =
@@ -176,22 +176,22 @@ module Tests =
             query.Limit     |> should equal <| None
 
         [<Test>]
-        [<ExpectedException(typeof<InvalidQuery>)>]
+        [<ExpectedException(typeof<InvalidQueryException>)>]
         member this.``when the In operator is used it should except`` () =
             let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND Age IN (\"Foo\", \"Bar\")"
-            parseDynamoQuery select |> should throw typeof<InvalidQuery>
+            parseDynamoQuery select |> should throw typeof<InvalidQueryException>
 
         [<Test>]
-        [<ExpectedException(typeof<InvalidQuery>)>]
+        [<ExpectedException(typeof<InvalidQueryException>)>]
         member this.``when the Is Null operator is used it should except`` () =
             let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND LastName IS NULL"
-            parseDynamoQuery select |> should throw typeof<InvalidQuery>
+            parseDynamoQuery select |> should throw typeof<InvalidQueryException>
 
         [<Test>]
-        [<ExpectedException(typeof<InvalidQuery>)>]
+        [<ExpectedException(typeof<InvalidQueryException>)>]
         member this.``when the Is Not Null operator is used it should except`` () =
             let select = "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND LastName IS NOT NULL"
-            parseDynamoQuery select |> should throw typeof<InvalidQuery>
+            parseDynamoQuery select |> should throw typeof<InvalidQueryException>
 
         [<Test>]
         member this.``when limit clause is specified, it should be parsed correctly`` () =
@@ -241,10 +241,10 @@ module Tests =
             query.Order     |> should equal <| Some(Desc)
 
         [<Test>]
-        [<ExpectedException(typeof<InvalidQuery>)>]
+        [<ExpectedException(typeof<InvalidQueryException>)>]
         member this.``when a count query is specified with attribute names, it should except`` () =
             let count = "COUNT FirstName FROM Employees WHERE FirstName = \"Yan\" AND Age >= 30 ORDER DESC LIMIT 10"
-            parseDynamoQuery count |> should throw typeof<InvalidQuery>
+            parseDynamoQuery count |> should throw typeof<InvalidQueryException>
 
         [<Test>]
         member this.``when NoConsistentRead option is specified it should be captured in the Options clause`` () =
@@ -315,16 +315,16 @@ module Tests =
     [<TestFixture>]
     type ``Given a scan`` () =
         [<Test>]
-        [<ExpectedException(typeof<InvalidScan>)>]
+        [<ExpectedException(typeof<InvalidScanException>)>]
         member this.``when there is no attributes in the select clause it should except`` () =
             let select = "SELECT FROM Employees WHERE @hashkey = \"Yan\""
-            parseDynamoScan select |> should throw typeof<InvalidScan>
+            parseDynamoScan select |> should throw typeof<InvalidScanException>
 
         [<Test>]
-        [<ExpectedException(typeof<InvalidTableName>)>]
+        [<ExpectedException(typeof<InvalidTableNameException>)>]
         member this.``when there is no table name in the from clause it should except`` () =
             let select = "SELECT * FROM WHERE FirstName = \"Yan\""
-            parseDynamoScan select |> should throw typeof<InvalidTableName>
+            parseDynamoScan select |> should throw typeof<InvalidTableNameException>
 
         [<Test>]   
         member this.``when there is no where clause it should be parsed correctly`` () =
@@ -338,10 +338,10 @@ module Tests =
             scan.Limit      |> should equal <| None
 
         [<Test>]
-        [<ExpectedException(typeof<InvalidScan>)>]
+        [<ExpectedException(typeof<InvalidScanException>)>]
         member this.``when there is no filter conditions in the where clause it should except`` () =
             let select = "SELECT * FROM Employees WHERE"
-            parseDynamoScan select |> should throw typeof<InvalidScan>
+            parseDynamoScan select |> should throw typeof<InvalidScanException>
 
         [<Test>]
         member this.``when there is white spaces around the attribute names and table name they should be ignored`` () =
@@ -373,16 +373,16 @@ module Tests =
             scan.Limit      |> should equal <| Some(Limit 5)
 
         [<Test>]
-        [<ExpectedException(typeof<InvalidScan>)>]
+        [<ExpectedException(typeof<InvalidScanException>)>]
         member this.``when a hash key is included it should except`` () =
             let select = "SELECT * FROM Employees WHERE @hashkey = \"Yan\""
-            parseDynamoScan select |> should throw typeof<InvalidScan>
+            parseDynamoScan select |> should throw typeof<InvalidScanException>
 
         [<Test>]
-        [<ExpectedException(typeof<InvalidScan>)>]
+        [<ExpectedException(typeof<InvalidScanException>)>]
         member this.``when a range key is included it should except`` () =
             let select = "SELECT * FROM Employees WHERE @rangekey = \"Cui\""
-            parseDynamoScan select |> should throw typeof<InvalidScan>
+            parseDynamoScan select |> should throw typeof<InvalidScanException>
 
         [<Test>]
         member this.``when an attribute name is included in a filter condition it should be parsed correctly`` () =
@@ -524,10 +524,10 @@ module Tests =
             scan.Limit      |> should equal <| Some(Limit 10)
 
         [<Test>]
-        [<ExpectedException(typeof<InvalidScan>)>]
+        [<ExpectedException(typeof<InvalidScanException>)>]
         member this.``when a count query is specified with attribute names, it should except`` () =
             let count = "COUNT FirstName FROM Employees WHERE FirstName = \"Yan\" AND Age >= 30 ORDER DESC LIMIT 10"
-            parseDynamoScan count |> should throw typeof<InvalidScan>
+            parseDynamoScan count |> should throw typeof<InvalidScanException>
 
         [<Test>]
         member this.``when PageSize option is specified it should be parsed correctly`` () =

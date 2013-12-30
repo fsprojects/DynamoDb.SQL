@@ -5,10 +5,22 @@
 
 namespace DynamoDb.SQL
 
-/// Exception that's raised when the query being parsed is invalid
-exception InvalidTableName  of string
-exception InvalidQuery      of string
-exception InvalidScan       of string
+open System
+
+type InvalidTableNameException =
+    inherit Exception
+
+    new : string -> InvalidTableNameException
+
+type InvalidQueryException = 
+    inherit Exception
+
+    new : string -> InvalidQueryException
+
+type InvalidScanException = 
+    inherit Exception
+
+    new : string -> InvalidScanException
 
 [<AutoOpen>]
 module internal Parser =
