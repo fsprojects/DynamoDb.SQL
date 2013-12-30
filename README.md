@@ -93,7 +93,7 @@ let response    = client.Query(selectQuery)
 
 #### Ordering and Limiting
 
-Often you will want to retrieve only the top or bottom X number of items based on the natural sorting order of the range key values.
+Often you will want to retrieve only the top or bottom X number of items based on the natural sorting order of the range key values. Therefore it often makes sense to combine the **ORDER** and **LIMIT** clauses in your query.
 
 For example, in our `GameScores` table (see above), to find the top 3 scoring games for a given user we can write:
 

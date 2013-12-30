@@ -1,7 +1,7 @@
-﻿// Copyright (c) Yan Cui 2012
+﻿// Author : Yan Cui (twitter @theburningmonk)
 
-// Email : theburningmonk@gmail.com
-// Blog  : http://theburningmonk.com
+// Email  : theburningmonk@gmail.com
+// Blog   : http://theburningmonk.com
 
 module Common
 
@@ -15,8 +15,8 @@ open Amazon.DynamoDBv2.DocumentModel
 open Amazon.DynamoDBv2.Model
 open DynamoDbV2.SQL.Execution
 
-let awsKey      = "AKIAI5Y767DTOFBUSYAA"
-let awsSecret   = "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"
+let awsKey      = "AWS-KEY"
+let awsSecret   = "AWS-SECRET"
 let region      = RegionEndpoint.USEast1
 
 let client = new AmazonDynamoDBClient(awsKey, awsSecret, region)
