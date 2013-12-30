@@ -180,6 +180,8 @@ let response = client.Query(selectQuery)
 
 ## Examples
 
+Here's a handful of examples in C# and F#, feel free to check out the respective project under the **examples** folder too, it also contains F# script to create the sample table and seeding it with test data you need to run these examples. 
+
 #### Query
 
 <table>
