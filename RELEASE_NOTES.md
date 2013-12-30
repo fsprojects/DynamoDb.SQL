@@ -79,3 +79,4 @@ For example:
 #### 2.0.0 - December 9 2013
 * Updated `AWSSDK` to `v2.0.4.1`.
 * Removed support for the v1 query syntax (e.g. the use of @HashKey and @RangeKey).
+* Replaced exception types with C# friendly types
