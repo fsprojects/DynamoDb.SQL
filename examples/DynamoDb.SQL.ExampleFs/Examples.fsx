@@ -1,7 +1,7 @@
-﻿// Copyright (c) Yan Cui 2012
+﻿// Author : Yan Cui (twitter @theburningmonk)
 
-// Email : theburningmonk@gmail.com
-// Blog  : http://theburningmonk.com
+// Email  : theburningmonk@gmail.com
+// Blog   : http://theburningmonk.com
 
 (*
     This script contains query and scan examples using the V2 API (with Index support).
@@ -12,7 +12,7 @@
     account and run the following functions from the 'Common'
     module first:
         createTable()   - creates a new table with 50 read and 50 write capacity
-        seedData()      - seed the table with 10k items
+        seedData()      - seed the table with 5k items
 
     PLEASE DON'T FORGET TO DELETE THE TABLE AFTER RUNNING THE EXAMPLES. 
     I WILL NOT BE LIABLE FOR ANY AWS COSTS YOU INCUR WHILE RUNNING THESE EXAMPLES.

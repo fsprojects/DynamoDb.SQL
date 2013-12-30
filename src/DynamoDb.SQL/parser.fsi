@@ -1,4 +1,4 @@
-﻿// Copyright (c) Yan Cui 2012
+﻿// Author : Yan Cui (twitter @theburningmonk)
 
 // Email : theburningmonk@gmail.com
 // Blog  : http://theburningmonk.com
