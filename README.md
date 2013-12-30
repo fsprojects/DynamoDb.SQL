@@ -7,7 +7,7 @@ This guide contains the following sections:
 - [Features](#features) - what you can do with this library
 - [Examples](#examples) - links to examples in F# and C#
 
-You can view the release notes [here](https://github.com/theburningmonk/DynamoDb.SQL/wiki/Release-Notes), and for detailed run-down of the syntax please refer to the [**Wiki**](https://github.com/theburningmonk/DynamoDb.SQL/wiki).
+You can view the release notes [here](https://github.com/theburningmonk/DynamoDb.SQL/wiki/Release-Notes), and check out the [Wiki](https://github.com/theburningmonk/DynamoDb.SQL/wiki).
 
 
 
@@ -47,7 +47,9 @@ let query  = "SELECT * FROM GameScores WHERE UserId = \"theburningmonk-1\""
 let scores = ctx.ExecQuery<GameScore>(selectQuery)
 ```
 
-whilst the above example is in F#, the same extension methods are accessible from C# too.
+whilst the above example is in F#, the same extension methods are accessible from C# too, check out the full range of examples in the [Examples](#examples) section.
+
+For a **detailed run-down of the syntax** please refer to this [**page**](https://github.com/theburningmonk/DynamoDb.SQL/wiki/Getting-Started-V2#syntax).
 
 
 ## Features
@@ -64,6 +66,9 @@ let selectQuery = "SELECT * FROM GameScores WHERE UserId = \"theburningmonk-1\""
 let response    = client.Query(selectQuery)
 ```
 
+Whilst the syntax for both *query* and *scan* operations are similar, there are minor differences and some comparisons (such as `CONTAINS` and `IN (...)`) are only supported in *scan* operations by *DynamoDB*.
+ 
+For a **detailed run-down of the syntax** please refer to this [**page**](https://github.com/theburningmonk/DynamoDb.SQL/wiki/Getting-Started-V2#syntax).
 
 #### Count-only queries
 
