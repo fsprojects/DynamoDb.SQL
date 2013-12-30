@@ -186,42 +186,42 @@ let response = client.Query(selectQuery)
 	<tbody>
 		<tr>
 			<td>Get all rows for a hash key</td>
-			<td>C#</td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L74-L87>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L68-L87>F#</a></td>
 		</tr>
 		<tr>
 			<td>Query with range key</td>
-			<td>C#</td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L89-L105>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L93-L118>F#</a></td>
 		</tr>
 		<tr>
 			<td>Query with ORDER and LIMIT</td>
-			<td>C#</td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L107-L122>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L122-L159>F#</a></td>
 		</tr>
 		<tr>
 			<td>Disable consistent read</td>
-			<td>C#</td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L124-L137>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L163-L175>F#</a></td>
 		</tr>
 		<tr>
 			<td>Throttling</td>
-			<td>C#</td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L139-L152>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L180-L193>F#</a></td>
 		</tr>
 		<tr>
 			<td>Query with Local Secondary Index (all attributes)</td>
-			<td>C#</td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L186-L203>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L237-L285>F#</a></td>
 		</tr>
 		<tr>
 			<td>Query with Local Secondary Index (projected attributes)</td>
-			<td>C#</td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L205-L222>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L292-L327>F#</a></td>
 		</tr>
 		<tr>
 			<td>Query with Global Secondary Index (projected attributes)</td>
-			<td>C#</td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L224-L243>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L335-L384>F#</a></td>
 		</tr>
 	</tbody>
@@ -234,27 +234,27 @@ let response = client.Query(selectQuery)
 	<tbody>
 		<tr>
 			<td>Basic scan</td>
-			<td>C#</td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L249-L262>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L414-L433>F#</a></td>
 		</tr>
 		<tr>
 			<td>Scan with LIMIT</td>
-			<td>C#</td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L264-L277>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L437-L456>F#</a></td>
 		</tr>
 		<tr>
 			<td>Throttling</td>
-			<td>C#</td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L279-L292>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L459-L474>F#</a></td>
 		</tr>
 		<tr>
 			<td>Parallel scans</td>
-			<td>C#</td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L294-L307>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L477-L492>F#</a></td>
 		</tr>
 		<tr>
 			<td>Disable returning consumed capacity</td>
-			<td>C#</td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L309-L318>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L497-L507>F#</a></td>
 		</tr>
 	</tbody>
