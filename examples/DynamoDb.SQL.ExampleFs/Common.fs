@@ -8,6 +8,7 @@ module Common
 open System
 open System.Diagnostics
 open System.Collections.Generic
+open System.Runtime.InteropServices
 open Amazon
 open Amazon.DynamoDBv2
 open Amazon.DynamoDBv2.DataModel
@@ -15,12 +16,16 @@ open Amazon.DynamoDBv2.DocumentModel
 open Amazon.DynamoDBv2.Model
 open DynamoDbV2.SQL.Execution
 
-let awsKey      = "AWS-KEY"
-let awsSecret   = "AWS-SECRET"
-let region      = RegionEndpoint.USEast1
+let awsKey      = "my-aws-key"
+let awsSecret   = "my-aws-secret"
 
-let client = new AmazonDynamoDBClient(awsKey, awsSecret, region)
-let ctx = new DynamoDBContext(client)
+let config = new AmazonDynamoDBConfig()
+config.ServiceURL     <- "http://localhost:8000"
+
+let client = new AmazonDynamoDBClient(awsKey, awsSecret, config)
+let ctx    = new DynamoDBContext(client)
+
+let tableName = "GameScores"
 
 [<DynamoDBTable("GameScores")>]
 type GameScore () =
@@ -32,9 +37,18 @@ type GameScore () =
     member val Wins             = 0 with get, set
     member val Losses           = 0 with get, set
 
+let startDynamoDBLocal fileName jarFile =
+    let procInfo = new ProcessStartInfo(fileName, jarFile)
+    procInfo.RedirectStandardInput  <- false
+    procInfo.RedirectStandardOutput <- false
+    procInfo.RedirectStandardError  <- false
+    procInfo.UseShellExecute        <- false
+    
+    Process.Start(procInfo)
+
 let createTable () = 
     let mutable req = new Amazon.DynamoDBv2.Model.CreateTableRequest()
-    req.TableName <- "GameScores"
+    req.TableName <- tableName
 
     let hashKey = new Amazon.DynamoDBv2.Model.KeySchemaElement()
     hashKey.KeyType         <- KeyType.HASH
@@ -92,6 +106,13 @@ let createTable () =
     req.GlobalSecondaryIndexes.Add(gsi)
     client.CreateTable(req) |> ignore
 
+let deleteTable () =
+    let req = new ListTablesRequest()
+    let res = client.ListTables(req)
+    if res.TableNames.Contains(tableName) then
+        let req = new DeleteTableRequest(TableName = tableName)
+        client.DeleteTable(req) |> ignore
+
 let alienAdventure = "Alien Adventure"
 let attackShips    = "Attack Ships"
 let galaxyInvaders = "Galaxy Invaders"
@@ -139,3 +160,6 @@ let time f =
     f()
     stopwatch.Stop()
     printfn "Execution took %A" stopwatch.Elapsed
+
+[<DllImport("kernel32.dll")>]
+extern bool GenerateConsoleCtrlEvent (uint32 dwCtrlEvent, uint32 dwProcessGroupId)
