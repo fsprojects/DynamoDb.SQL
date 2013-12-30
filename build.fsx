@@ -56,7 +56,7 @@ let releaseNotes = release.Notes |> String.concat "\n"
 // Generate assembly info files with the right version & up-to-date information
 
 Target "AssemblyInfo" (fun _ ->
-    CreateFSharpAssemblyInfo "DynamoDb.SQL/AssemblyInfo.fs"
+    CreateFSharpAssemblyInfo "src/DynamoDb.SQL/AssemblyInfo.fs"
            [ Attribute.Title        project
              Attribute.Product      project
              Attribute.Description  summary
@@ -85,13 +85,13 @@ let files includes =
     Excludes = [] } 
 
 Target "Build" (fun _ ->
-    files [ "DynamoDb.SQL/DynamoDb.SQL.fsproj" ]
+    files [ "src/DynamoDb.SQL/DynamoDb.SQL.fsproj" ]
     |> MSBuildRelease buildDir "Rebuild"
     |> ignore
 )
 
 Target "BuildTests" (fun _ ->
-    files [ "DynamoDb.SQL.Tests/DynamoDb.SQL.Tests.fsproj" ]
+    files [ "tests/DynamoDb.SQL.Tests/DynamoDb.SQL.Tests.fsproj" ]
     |> MSBuildDebug testDir "Rebuild"
     |> ignore
 )
