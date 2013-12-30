@@ -207,7 +207,7 @@ module ClientExt =
                 -> queryLoop this n req None
             | GetQueryReq req 
                 -> queryLoop this Int32.MaxValue req None
-            | _ -> raise <| InvalidQuery (sprintf "Not a valid query request : %s" query)
+            | _ -> raise <| InvalidQueryException (sprintf "Not a valid query request : %s" query)
 
         member this.Query (query : string) = this.QueryAsync(query) |> Async.RunSynchronously
 
@@ -217,7 +217,7 @@ module ClientExt =
     
             let scanReqs    = match dynamoScan with 
                               | GetScanReqs reqs -> reqs 
-                              | _ -> raise <| InvalidScan (sprintf "Not a valid scan request : %s" query)
+                              | _ -> raise <| InvalidScanException (sprintf "Not a valid scan request : %s" query)
             
             async {
                 let! scanResponses = scanReqs |> Array.map (scanLoop this maxResults None) |> Async.Parallel

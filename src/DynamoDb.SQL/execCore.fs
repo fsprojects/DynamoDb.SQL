@@ -8,7 +8,8 @@ namespace DynamoDb.SQL
 open System.Collections.Generic
 open Amazon.DynamoDBv2.Model
 
-exception InvalidQueryFormat    of string
+type InvalidQueryFormatException (errMsg) =
+    inherit System.Exception(errMsg)
 
 module Core =
     let (|QueryCondition|) (conditions : Filter list) = 
@@ -16,9 +17,9 @@ module Core =
         let filters = conditions |> List.map (fun (Attribute name, cond) -> name, cond)
 
         match filters with
-        | [] -> raise <| InvalidQueryFormat "Query should specify a '=' clause against the hash key attribute"
+        | [] -> raise <| InvalidQueryFormatException "Query should specify a '=' clause against the hash key attribute"
         | _ when not <| (filters |> List.exists (function | _, Equal _ -> true | _ -> false))
-             -> raise <| InvalidQueryFormat "Query should specify a '=' clause against the hash key attribute"
+             -> raise <| InvalidQueryFormatException "Query should specify a '=' clause against the hash key attribute"
         | _  -> filters
 
     let (|ScanCondition|) (conditions : Filter list) =

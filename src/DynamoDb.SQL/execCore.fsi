@@ -7,7 +7,10 @@ namespace DynamoDb.SQL
 
 open System.Collections.Generic
 
-exception InvalidQueryFormat    of string
+type InvalidQueryFormatException =
+    inherit System.Exception
+
+    new : string -> InvalidQueryFormatException
 
 [<AutoOpen>]
 module internal Core =
