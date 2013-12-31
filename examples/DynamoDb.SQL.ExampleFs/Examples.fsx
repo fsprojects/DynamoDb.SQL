@@ -482,7 +482,28 @@ module ScanExamples =
         printfn "(DynamoDBContext) Running basic scan with PageSize :\n\t\t%s" selectQuery
         let gameScores = ctx.ExecScan<GameScore>(selectQuery) |> Seq.toArray
         gameScores |> assertGameScores 1000 starshipX |> ignore
-    
+        
+    /// Select specific attributes
+    let selectSpecificAttributes () =
+        // this scan should return quite a number of items... all the game scores should be for starship x
+        let selectQuery = sprintf "SELECT GameTitle, TopScoreDateTime FROM GameScores WHERE GameTitle = \"%s\"" starshipX
+
+        (* ---------------- query using AmazonDynamoDBClient ---------------- *)
+        printfn "(AmazonDynamoDBClient) Running basic scan :\n\t\t%s" selectQuery
+        let response = client.Scan(selectQuery)
+        response |> assertItemsCount 1000 |> assertGameTitle starshipX |> ignore        
+        assertThat (response.Items |> Seq.forall (fun attrs -> attrs.Count = 2 && attrs.ContainsKey "GameTitle" && attrs.ContainsKey "TopScoreDateTime"))
+                   "QueryResult items should only contain GameTitle and TopScoreDateTime attributes"
+
+        (* ---------------- query using DynamoDBContext ---------------- *)
+        printfn "(DynamoDBContext) Running basic scan :\n\t\t%s" selectQuery
+        let gameScores = ctx.ExecScan<GameScore>(selectQuery) |> Seq.toArray
+        gameScores |> assertGameScores 1000 starshipX |> ignore
+
+        assertThat (gameScores |> Seq.forall (fun gs -> gs.GameTitle.Length > 0 && gs.TopScoreDateTime > DateTime.MinValue &&
+                                                        gs.Wins = 0 && gs.Losses = 0 && gs.TopScore = 0 && String.IsNullOrWhiteSpace gs.UserId))
+                   "Only GameScore.GameTitle and GameScore.TopScoreDateTime should be set"
+                   
     /// You can use Scan segments to carry out scans in multiple segments simultaneously
     let scanWithScanPageSizeAndSegments () =
         // this scan should return the same results as the basic example, but 
@@ -540,5 +561,6 @@ time <| QueryExamples.queryWithGlobalSecondaryIndexProjectedAttributes
 time <| ScanExamples.basicScan
 time <| ScanExamples.scanWithLimit
 time <| ScanExamples.throttlingWithScanPageSize
+time <| ScanExamples.selectSpecificAttributes
 time <| ScanExamples.scanWithScanPageSizeAndSegments
 time <| ScanExamples.scanWithNoReturnedConsumedCapacity

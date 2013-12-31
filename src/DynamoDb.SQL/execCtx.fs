@@ -59,6 +59,7 @@ module Ctx =
                                         Filter                  = this.Filter,
                                         Limit                   = this.Limit,
                                         TotalSegments           = this.TotalSegments,
+                                        Select                  = this.Select,
                                         Segment                 = n)
 
             [| 0..this.TotalSegments - 1 |] |> Array.map (fun n -> makeSegment n)
@@ -79,6 +80,12 @@ module Ctx =
 
                     config.Filter <- scanFilter
                | _ -> ()
+
+               // you cannot specify both AttributesToGet and SPECIFIC_ATTRIBUTES in Select
+               // for more details, see http://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Scan.html
+               config.Select <- match attributes with
+                                | null -> SelectValues.AllAttributes
+                                | _    -> SelectValues.SpecificAttributes
                
                match tryGetScanPageSize opts with | Some n -> config.Limit <- n | _ -> ()
                config.TotalSegments <- getScanSegments opts

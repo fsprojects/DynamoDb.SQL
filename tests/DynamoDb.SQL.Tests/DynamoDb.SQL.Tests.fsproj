@@ -48,6 +48,7 @@
     <Compile Include="execCoreTests.fs" />
     <Compile Include="execLowLevelTests.fs" />
     <Compile Include="execCtxTests.fs" />
+    <Compile Include="dynamoDBLocalTests.fs" />
     <None Include="packages.config" />
     <None Include="app.config" />
   </ItemGroup>
