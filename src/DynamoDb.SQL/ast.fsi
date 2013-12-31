@@ -21,7 +21,6 @@ module internal Ast =
         | N     of double
 
         member ToAttributeValue   : unit -> AttributeValue
-        member ToPrimitive        : unit -> Primitive
 
     type FilterCondition = 
         | Equal                 of Operant
