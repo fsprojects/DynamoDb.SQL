@@ -55,11 +55,6 @@ module Ast =
                 | S(str) -> new AttributeValue(S = str)
                 | N(n)   -> new AttributeValue(N = string n)
 
-            member this.ToPrimitive() =
-                match this with
-                | S(str) -> new Primitive(str)
-                | N(n)   -> new Primitive(string n, true)
-
             member private this.StructuredFormatDisplay = this.ToString()
 
     [<StructuredFormatDisplay("{StructuredFormatDisplay}")>]

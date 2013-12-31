@@ -27,20 +27,6 @@ type ``Given an Operant`` () =
 
         op.ToAttributeValue().N   |> should equal "30"
 
-    [<Test>]
-    member this.``S.ToPrimitive should return a Primitive with type String of its string value`` () =
-        let op = S "Test"
-
-        op.ToPrimitive().Type     |> should equal DynamoDBEntryType.String
-        op.ToPrimitive().Value    |> should equal "Test"
-
-    [<Test>]
-    member this.``N.ToPrimitive should return a Primitive with type Numeric of string representation of its numeric value`` () =
-        let op = N 30.0
-
-        op.ToPrimitive().Type     |> should equal DynamoDBEntryType.Numeric
-        op.ToPrimitive().Value    |> should equal "30"
-
 [<TestFixture>]
 type ``Given a FilterCondition`` () =
     [<Test>]
