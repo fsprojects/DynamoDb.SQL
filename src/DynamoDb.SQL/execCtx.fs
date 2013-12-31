@@ -3,7 +3,7 @@
 // Email : theburningmonk@gmail.com
 // Blog  : http://theburningmonk.com
 
-namespace DynamoDbV2.SQL.Execution
+namespace Amazon.DynamoDBv2.DataModel
 
 open System
 open System.Linq

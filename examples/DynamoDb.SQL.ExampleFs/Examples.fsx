@@ -39,7 +39,6 @@ open System
 open System.Linq
 open Amazon.DynamoDBv2
 open Amazon.DynamoDBv2.DataModel
-open DynamoDbV2.SQL.Execution
 
 module QueryExamples = 
     let userId = "theburningmonk-1"

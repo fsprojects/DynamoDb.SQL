@@ -3,20 +3,17 @@
 // Email : theburningmonk@gmail.com
 // Blog  : http://theburningmonk.com
 
-module DynamoDbV2.SQL.Execution.LowLevel.Tests
+namespace DynamoDb.SQL.execLowLevel.Tests
 
 open System
 open FsUnit
 open NUnit.Framework
 open DynamoDb.SQL
 open DynamoDb.SQL.Parser
-open DynamoDbV2.SQL.Execution
 open Amazon.DynamoDBv2
 
-let equal = FsUnit.TopLevelOperators.equal
-
 [<TestFixture>]
-type ``Given a V2 DynamoQuery`` () =
+type ``Given a DynamoQuery`` () =
     [<Test>]
     member this.``when there is only an equality filter then KeyConditions should contain a single key condition`` () =
         let (GetQueryReq req) = parseDynamoQuery "SELECT * FROM Employees WHERE FirstName = \"Yan\""
@@ -147,7 +144,7 @@ type ``Given a V2 DynamoQuery`` () =
         req.Select      |> should equal Select.COUNT
 
 [<TestFixture>]
-type ``Given a V2 DynamoScan`` () =
+type ``Given a DynamoScan`` () =
     [<Test>]
     member this.``when there is no where clause it should return a ScanRequest with empty ScanFilter`` () =
         let (GetScanReqs reqs) = parseDynamoScan "SELECT * FROM Employees"

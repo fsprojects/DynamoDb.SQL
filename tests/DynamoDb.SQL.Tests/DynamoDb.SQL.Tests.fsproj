@@ -47,7 +47,7 @@
     <Compile Include="parserTests.fs" />
     <Compile Include="execCoreTests.fs" />
     <Compile Include="execLowLevelTests.fs" />
-    <Compile Include="execCxtTests.fs" />
+    <Compile Include="execCtxTests.fs" />
     <None Include="packages.config" />
     <None Include="app.config" />
   </ItemGroup>

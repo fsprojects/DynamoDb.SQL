@@ -12,10 +12,8 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
-using Amazon;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
-using DynamoDbV2.SQL.Execution;
 
 namespace DynamoClientApiTest
 {

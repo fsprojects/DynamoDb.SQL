@@ -14,7 +14,6 @@ open Amazon.DynamoDBv2
 open Amazon.DynamoDBv2.DataModel
 open Amazon.DynamoDBv2.DocumentModel
 open Amazon.DynamoDBv2.Model
-open DynamoDbV2.SQL.Execution
 
 let awsKey      = "my-aws-key"
 let awsSecret   = "my-aws-secret"

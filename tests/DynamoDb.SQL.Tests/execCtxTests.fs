@@ -3,18 +3,16 @@
 // Email : theburningmonk@gmail.com
 // Blog  : http://theburningmonk.com
 
-module DynamoDbV2.SQL.Execution.Helper.Tests
+namespace DynamoDb.SQL.execCtx.Tests
 
 open System
 open FsUnit
 open NUnit.Framework
 open DynamoDb.SQL
 open DynamoDb.SQL.Parser
-open DynamoDbV2.SQL.Execution
 open Amazon.DynamoDBv2
+open Amazon.DynamoDBv2.DataModel
 open Amazon.DynamoDBv2.DocumentModel
-
-let equal = FsUnit.TopLevelOperators.equal
 
 [<TestFixture>]
 type ``Given a DynamoQuery`` () =
@@ -118,7 +116,7 @@ type ``Given a DynamoQuery`` () =
         |> should throw typeof<NotSupportedException>
 
 [<TestFixture>]
-type ``Given a V2 DynamoScan`` () =
+type ``Given a DynamoScan`` () =
     [<Test>]
     member this.``when there is no where clause Filter.ToConditions() should be empty`` () =
         let (GetScanConfigs configs) = parseDynamoScan "SELECT * FROM Employees"
