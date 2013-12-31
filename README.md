@@ -188,47 +188,47 @@ Here's a handful of examples in C# and F#, feel free to check out the respective
 	<tbody>
 		<tr>
 			<td>Get all rows for a hash key</td>
-			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L65-L78>C#</a></td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L66-L79>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L78-L97>F#</a></td>
 		</tr>
 		<tr>
 			<td>Query with range key</td>
-			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L80-L96>C#</a></td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L81-L97>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L103-L128>F#</a></td>
 		</tr>
 		<tr>
 			<td>Query with ORDER and LIMIT</td>
-			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L98-L113>C#</a></td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L99-L114>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L132-L169>F#</a></td>
 		</tr>
 		<tr>
 			<td>Disable consistent read</td>
-			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L115-L128>C#</a></td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L116-L129>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L173-L185>F#</a></td>
 		</tr>
 		<tr>
 			<td>Throttling</td>
-			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L130-L143>C#</a></td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L131-L144>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L190-L203>F#</a></td>
 		</tr>
 		<tr>
 			<td>Selecting specific attributes</td>
-			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L145-L164>C#</a></td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L146-L165>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L207-L226>F#</a></td>
 		</tr>
 		<tr>
 			<td>Query with Local Secondary Index (all attributes)</td>
-			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L177-L194>C#</a></td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L178-L195>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L247-L295>F#</a></td>
 		</tr>
 		<tr>
 			<td>Query with Local Secondary Index (projected attributes)</td>
-			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L196-L213>C#</a></td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L197-L214>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L302-L337>F#</a></td>
 		</tr>
 		<tr>
 			<td>Query with Global Secondary Index (projected attributes)</td>
-			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L215-L234>C#</a></td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L216-L235>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L345-L394>F#</a></td>
 		</tr>
 	</tbody>
@@ -241,17 +241,17 @@ Here's a handful of examples in C# and F#, feel free to check out the respective
 	<tbody>
 		<tr>
 			<td>Basic scan</td>
-			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L240-L253>C#</a></td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L241-L254>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L424-L443>F#</a></td>
 		</tr>
 		<tr>
 			<td>Scan with LIMIT</td>
-			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L255-L268>C#</a></td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L256-L269>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L447-L466>F#</a></td>
 		</tr>
 		<tr>
 			<td>Throttling</td>
-			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L270-L283>C#</a></td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L271-L284>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L469-L484>F#</a></td>
 		</tr>
 		<tr>
@@ -261,12 +261,12 @@ Here's a handful of examples in C# and F#, feel free to check out the respective
 		</tr>
 		<tr>
 			<td>Parallel scans</td>
-			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L285-L298>C#</a></td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L286-L299>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L508-L523>F#</a></td>
 		</tr>
 		<tr>
 			<td>Disable returning consumed capacity</td>
-			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L300-L309>C#</a></td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L301-L310>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L528-L538>F#</a></td>
 		</tr>
 	</tbody>
