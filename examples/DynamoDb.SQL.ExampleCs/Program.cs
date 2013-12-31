@@ -54,6 +54,7 @@ namespace DynamoClientApiTest
             ThrottlingWithScanPageSize(client, ctx);
             ScanWithScanPageSizeAndSegments(client, ctx);
             ScanWithNoReturnedConsumedCapacity(client);
+            SelectSpecificAttributes(client, ctx);
 
             Console.WriteLine("all done...");
 
@@ -306,6 +307,25 @@ namespace DynamoClientApiTest
             Debug.Assert(response.Items.Count == 1000);
             Debug.Assert(response.Items.TrueForAll(i => i["GameTitle"].S == StarshipX));
             Debug.Assert(response.ConsumedCapacity == null);
+        }
+
+        private static void SelectSpecificAttributes(AmazonDynamoDBClient client, DynamoDBContext context)
+        {
+            var selectQuery = string.Format("SELECT GameTitle, TopScoreDateTime FROM GameScores WHERE GameTitle = \"{0}\"", StarshipX);
+
+            Console.WriteLine("(AmazonDynamoDBClient) Running basic scan :\n\t\t{0}", selectQuery);
+            var response = client.Scan(selectQuery);
+            Debug.Assert(response.Items.Count == 1000);
+            Debug.Assert(response.Items.TrueForAll(i => i["GameTitle"].S == StarshipX));
+            Debug.Assert(response.Items.TrueForAll(i => i.Count == 2));
+
+            Console.WriteLine("(DynamoDBContext) Running basic scan :\n\t\t{0}", selectQuery);
+            var gameScores = context.ExecScan<GameScore>(selectQuery).ToArray();
+            Debug.Assert(gameScores.Count() == 1000);
+            Debug.Assert(gameScores.All(gs => gs.GameTitle == StarshipX));
+            Debug.Assert(gameScores.All(gs => gs.TopScoreDateTime > default(DateTime) &&
+                                              gs.Wins == 0 && gs.Losses == 0 && gs.TopScore == 0 &&
+                                              String.IsNullOrWhiteSpace(gs.UserId)));
         }
 
         #endregion
