@@ -3,7 +3,7 @@
 // Email : theburningmonk@gmail.com
 // Blog  : http://theburningmonk.com
 
-module DynamoDb.SQL.Tests
+namespace DynamoDb.SQL.ast.Tests
 
 open System
 open FsUnit
@@ -12,9 +12,6 @@ open Amazon.DynamoDBv2
 open Amazon.DynamoDBv2.DocumentModel
 open DynamoDb.SQL
 open DynamoDb.SQL.Parser
-open DynamoDbV2.SQL.Execution
-
-let equal = FsUnit.TopLevelOperators.equal
 
 [<TestFixture>]
 type ``Given an Operant`` () =
