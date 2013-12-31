@@ -256,7 +256,7 @@ Here's a handful of examples in C# and F#, feel free to check out the respective
 		</tr>
 		<tr>
 			<td>Selecting specific attributes</td>
-			<td>C#</td>
+			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L312-L329>C#</a></td>
 			<td><a href=https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L487-L505>F#</a></td>
 		</tr>
 		<tr>
