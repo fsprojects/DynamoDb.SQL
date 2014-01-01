@@ -76,6 +76,17 @@ For example:
 #### 1.3.1 - July 02 2013
 * Updated `AWSSDK` to `v1.5.25.0`.
 
-#### 2.0.0 - December 9 2013
+#### 2.0.0-beta - December 9 2013
 * Updated `AWSSDK` to `v2.0.2.4`.
 * Removed support for the v1 query syntax (e.g. the use of @HashKey and @RangeKey).
+
+#### 2.0.0-beta2 - December 30 2013
+* Updated `AWSSDK` to `v2.0.4.1`.
+* Removed support for the v1 query syntax (e.g. the use of @HashKey and @RangeKey).
+* Replaced exception types with C# friendly types.
+
+#### 2.0.0-beta3 - ?
+* Updated `AWSSDK` to `v2.0.4.1`.
+* Removed support for the v1 query syntax (e.g. the use of @HashKey and @RangeKey).
+* Replaced exception types with C# friendly types.
+* Fixed bug with scanning using specific attributes.

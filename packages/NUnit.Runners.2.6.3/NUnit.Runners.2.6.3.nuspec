@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>NUnit.Runners</id>
     <version>2.6.3</version>
@@ -20,6 +20,5 @@ This package includes the NUnit console, gui and pnunit runners and is compatibl
     <copyright />
     <language>en-US</language>
     <tags>nunit test testing tdd runner</tags>
-    <references />
   </metadata>
 </package>

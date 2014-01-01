@@ -19,8 +19,8 @@
 		@dependencies@
     </metadata>
     <files>
-        <file src="..\build\DynamoDb.SQL.dll" target="lib/net40" />
-		<file src="..\build\DynamoDb.SQL.pdb" target="lib/net40" />
-		<file src="..\build\DynamoDb.SQL.xml" target="lib/net40" />
+        <file src="..\build\DynamoDb.SQL.dll" target="lib/net45" />
+		  <file src="..\build\DynamoDb.SQL.pdb" target="lib/net45" />
+		  <file src="..\build\DynamoDb.SQL.xml" target="lib/net45" />
     </files>
 </package>
