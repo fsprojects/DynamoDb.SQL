@@ -7,7 +7,7 @@ This guide contains the following sections:
 - [Features](#features) - what you can do with this library
 - [Examples](#examples) - links to examples in F# and C#
 
-You can view the release notes [here](https://github.com/theburningmonk/DynamoDb.SQL/wiki/Release-Notes), and check out the [Wiki](https://github.com/theburningmonk/DynamoDb.SQL/wiki).
+You can view the release notes [here](https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/RELEASE_NOTES.md), and check out the [Wiki](https://github.com/theburningmonk/DynamoDb.SQL/wiki).
 
 
 
