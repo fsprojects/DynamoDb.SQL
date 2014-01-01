@@ -27,14 +27,12 @@ Now suppose we have a DynamoDB tabled called `GameScores` like the following:
 
 ![!table](http://dynamodb.sql.s3.amazonaws.com/dynamodb-sql-table.png)
 
-We can find all the scores for the player with `UserId` "theburningmonk-1" we can simply execute the query like the following:
+To find all the scores for the player with `UserId` "theburningmonk-1" we can simply execute the query like the following:
 
 ```fsharp
 
 open Amazon.DynamoDBv2
 open Amazon.DynamoDBv2.DataModel
-
-open DynamoDbV2.SQL.Execution 	// you need to open this namespace to get the ExecQuery extension method
 
 let awsKey      = "MY-AWS-KEY"
 let awsSecret   = "MY-AWS-SECRET"
