@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Dynamodb.sql by theburningmonk</title>
+    <title>DynamoDB.SQL by theburningmonk</title>
 
     <link rel="stylesheet" href="stylesheets/styles.css">
     <link rel="stylesheet" href="stylesheets/pygment_trac.css">
@@ -15,7 +15,7 @@
   <body>
     <div class="wrapper">
       <header>
-        <h1>Dynamodb.sql</h1>
+        <h1>DynamoDB.SQL</h1>
         <p>SQL-like external DSL for querying and scanning Amazon DynamoDB</p>
 
         <p class="view"><a href="https://github.com/theburningmonk/DynamoDb.SQL">View the Project on GitHub <small>theburningmonk/DynamoDb.SQL</small></a></p>
@@ -28,88 +28,286 @@
         </ul>
       </header>
       <section>
-        <p>This library gives you the ability to execute <a href="http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/API_Query.html"><strong>query</strong></a> and <a href="http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/API_Scan.html"><strong>scan</strong></a> operations against <a href="http://aws.amazon.com/dynamodb/"><strong>Amazon DynamoDB</strong></a> using a <strong>SQL</strong>-like syntax by extending the existing functionalities of <code>AmazonDynamoDBClient</code> and <code>DynamoDBContext</code> classes found in the standard .Net AWS SDK.</p>
+        <h1>
+<a name="dynamodbsql-dynamodbsql" class="anchor" href="#dynamodbsql-dynamodbsql"><span class="octicon octicon-link"></span></a>DynamoDb.SQL (<a href="https://twitter.com/DynamoDbSQL">@DynamoDbSQL</a>)</h1>
 
-<h3>
-<a name="syntax" class="anchor" href="#syntax"><span class="octicon octicon-link"></span></a>Syntax</h3>
+<p>This library gives you the capability to execute <a href="http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/API_Query.html"><strong>query</strong></a> and <a href="http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/API_Scan.html"><strong>scan</strong></a> operations against <a href="http://aws.amazon.com/dynamodb/"><strong>Amazon DynamoDB</strong></a> using a <strong>SQL</strong>-like syntax by extending the existing functionalities of <code>AmazonDynamoDBClient</code> and <code>DynamoDBContext</code> classes found in the standard .Net AWS SDK.</p>
 
-<p>A <strong>Query</strong> request is <em>only permitted</em> if your table defines both a hash and a range key. A <code>Query</code> allows you to specify the hash key value and optionally specify at most one comparison against the range key value, if no range key comparison is specified then all available range keys will be returned.</p>
+<p>This guide contains the following sections:</p>
 
-<p>The basic format of a <code>Query</code> can be expressed as:</p>
+<ul>
+<li>
+<a href="#basics">Basics</a> - how to get started using this library</li>
+<li>
+<a href="#features">Features</a> - what you can do with this library</li>
+<li>
+<a href="#examples">Examples</a> - links to examples in F# and C#</li>
+</ul><p>You can view the release notes <a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/RELEASE_NOTES.md">here</a>, and check out the <a href="https://github.com/theburningmonk/DynamoDb.SQL/wiki">Wiki</a>.</p>
 
-<pre><code>SELECT AttributeName1, AttributeName2, ..., AttributeNameN
-FROM   TableName
-WHERE  HashKeyAttributeName = HashKeyValue
-AND    RangeKeyAttributeName operator RangeKeyValue(s)
-ORDER DESC
-LIMIT  N
-WITH   (NoConsistentRead, PageSize(n), NoReturnedCapacity, 
-        Index(IndexName, AllAttributesFlag))
-</code></pre>
+<h2>
+<a name="basics" class="anchor" href="#basics"><span class="octicon octicon-link"></span></a>Basics</h2>
 
-<p>A <strong>Scan</strong> request on the other hand is more permissive but also more expensive to run (both in terms of latency and read units consumed which translates directly to running cost). A 'Scan' allows you to filter on arbitrary fields in your data using a wide range of comparison operators.</p>
-
-<p>The basic format of a <code>Scan</code> can be expressed as:</p>
-
-<pre><code>SELECT AttributeName1, AttributeName2, ..., AttributeNameN
-FROM   TableName
-WHERE  AttributeName1 operator1 AttributeValue1
-AND    AttributeName2 operator2 AttributeValue2
-AND    ...
-AND    AttributeNameN operatorN AttributeValueN
-LIMIT  N
-WITH   (PageSize(n), NoReturnedCapacity, Segments(m))
-</code></pre>
-
-<p>For more details on the valid operators and explanation of the various <code>with</code> options for each type of request, please refer to the <a href="https://github.com/theburningmonk/DynamoDb.SQL/wiki/Getting-Started-V2"><strong>Getting Started</strong></a> guide.</p>
-
-<p>If all you want to find out is the number of matching items rather than the actual items themselves, then you can also use the <code>COUNT</code> keyword in place of <code>SELECT</code>.</p>
-
-<p>For instance, for a <a href="http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/QueryAndScan.html#Count">query count</a>:</p>
-
-<pre><code>COUNT  * 
-FROM   TableName
-WHERE  HashKeyAttributeName = HashKeyValue
-AND    RangeKeyAttributeName operator RangeKeyValue(s)
-LIMIT  N
-</code></pre>
-
-<p>or a <a href="http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/QueryAndScan.html#Count">scan count</a>:</p>
-
-<pre><code>COUNT  * 
-FROM   TableName
-WHERE  AttributeName1 operator1 AttributeValue1
-AND    AttributeName2 operator2 AttributeValue2
-AND    ...
-AND    AttributeNameN operatorN AttributeValueN
-LIMIT  N
-</code></pre>
-
-<p>Please note that <code>DynamoDB</code> <strong>does not</strong> allow attribute names to be specified when performing a count operation, so a valid count query will <strong>always</strong> start with <code>COUNT * FROM ...</code>.</p>
-
-<h3>
-<a name="local-secondary-index-lsi" class="anchor" href="#local-secondary-index-lsi"><span class="octicon octicon-link"></span></a>Local Secondary Index (LSI)</h3>
-
-<p>Querying using LSI is supported using the <strong>Index</strong> query option, more details <a href="http://theburningmonk.com/2013/05/dynamodb-sql-1-2-1-now-supports-local-secondary-index/">here</a>.</p>
-
-<h3>
-<a name="parallel-scans" class="anchor" href="#parallel-scans"><span class="octicon octicon-link"></span></a>Parallel Scans</h3>
-
-<p>Scanning using parallel scans is supported using the <strong>Segments</strong> scan option, example <a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/master/ExampleFs/V2Examples.fsx#L466-L497">here</a>.</p>
-
-<h3>
-<a name="nuget" class="anchor" href="#nuget"><span class="octicon octicon-link"></span></a>Nuget</h3>
+<h4>
+<a name="getting-started" class="anchor" href="#getting-started"><span class="octicon octicon-link"></span></a>Getting Started</h4>
 
 <p>Download and install <strong>DynamoDb.SQL</strong> using <a href="https://nuget.org/packages/DynamoDb.SQL">NuGet</a>.</p>
 
 <p><a href="https://nuget.org/packages/DynamoDb.SQL"><img src="http://theburningmonk.com/images/dynamodb.sql-nuget-install.png" alt="NuGet package"></a></p>
 
-<p>You can view the release notes <a href="https://github.com/theburningmonk/DynamoDb.SQL/wiki/Release-Notes">here</a>.</p>
+<p>Now suppose we have a DynamoDB tabled called <code>GameScores</code> like the following:</p>
 
-<h3>
-<a name="keep-in-touch" class="anchor" href="#keep-in-touch"><span class="octicon octicon-link"></span></a>Keep in touch</h3>
+<p><img src="http://dynamodb.sql.s3.amazonaws.com/dynamodb-sql-table.png" alt="!table"></p>
 
-<p>Please follow the official twitter account <a href="https://twitter.com/DynamoDbSQL">@DynamoDbSQL</a> for updates, and feel free to send me any feedbacks or questions you have about the project :-)</p>
+<p>To find all the scores for the player with <code>UserId</code> "theburningmonk-1" we can simply execute the query like the following:</p>
+
+<div class="highlight highlight-fsharp"><pre>
+<span class="k">open</span> <span class="nn">Amazon.DynamoDBv2</span>
+<span class="k">open</span> <span class="nn">Amazon.DynamoDBv2.DataModel</span>
+
+<span class="k">let</span> <span class="nv">awsKey</span>      <span class="o">=</span> <span class="s">"MY-AWS-KEY"</span>
+<span class="k">let</span> <span class="nv">awsSecret</span>   <span class="o">=</span> <span class="s">"MY-AWS-SECRET"</span>
+<span class="k">let</span> <span class="nv">region</span>      <span class="o">=</span> <span class="nn">RegionEndpoint</span><span class="p">.</span><span class="n">USEast1</span>
+
+<span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AmazonDynamoDBClient</span><span class="o">(</span><span class="n">awsKey</span><span class="o">,</span> <span class="n">awsSecret</span><span class="o">,</span> <span class="n">region</span><span class="o">)</span>
+<span class="k">let</span> <span class="nv">ctx</span>    <span class="o">=</span> <span class="k">new</span> <span class="n">DynamoDBContext</span><span class="o">(</span><span class="n">client</span><span class="o">)</span>
+
+<span class="k">let</span> <span class="nv">query</span>  <span class="o">=</span> <span class="s">"SELECT * FROM GameScores WHERE UserId = </span><span class="se">\"</span><span class="s">theburningmonk-1</span><span class="se">\"</span><span class="s">"</span>
+<span class="k">let</span> <span class="nv">scores</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">ExecQuery</span><span class="o">&lt;</span><span class="n">GameScore</span><span class="o">&gt;(</span><span class="n">selectQuery</span><span class="o">)</span>
+</pre></div>
+
+<p>whilst the above example is in F#, the same extension methods are accessible from C# too, check out the full range of examples in the <a href="#examples">Examples</a> section.</p>
+
+<p>For a <strong>detailed run-down of the syntax</strong> please refer to this <a href="https://github.com/theburningmonk/DynamoDb.SQL/wiki/Getting-Started-V2#syntax"><strong>page</strong></a>.</p>
+
+<h2>
+<a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h2>
+
+<h4>
+<a name="simple-sql-like-syntax" class="anchor" href="#simple-sql-like-syntax"><span class="octicon octicon-link"></span></a>Simple SQL-like syntax</h4>
+
+<p>This library lets you use a SQL-like syntax for performing <em>query</em> and <em>scan</em> operations against <em>DynamoDB</em>. If you're new to <em>DynamoDB</em> and is not clear on the difference between the two, please refer to the <em>DynamoDB</em> documentation <a href="http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/QueryAndScan.html">here</a> and guidelines <a href="http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/QueryAndScanGuidelines.html">here</a>.</p>
+
+<p>Using the appropriate extension methods on <code>AmazonDynamoDBClient</code> and <code>DynamoDBContext</code> you will be able to query/scan your <em>DynamoDB</em> table like this:</p>
+
+<div class="highlight highlight-fsharp"><pre><span class="k">let</span> <span class="nv">selectQuery</span> <span class="o">=</span> <span class="s">"SELECT * FROM GameScores WHERE UserId = </span><span class="se">\"</span><span class="s">theburningmonk-1</span><span class="se">\"</span><span class="s">"</span>
+<span class="k">let</span> <span class="nv">response</span>    <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">Query</span><span class="o">(</span><span class="n">selectQuery</span><span class="o">)</span>
+</pre></div>
+
+<p>Whilst the syntax for both <em>query</em> and <em>scan</em> operations are similar, there are minor differences and some comparisons (such as <code>CONTAINS</code> and <code>IN (...)</code>) are only supported in <em>scan</em> operations by <em>DynamoDB</em>.</p>
+
+<p>For a <strong>detailed run-down of the syntax</strong> please refer to this <a href="https://github.com/theburningmonk/DynamoDb.SQL/wiki/Getting-Started-V2#syntax"><strong>page</strong></a>.</p>
+
+<h4>
+<a name="count-only-queries" class="anchor" href="#count-only-queries"><span class="octicon octicon-link"></span></a>Count-only queries</h4>
+
+<p>If you only want to find out the number of items that matches some conditions and not the items themselves, then you can save yourself some bandwidth and read capacity units by using a <strong>COUNT</strong> query:</p>
+
+<div class="highlight highlight-fsharp"><pre><span class="k">let</span> <span class="nv">countQuery</span>    <span class="o">=</span> <span class="s">"COUNT * FROM GameScores WHERE UserId = </span><span class="se">\"</span><span class="s">theburningmonk-1</span><span class="se">\"</span><span class="s">"</span>
+<span class="k">let</span> <span class="nv">countResponse</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">Query</span><span class="o">(</span><span class="n">countQuery</span><span class="o">)</span>
+</pre></div>
+
+<blockquote>
+<p><strong>Note</strong>: count queries are <strong>only supported</strong> when you're working with the <code>AmazonDynamoDBCient</code>.</p>
+</blockquote>
+
+<h4>
+<a name="selecting-specific-attributes" class="anchor" href="#selecting-specific-attributes"><span class="octicon octicon-link"></span></a>Selecting specific attributes</h4>
+
+<p>If you only want to retrieve certain attributes from your query, then you can save yourself some bandwidth and potentially processing power by specifying exactly which attributes you want to retrieve:</p>
+
+<div class="highlight highlight-fsharp"><pre><span class="k">let</span> <span class="nv">selectQuery</span> <span class="o">=</span> <span class="s">"SELECT UserId, GameTitle, Wins FROM GameScores WHERE UserId = </span><span class="se">\"</span><span class="s">theburningmonk-1</span><span class="se">\"</span><span class="s">"</span>
+<span class="k">let</span> <span class="nv">response</span>    <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">Query</span><span class="o">(</span><span class="n">selectQuery</span><span class="o">)</span>
+</pre></div>
+
+<h4>
+<a name="ordering-and-limiting" class="anchor" href="#ordering-and-limiting"><span class="octicon octicon-link"></span></a>Ordering and Limiting</h4>
+
+<p>Often you will want to retrieve only the top or bottom X number of items based on the natural sorting order of the range key values. Therefore it often makes sense to combine the <strong>ORDER</strong> and <strong>LIMIT</strong> clauses in your query.</p>
+
+<p>For example, in our <code>GameScores</code> table (see above), to find the top 3 scoring games for a given user we can write:</p>
+
+<div class="highlight highlight-fsharp"><pre><span class="k">let</span> <span class="nv">selectQuery</span> <span class="o">=</span> <span class="s">"SELECT * FROM GameScores WHERE UserId = </span><span class="se">\"</span><span class="s">theburningmonk-1</span><span class="se">\"</span><span class="s"> ORDER DESC LIMIT 3"</span>
+<span class="k">let</span> <span class="nv">response</span>    <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">Query</span><span class="o">(</span><span class="n">selectQuery</span><span class="o">)</span>
+</pre></div>
+
+<blockquote>
+<p><strong>Note</strong>: in <em>DynamoDB</em>, you can only order on the range key values hence why there's no option for you to specify what column to order on in the query syntax.  </p>
+</blockquote>
+
+<h4>
+<a name="throttling" class="anchor" href="#throttling"><span class="octicon octicon-link"></span></a>Throttling</h4>
+
+<p>As stated in the DynamoDB <a href="http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/BestPractices.html">best practices guide</a>, you should <a href="http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/QueryAndScanGuidelines.html#QueryAndScanGuidelines.BurstsOfActivity">avoid sudden bursts of read activity</a>.</p>
+
+<p>To throttle your <em>query</em> or <em>scan</em> operation, you can use the <strong>PageSize</strong> option in your query to throttle the amount of read capacity units that your query consumes in one go:</p>
+
+<div class="highlight highlight-fsharp"><pre><span class="k">let</span> <span class="nv">selectQuery</span> <span class="o">=</span> <span class="s">"SELECT * FROM GameScores WHERE UserId = </span><span class="se">\"</span><span class="s">theburningmonk-1</span><span class="se">\"</span><span class="s"> WITH (PageSize(10))"</span>
+<span class="k">let</span> <span class="nv">response</span>    <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">Query</span><span class="o">(</span><span class="n">selectQuery</span><span class="o">)</span>
+</pre></div>
+
+<p>this query will fetch 10 results at a time, if there are more than 10 results available then additional requests will be made behind the scene until all available results have been retrieved. </p>
+
+<blockquote>
+<p><strong>Note</strong>: using the <em>PageSize</em> option means your <em>query</em> or <em>scan</em> will take longer to complete and require more individual requests to <em>DynamoDB</em>.</p>
+</blockquote>
+
+<h4>
+<a name="parallel-scans" class="anchor" href="#parallel-scans"><span class="octicon octicon-link"></span></a>Parallel scans</h4>
+
+<p>If your table is sufficiently large (<em>DynamoDB</em> documentations suggests 20GB or larger), <a href="http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/QueryAndScanGuidelines.html#QueryAndScanGuidelines.ParallelScan">it's recommended</a> that you take advantage of the parallel scans support in <em>DynamoDB</em> to speed up the scan operations.</p>
+
+<p>To use parallel scans, you can use the <strong>Segments</strong> option in your <em>scan</em> query:</p>
+
+<div class="highlight highlight-fsharp"><pre><span class="k">let</span> <span class="nv">selectQuery</span> <span class="o">=</span> <span class="s">"SELECT * FROM GameScores WHERE GameTitle = </span><span class="se">\"</span><span class="s">Starship X</span><span class="se">\"</span><span class="s"> WITH (Segments(10))"</span>
+<span class="k">let</span> <span class="nv">response</span>    <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">Scan</span><span class="o">(</span><span class="n">selectQuery</span><span class="o">)</span>
+</pre></div>
+
+<p>this query will make ten parallel scan requests against <em>DynamoDB</em> and the operation will complete when all ten 'segments' have completed and returned all their results.</p>
+
+<blockquote>
+<p><strong>Note</strong>: using parallel scan will consume large amounts of read capacity units in a short burst, so you should plan ahead and up the throughput of your table accordingly before starting the parallel scan!</p>
+</blockquote>
+
+<h4>
+<a name="local-secondary-index-support" class="anchor" href="#local-secondary-index-support"><span class="octicon octicon-link"></span></a>Local Secondary Index support</h4>
+
+<blockquote>
+<p><em>AWS</em> <a href="http://aws.typepad.com/aws/2013/04/local-secondary-indexes-for-amazon-dynamodb.html">announced</a> support for <em>Local Secondary Indexes</em> on April 18, 2013, for more details please refer to the <em>DynamoDB</em> documentations page <a href="http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/LSI.html">here</a> and <a href="http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GuidelinesForLSI.html">guidelines</a> for using <em>Local Secondary Indexes</em>.</p>
+</blockquote>
+
+<p>Support for local secondary index is available since version 1.2.1 using the <strong>INDEX</strong> option inside the <strong>WITH</strong> clause.</p>
+
+<p>For example, suppose the aforementioned <code>GameScores</code> table has a local secondary index called <strong>TopScoreIndex</strong>:</p>
+
+<p><img src="http://dynamodb.sql.s3.amazonaws.com/dynamodb-sql-indexes.png" alt="table-indexes"></p>
+
+<p>We can query the table using this index and optionally specify whether to retrieve all attributes or just the attributes projected into the index (any attributes that are not on the index will be retrieved from the table using extra read capacity):</p>
+
+<div class="highlight highlight-fsharp"><pre><span class="k">let</span> <span class="nv">selectQuery</span> <span class="o">=</span> <span class="s">"SELECT * FROM GameScores </span>
+<span class="s">                   WHERE UserId = </span><span class="se">\"</span><span class="s">theburningmonk-1</span><span class="se">\"</span><span class="s"> </span>
+<span class="s">                   AND TopScore &gt;= 1000 </span>
+<span class="s">                   WITH(Index(TopScoreIndex, true))"</span>
+<span class="k">let</span> <span class="nv">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">Query</span><span class="o">(</span><span class="n">selectQuery</span><span class="o">)</span>
+</pre></div>
+
+<p>For more details, please read <a href="http://theburningmonk.com/2013/05/dynamodb-sql-1-2-1-now-supports-local-secondary-index/">this post</a>.</p>
+
+<h4>
+<a name="global-secondary-indexes-support" class="anchor" href="#global-secondary-indexes-support"><span class="octicon octicon-link"></span></a>Global Secondary Indexes support</h4>
+
+<blockquote>
+<p><em>AWS</em> <a href="http://aws.typepad.com/aws/2013/12/now-available-global-secondary-indexes-for-amazon-dynamodb.html">announced</a> support for <em>Global Secondary Indexes</em> on December 12, 2013, for more details please refer to the <em>DynamoDB</em> documentations page <a href="http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GSI.html">here</a> and <a href="http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GuidelinesForGSI.html">guidelines</a> for using <em>Global Secondary Indexes</em>.</p>
+</blockquote>
+
+<p><em>Global Secondary Indexes</em>, or <em>GSI</em> is supported through the same <strong>INDEX</strong> option as local secondary index above, the index name specified in the <em>INDEX</em> option can be any local or global index on the table.</p>
+
+<p>For example, to query against the global secondary index <strong>GameTitleIndex</strong> on our <code>GameScores</code> table (see above):  </p>
+
+<div class="highlight highlight-fsharp"><pre><span class="k">let</span> <span class="nv">selectQuery</span> <span class="o">=</span> <span class="s">"SELECT * FROM GameScores </span>
+<span class="s">                   WHERE GameTitle = </span><span class="se">\"</span><span class="s">Starship X</span><span class="se">\"</span><span class="s"> </span>
+<span class="s">                   AND TopScore &gt;= 1000</span>
+<span class="s">                   WITH(Index(GameTitleIndex, false), NoConsistentRead)"</span>
+<span class="k">let</span> <span class="nv">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">Query</span><span class="o">(</span><span class="n">selectQuery</span><span class="o">)</span>
+</pre></div>
+
+<blockquote>
+<p><strong>Important</strong>: although the queries look identical, compared to local secondary indexes there are a couple of key differences you need to be aware of when querying against global secondary indexes:</p>
+
+<ul>
+<li>you <strong>must add the NoConsistentRead option</strong> in your query as global secondary indexes only support eventually consistent reads, if you try to do a consistent read against a global secondary index it will result in an error from <em>DynamoDB</em>;</li>
+<li>when you created the global secondary index, if you didn't choose <strong>All Attributes</strong> as the <strong>Projected Attributes</strong> for the index, then you must set the "all attributes" flag in the <code>Index</code> option to <code>false</code> (i.e. Index(IndexName, <strong>false</strong>))</li>
+</ul>
+</blockquote>
+
+<h2>
+<a name="examples" class="anchor" href="#examples"><span class="octicon octicon-link"></span></a>Examples</h2>
+
+<p>Here's a handful of examples in C# and F#, feel free to check out the respective project under the <strong>examples</strong> folder too, it also contains F# script to create the sample table and seeding it with test data you need to run these examples. </p>
+
+<h4>
+<a name="query" class="anchor" href="#query"><span class="octicon octicon-link"></span></a>Query</h4>
+
+<table><tbody>
+<tr>
+<td>Get all rows for a hash key</td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L66-L79">C#</a></td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L78-L97">F#</a></td>
+        </tr>
+<tr>
+<td>Query with range key</td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L81-L97">C#</a></td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L103-L128">F#</a></td>
+        </tr>
+<tr>
+<td>Query with ORDER and LIMIT</td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L99-L114">C#</a></td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L132-L169">F#</a></td>
+        </tr>
+<tr>
+<td>Disable consistent read</td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L116-L129">C#</a></td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L173-L185">F#</a></td>
+        </tr>
+<tr>
+<td>Throttling</td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L131-L144">C#</a></td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L190-L203">F#</a></td>
+        </tr>
+<tr>
+<td>Selecting specific attributes</td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L146-L165">C#</a></td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L207-L226">F#</a></td>
+        </tr>
+<tr>
+<td>Query with Local Secondary Index (all attributes)</td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L178-L195">C#</a></td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L247-L295">F#</a></td>
+        </tr>
+<tr>
+<td>Query with Local Secondary Index (projected attributes)</td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L197-L214">C#</a></td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L302-L337">F#</a></td>
+        </tr>
+<tr>
+<td>Query with Global Secondary Index (projected attributes)</td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L216-L235">C#</a></td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L345-L394">F#</a></td>
+        </tr>
+</tbody></table><h4>
+<a name="scan" class="anchor" href="#scan"><span class="octicon octicon-link"></span></a>Scan</h4>
+
+<table><tbody>
+<tr>
+<td>Basic scan</td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L241-L254">C#</a></td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L424-L443">F#</a></td>
+        </tr>
+<tr>
+<td>Scan with LIMIT</td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L256-L269">C#</a></td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L447-L466">F#</a></td>
+        </tr>
+<tr>
+<td>Throttling</td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L271-L284">C#</a></td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L469-L484">F#</a></td>
+        </tr>
+<tr>
+<td>Selecting specific attributes</td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L312-L329">C#</a></td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L487-L505">F#</a></td>
+        </tr>
+<tr>
+<td>Parallel scans</td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L286-L299">C#</a></td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L508-L523">F#</a></td>
+        </tr>
+<tr>
+<td>Disable returning consumed capacity</td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleCs/Program.cs#L301-L310">C#</a></td>
+            <td><a href="https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/examples/DynamoDb.SQL.ExampleFs/Examples.fsx#L528-L538">F#</a></td>
+        </tr>
+</tbody></table>
       </section>
       <footer>
         <p>This project is maintained by <a href="https://github.com/theburningmonk">theburningmonk</a></p>
