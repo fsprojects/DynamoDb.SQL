@@ -271,3 +271,6 @@ Here's a handful of examples in C# and F#, feel free to check out the respective
 		</tr>
 	</tbody>
 </table>
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/theburningmonk/dynamodb.sql/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
