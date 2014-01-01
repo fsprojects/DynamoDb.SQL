@@ -1,8 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DynamoDb.SQL", "DynamoDb.SQL\DynamoDb.SQL.fsproj", "{EBDF1236-1EFE-4643-9977-6575F6213A58}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{F0F01DDC-7450-45A2-BFF3-C02863CF7219}"
 	ProjectSection(SolutionItems) = preProject
 		.nuget\NuGet.Config = .nuget\NuGet.Config
@@ -10,13 +8,24 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{F0F01D
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{28252BEF-D159-4E80-A569-88A9B2462F9B}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "project", "project", "{28252BEF-D159-4E80-A569-88A9B2462F9B}"
 	ProjectSection(SolutionItems) = preProject
 		build.fsx = build.fsx
+		nuget\DynamoDb.SQL.nuspec = nuget\DynamoDb.SQL.nuspec
 		RELEASE_NOTES.md = RELEASE_NOTES.md
 	EndProjectSection
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DynamoDb.SQL.Tests", "DynamoDb.SQL.Tests\DynamoDb.SQL.Tests.fsproj", "{B4B8B239-AEE5-42CE-BAE2-8E6CA1C3D2D8}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2333BFB7-FB26-4248-921B-AA27152AAAC8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{8638EAA8-98DE-4362-92E7-3A7A6A73AD08}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DynamoDb.SQL", "src\DynamoDb.SQL\DynamoDb.SQL.fsproj", "{EBDF1236-1EFE-4643-9977-6575F6213A58}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DynamoDb.SQL.Tests", "tests\DynamoDb.SQL.Tests\DynamoDb.SQL.Tests.fsproj", "{B4B8B239-AEE5-42CE-BAE2-8E6CA1C3D2D8}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DynamoDb.SQL.ExampleFs", "examples\DynamoDb.SQL.ExampleFs\DynamoDb.SQL.ExampleFs.fsproj", "{77901442-DDA1-45E6-866C-5EA0955DE82B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamoDb.SQL.ExampleCs", "examples\DynamoDb.SQL.ExampleCs\DynamoDb.SQL.ExampleCs.csproj", "{9C528125-519F-4FFF-BC93-6274720D6758}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -48,8 +57,33 @@ Global
 		{B4B8B239-AEE5-42CE-BAE2-8E6CA1C3D2D8}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{B4B8B239-AEE5-42CE-BAE2-8E6CA1C3D2D8}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{B4B8B239-AEE5-42CE-BAE2-8E6CA1C3D2D8}.Release|x86.ActiveCfg = Release|Any CPU
+		{77901442-DDA1-45E6-866C-5EA0955DE82B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77901442-DDA1-45E6-866C-5EA0955DE82B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77901442-DDA1-45E6-866C-5EA0955DE82B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{77901442-DDA1-45E6-866C-5EA0955DE82B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{77901442-DDA1-45E6-866C-5EA0955DE82B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{77901442-DDA1-45E6-866C-5EA0955DE82B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77901442-DDA1-45E6-866C-5EA0955DE82B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77901442-DDA1-45E6-866C-5EA0955DE82B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{77901442-DDA1-45E6-866C-5EA0955DE82B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{77901442-DDA1-45E6-866C-5EA0955DE82B}.Release|x86.ActiveCfg = Release|Any CPU
+		{9C528125-519F-4FFF-BC93-6274720D6758}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{9C528125-519F-4FFF-BC93-6274720D6758}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{9C528125-519F-4FFF-BC93-6274720D6758}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{9C528125-519F-4FFF-BC93-6274720D6758}.Debug|x86.ActiveCfg = Debug|x86
+		{9C528125-519F-4FFF-BC93-6274720D6758}.Debug|x86.Build.0 = Debug|x86
+		{9C528125-519F-4FFF-BC93-6274720D6758}.Release|Any CPU.ActiveCfg = Release|x86
+		{9C528125-519F-4FFF-BC93-6274720D6758}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{9C528125-519F-4FFF-BC93-6274720D6758}.Release|Mixed Platforms.Build.0 = Release|x86
+		{9C528125-519F-4FFF-BC93-6274720D6758}.Release|x86.ActiveCfg = Release|x86
+		{9C528125-519F-4FFF-BC93-6274720D6758}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B4B8B239-AEE5-42CE-BAE2-8E6CA1C3D2D8} = {2333BFB7-FB26-4248-921B-AA27152AAAC8}
+		{77901442-DDA1-45E6-866C-5EA0955DE82B} = {8638EAA8-98DE-4362-92E7-3A7A6A73AD08}
+		{9C528125-519F-4FFF-BC93-6274720D6758} = {8638EAA8-98DE-4362-92E7-3A7A6A73AD08}
 	EndGlobalSection
 EndGlobal

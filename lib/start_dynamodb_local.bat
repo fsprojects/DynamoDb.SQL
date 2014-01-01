@@ -1,0 +1,1 @@
+java -Djava.library.path=. -jar dynamodb_local_2013-12-12/DynamoDBLocal.jar
