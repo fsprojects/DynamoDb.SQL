@@ -78,6 +78,9 @@ For example:
 
 #### 2.0.0 - Jan 01 2013 
 * Updated `AWSSDK` to `v2.0.4.1`.
-* Removed support for the v1 query syntax (e.g. the use of @HashKey and @RangeKey).
 * Replaced exception types with C# friendly types.
 * Fixed bug with scanning using specific attributes.
+* Verified that Global Secondary Index is supported through existing `Index` option.
+* **Breaking Changes**
+	* Removed support for the v1 query syntax (i.e. the use of `@HashKey` and `@RangeKey`).
+	* The namespace `DynamoDbV2.SQL.Execution` is gone, the extension methods for `AmazonDynamoDBClient` and `DynamoDBContext` are now in their corresponding namespaces so that you don't need to open another namespace to get them	
