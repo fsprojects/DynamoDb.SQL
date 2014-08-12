@@ -54,7 +54,8 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="AWSSDK">
-      <HintPath>..\..\packages\AWSSDK.2.0.4.1\lib\net45\AWSSDK.dll</HintPath>
+      <HintPath>..\..\packages\AWSSDK.2.2.2.2\lib\net45\AWSSDK.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="FSharp.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="FsUnit.NUnit">
