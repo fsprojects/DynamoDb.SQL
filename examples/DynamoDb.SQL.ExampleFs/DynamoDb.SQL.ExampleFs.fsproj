@@ -36,7 +36,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AWSSDK">
-      <HintPath>..\..\packages\AWSSDK.2.0.4.1\lib\net45\AWSSDK.dll</HintPath>
+      <HintPath>..\..\packages\AWSSDK.2.2.2.2\lib\net45\AWSSDK.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
@@ -49,6 +50,7 @@
   <ItemGroup>
     <Compile Include="Common.fs" />
     <Compile Include="Examples.fsx" />
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
