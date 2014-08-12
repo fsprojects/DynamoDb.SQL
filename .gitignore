@@ -57,6 +57,7 @@ ipch/
 _ReSharper*
 
 # NCrunch
+*ncrunch*/*
 *.ncrunch*
 .*crunch*.local.xml
 

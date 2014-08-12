@@ -7,7 +7,7 @@ This guide contains the following sections:
 - [Features](#features) - what you can do with this library
 - [Examples](#examples) - links to examples in F# and C#
 
-You can view the release notes [here](https://github.com/theburningmonk/DynamoDb.SQL/wiki/Release-Notes), and check out the [Wiki](https://github.com/theburningmonk/DynamoDb.SQL/wiki).
+You can view the release notes [here](https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/RELEASE_NOTES.md), and please report any issues [here](https://github.com/theburningmonk/DynamoDb.SQL/issues).
 
 
 
@@ -27,14 +27,12 @@ Now suppose we have a DynamoDB tabled called `GameScores` like the following:
 
 ![!table](http://dynamodb.sql.s3.amazonaws.com/dynamodb-sql-table.png)
 
-We can find all the scores for the player with `UserId` "theburningmonk-1" we can simply execute the query like the following:
+To find all the scores for the player with `UserId` "theburningmonk-1" we can simply execute the query like the following:
 
 ```fsharp
 
 open Amazon.DynamoDBv2
 open Amazon.DynamoDBv2.DataModel
-
-open DynamoDbV2.SQL.Execution 	// you need to open this namespace to get the ExecQuery extension method
 
 let awsKey      = "MY-AWS-KEY"
 let awsSecret   = "MY-AWS-SECRET"
@@ -271,6 +269,3 @@ Here's a handful of examples in C# and F#, feel free to check out the respective
 		</tr>
 	</tbody>
 </table>
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/theburningmonk/dynamodb.sql/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
