@@ -84,3 +84,6 @@ For example:
 * **Breaking Changes**
 	* Removed support for the v1 query syntax (i.e. the use of `@HashKey` and `@RangeKey`).
 	* The namespace `DynamoDbV2.SQL.Execution` is gone, the extension methods for `AmazonDynamoDBClient` and `DynamoDBContext` are now in their corresponding namespaces so that you don't need to open another namespace to get them	
+
+#### 2.0.1 - Aug 12 2013
+* Updated `AWSSDK` to `v2.2.2.0`.
