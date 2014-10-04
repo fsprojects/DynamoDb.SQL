@@ -6,9 +6,9 @@
         <title>@project@</title>
         <authors>@authors@</authors>
 		<owners>theburningmonk</owners>
-        <licenseUrl>https://github.com/theburningmonk/DynamoDb.SQL/blob/master/LICENSE</licenseUrl>
-        <projectUrl>https://github.com/theburningmonk/DynamoDb.SQL</projectUrl>
-        <iconUrl>https://raw.github.com/theburningmonk/DynamoDb.SQL/master/misc/logo.png</iconUrl>
+        <licenseUrl>https://github.com/fsprojects/DynamoDb.SQL/blob/develop/LICENSE</licenseUrl>
+        <projectUrl>https://github.com/fsprojects/DynamoDb.SQL</projectUrl>
+        <iconUrl>https://raw.githubusercontent.com/fsprojects/DynamoDb.SQL/develop/nuget/logo.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <summary>@summary@</summary>
 		<description>
@@ -30,15 +30,15 @@
       DynamoDB, which is a great product despite the lack of built-in support for a good
       query language.
     </description>
-        <releaseNotes>@releaseNotes@</releaseNotes>
-        <copyright>Copyright @ Yan Cui 2012</copyright>
-        <language>en-GB</language>
-        <tags>@tags@</tags>
+    <releaseNotes>@releaseNotes@</releaseNotes>
+    <copyright>Copyright @ Yan Cui 2012</copyright>
+    <language>en-GB</language>
+    <tags>@tags@</tags>
 		@dependencies@
     </metadata>
     <files>
         <file src="..\build\DynamoDb.SQL.dll" target="lib/net45" />
-		  <file src="..\build\DynamoDb.SQL.pdb" target="lib/net45" />
-		  <file src="..\build\DynamoDb.SQL.xml" target="lib/net45" />
+		    <file src="..\build\DynamoDb.SQL.pdb" target="lib/net45" />
+		    <file src="..\build\DynamoDb.SQL.xml" target="lib/net45" />
     </files>
 </package>
