@@ -356,6 +356,12 @@ type ``Given a scan`` () =
         scan.Limit      |> should equal <| Some(Limit 5)
 
     [<Test>]
+    member this.``when table name has valid non-alphanumeric characters it should parse`` () =
+        let select = "SELECT * FROM t-A_b.le1"
+        let scan = parseDynamoScan select
+        scan.From       |> should equal <| From "t-A_b.le1"
+
+    [<Test>]
     member this.``when the SELECT, FROM, WHERE and LIMIT keywords are not in capitals they should still be parsed correctly`` () =
         let select = "sELeCT Name, Age, Salary
                         FrOm Employees

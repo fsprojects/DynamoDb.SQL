@@ -67,7 +67,7 @@ module Common =
     let paction = ws >>. choice [pselect; pcount] .>> ws
 
     // parser for table names
-    let isTableName = isLetter <||> isDigit
+    let isTableName = isLetter <||> isDigit <||> isAnyOf ['.'; '-'; '_']
     let pfrom =
         ws
         >>. skipStringCI_ws "from"
