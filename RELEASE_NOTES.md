@@ -90,3 +90,6 @@ For example:
 
 #### 2.0.2 - Oct 4 2014
 * Updated `AWSSDK` to `v2.3.1.0`.
+
+#### 2.1.0 - May 6 2015
+* Allow '.' '_' and '-' in table names
