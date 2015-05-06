@@ -1,3 +1,6 @@
+[![Issue Stats](http://issuestats.com/github/fsprojects/DynamoDb.SQL/badge/issue)](http://issuestats.com/github/fsprojects/DynamoDb.SQL)
+[![Issue Stats](http://issuestats.com/github/fsprojects/DynamoDb.SQL/badge/pr)](http://issuestats.com/github/fsprojects/DynamoDb.SQL)
+
 # DynamoDb.SQL ([@DynamoDbSQL](https://twitter.com/DynamoDbSQL))
 
 This library gives you the capability to execute [**query**](http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/API_Query.html) and [**scan**](http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/API_Scan.html) operations against [**Amazon DynamoDB**](http://aws.amazon.com/dynamodb/) using a **SQL**-like syntax by extending the existing functionalities of `AmazonDynamoDBClient` and `DynamoDBContext` classes found in the standard .Net AWS SDK.
@@ -9,7 +12,7 @@ This guide contains the following sections:
 
 You can view the release notes [here](https://github.com/theburningmonk/DynamoDb.SQL/blob/develop/RELEASE_NOTES.md), and please report any issues [here](https://github.com/theburningmonk/DynamoDb.SQL/issues).
 
-
+[![NuGet Status](http://img.shields.io/nuget/v/DynamoDb.SQL.svg?style=flat)](https://www.nuget.org/packages/DynamoDb.SQL/)
 
 
 
@@ -269,3 +272,10 @@ Here's a handful of examples in C# and F#, feel free to check out the respective
 		</tr>
 	</tbody>
 </table>
+
+
+## Maintainer(s)
+
+- [@theburningmonk](https://github.com/theburningmonk)
+
+The default maintainer account for projects under "fsprojects" is [@fsgit](https://github.com/fsgit) - F# Community Project Incubation Space (repo management)
