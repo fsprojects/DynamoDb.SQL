@@ -53,7 +53,7 @@ module Ast =
             member this.ToAttributeValue() =
                 match this with
                 | S(str) -> new AttributeValue(S = str)
-                | N(n)   -> new AttributeValue(N = string n)
+                | N(n)   -> new AttributeValue(N = n.ToString("r"))
 
             member private this.StructuredFormatDisplay = this.ToString()
 

@@ -52,7 +52,7 @@ module Common =
     let asterisk    = stringCIReturn_ws "*" Asterisk
 
     let isAttrName  = isLetter <||> isDigit
-    let attributeName   : Parser<_> = many1SatisfyL isAttrName "attribute name"
+    let attributeName : Parser<_> = many1SatisfyL isAttrName "attribute name"
     let attribute   = attributeName .>> ws |>> Attribute
 
     // only allow explicit attribute name and asterisk in select
