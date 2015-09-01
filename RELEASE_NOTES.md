@@ -45,7 +45,7 @@ For examples:
 
 #### 1.1.3 - March 27 2013
 * Updated `AWSSDK` to `v1.5.16.1`
-* Fixed issue [#4] (https://github.com/theburningmonk/DynamoDb.SQL/issues/4) where 
+* Fixed issue [#4](https://github.com/theburningmonk/DynamoDb.SQL/issues/4) where 
 `DynamoDbClient` extension methods did not behave correctly with regards to the `Limit` clause.
 
 #### 1.2.1 - May 05 2013
@@ -93,3 +93,8 @@ For example:
 
 #### 2.1.0 - May 6 2015
 * Allow '.' '_' and '-' in table names
+
+#### 2.1.1 - Sep 1 2015
+* Fixed issue [#28](https://github.com/theburningmonk/DynamoDb.SQL/issues/28) where
+  long floating point numbers don't work because they're formatted to scientific
+  notation when sent to AWS
