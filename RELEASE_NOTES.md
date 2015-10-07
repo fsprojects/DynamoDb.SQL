@@ -98,3 +98,6 @@ For example:
 * Fixed issue [#28](https://github.com/theburningmonk/DynamoDb.SQL/issues/28) where
   long floating point numbers don't work because they're formatted to scientific
   notation when sent to AWS
+
+#### 2.1.2 - Oct 7 2015
+* Fixed issue [#29](https://github.com/theburningmonk/DynamoDb.SQL/issues/29) where long floating point numbers start to lose precision
