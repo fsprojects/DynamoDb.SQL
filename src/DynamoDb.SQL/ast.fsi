@@ -17,8 +17,9 @@ module internal Ast =
         | Attribute of string
 
     type Operant = 
-        | S     of string
-        | N     of double
+        | S         of string
+        | NDouble   of double
+        | NBigInt   of bigint
 
         member ToAttributeValue   : unit -> AttributeValue
 

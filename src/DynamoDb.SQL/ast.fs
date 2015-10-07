@@ -42,18 +42,21 @@ module Ast =
 
     [<StructuredFormatDisplay("{StructuredFormatDisplay}")>]
     type Operant = 
-        | S     of string
-        | N     of double
+        | S         of string
+        | NDouble   of double
+        | NBigInt   of bigint
         with
             override this.ToString() =
                 match this with
-                | S(str)    -> str
-                | N(n)      -> n.ToString()
+                | S(str)     -> str
+                | NDouble(n) -> n.ToString("r")
+                | NBigInt(n) -> n.ToString()
 
             member this.ToAttributeValue() =
                 match this with
                 | S(str) -> new AttributeValue(S = str)
-                | N(n)   -> new AttributeValue(N = n.ToString("r"))
+                | NDouble(n) -> new AttributeValue(N = n.ToString("r"))
+                | NBigInt(n) -> new AttributeValue(N = n.ToString())
 
             member private this.StructuredFormatDisplay = this.ToString()
 
