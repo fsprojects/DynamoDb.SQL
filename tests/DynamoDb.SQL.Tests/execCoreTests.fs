@@ -16,17 +16,18 @@ type ``Given a DynamoQuery`` () =
         let query = parseDynamoQuery "SELECT * FROM Employees WHERE FirstName = \"Yan\""
 
         let (Where(QueryCondition(lst))) = query.Where
-        lst     |> should equal [ "FirstName", Equal(S "Yan") ]
+        lst |> should equal [ "FirstName", Equal(S "Yan") ]
 
     [<Test>]
     member this.``when there are multiple conditions they should all be captured in Where clause`` () =
         let query = parseDynamoQuery "SELECT * FROM Employees WHERE Title = \"Developer\" AND Age >= 30 AND FirstName BEGINS WITH \"Y\" AND Age BETWEEN 30 AND 40 "
 
         let (Where(QueryCondition(lst))) = query.Where
-        lst     |> should equal [ ("Title",     Equal (S "Developer"));
-                                  ("Age",       GreaterThanOrEqual (N 30.0));
-                                  ("FirstName", BeginsWith (S "Y"));
-                                  ("Age",       Between (N 30.0, N 40.0)) ]
+        lst |> should equal [ 
+            ("Title",     Equal (S "Developer"));
+            ("Age",       GreaterThanOrEqual (NBigInt 30I));
+            ("FirstName", BeginsWith (S "Y"));
+            ("Age",       Between (NBigInt 30I, NBigInt 40I)) ]
 
     [<Test>]
     [<ExpectedException(typeof<InvalidQueryException>)>]
@@ -47,21 +48,21 @@ type ``Given a DynamoQuery`` () =
         let query = parseDynamoQuery "SELECT * FROM Employees WHERE FirstName = \"Yan\""
 
         let (Select(SelectAttributes(lst))) = query.Action
-        lst     |> should equal null
+        lst |> should equal null
 
     [<Test>]
     member this.``when there is an asterisk (*) and other attribute names in the SELECT clause it should return null as attribtue values`` () =
         let query = parseDynamoQuery "SELECT *, Name, Age FROM Employees WHERE FirstName = \"Yan\""
 
         let (Select(SelectAttributes(lst))) = query.Action
-        lst     |> should equal null
+        lst |> should equal null
 
     [<Test>]
     member this.``when there is no asterisk (*) in the SELECT clause it should return a list of attribtue values`` () =
         let query = parseDynamoQuery "SELECT Name, Age FROM Employees WHERE FirstName = \"Yan\""
 
         let (Select(SelectAttributes(lst))) = query.Action
-        lst     |> should equal [ "Name"; "Age" ]
+        lst |> should equal [ "Name"; "Age" ]
                 
 [<TestFixture>]
 type ``Given a DynamoScan`` () =
@@ -70,7 +71,10 @@ type ``Given a DynamoScan`` () =
         let scan = parseDynamoScan "SELECT * FROM Employees WHERE FirstName = \"Yan\" AND LastName != \"Cui\" AND Age >= 30"
 
         let (Some(Where(ScanCondition lst))) = scan.Where
-        lst         |> should equal <| [ ("FirstName", Equal (S "Yan")); ("LastName", NotEqual (S "Cui")); ("Age", GreaterThanOrEqual (N 30.0)) ]
+        lst |> should equal <| [ 
+            ("FirstName", Equal (S "Yan"))
+            ("LastName", NotEqual (S "Cui"))
+            ("Age", GreaterThanOrEqual (NBigInt 30I)) ]
 
 [<TestFixture>]
 type ``Given some array of query options`` () =

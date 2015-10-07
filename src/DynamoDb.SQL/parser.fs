@@ -93,8 +93,22 @@ module Common =
     let closeParentheses  = skipString_ws ")"
     let comma             = pstring_ws ","
 
+    let (|BigInt|_|) x =
+        match bigint.TryParse x with
+        | true, x -> Some x
+        | _ -> None
+
+    let pnumber = 
+        many1Satisfy2 (isDigit <||> ((=) '-')) (isDigit <||> ((=) '.'))
+        |>> (function 
+                | BigInt x -> NBigInt x
+                | x -> Double.Parse x |> NDouble)
+
     // parser for the operant (string or numeric value)
-    let operant = ws >>. choiceL [ (stringLiteral |>> S); (pfloat |>> N) ] "String or Numeric value" .>> ws
+    let operant = 
+        ws 
+        >>. choiceL [ (stringLiteral |>> S); pnumber ] "String or Numeric value" 
+        .>> ws
 
     let plimit = ws >>. skipStringCI_ws "limit" >>. pint32_ws |>> Limit
 

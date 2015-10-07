@@ -23,9 +23,8 @@ type ``Given an Operant`` () =
 
     [<Test>]
     member this.``N.ToAttributeValue should return an AttributeValue with N set to string representation of its numeric value value`` () =
-        let op = N 30.0
-
-        op.ToAttributeValue().N   |> should equal "30"
+        (NDouble 30.0).ToAttributeValue().N |> should equal "30"
+        (NBigInt 30I).ToAttributeValue().N  |> should equal "30"
 
 [<TestFixture>]
 type ``Given a FilterCondition`` () =
@@ -52,27 +51,27 @@ type ``Given a FilterCondition`` () =
 
     [<Test>]
     member this.``GreaterThan.ToCondition should return valid ComparisonOperator and AttributeValueList`` () =
-        GreaterThan(N 30.0).ToCondition().ComparisonOperator       |> should equal ComparisonOperator.GT
-        GreaterThan(N 30.0).ToCondition().AttributeValueList.Count |> should equal 1
-        GreaterThan(N 30.0).ToCondition().AttributeValueList.[0].N |> should equal "30"
+        GreaterThan(NBigInt 30I).ToCondition().ComparisonOperator       |> should equal ComparisonOperator.GT
+        GreaterThan(NBigInt 30I).ToCondition().AttributeValueList.Count |> should equal 1
+        GreaterThan(NBigInt 30I).ToCondition().AttributeValueList.[0].N |> should equal "30"
 
     [<Test>]
     member this.``GreaterThanOrEqual.ToCondition should return valid ComparisonOperator and AttributeValueList`` () =
-        GreaterThanOrEqual(N 30.0).ToCondition().ComparisonOperator       |> should equal ComparisonOperator.GE
-        GreaterThanOrEqual(N 30.0).ToCondition().AttributeValueList.Count |> should equal 1
-        GreaterThanOrEqual(N 30.0).ToCondition().AttributeValueList.[0].N |> should equal "30"
+        GreaterThanOrEqual(NBigInt 30I).ToCondition().ComparisonOperator       |> should equal ComparisonOperator.GE
+        GreaterThanOrEqual(NBigInt 30I).ToCondition().AttributeValueList.Count |> should equal 1
+        GreaterThanOrEqual(NBigInt 30I).ToCondition().AttributeValueList.[0].N |> should equal "30"
 
     [<Test>]
     member this.``LessThan.ToCondition should return valid ComparisonOperator and AttributeValueList`` () =
-        LessThan(N 30.0).ToCondition().ComparisonOperator         |> should equal ComparisonOperator.LT
-        LessThan(N 30.0).ToCondition().AttributeValueList.Count   |> should equal 1
-        LessThan(N 30.0).ToCondition().AttributeValueList.[0].N   |> should equal "30"
+        LessThan(NBigInt 30I).ToCondition().ComparisonOperator         |> should equal ComparisonOperator.LT
+        LessThan(NBigInt 30I).ToCondition().AttributeValueList.Count   |> should equal 1
+        LessThan(NBigInt 30I).ToCondition().AttributeValueList.[0].N   |> should equal "30"
 
     [<Test>]
     member this.``LessThanOrEqual.ToCondition should return valid ComparisonOperator and AttributeValueList`` () =
-        LessThanOrEqual(N 30.0).ToCondition().ComparisonOperator          |> should equal ComparisonOperator.LE
-        LessThanOrEqual(N 30.0).ToCondition().AttributeValueList.Count    |> should equal 1
-        LessThanOrEqual(N 30.0).ToCondition().AttributeValueList.[0].N    |> should equal "30"
+        LessThanOrEqual(NBigInt 30I).ToCondition().ComparisonOperator          |> should equal ComparisonOperator.LE
+        LessThanOrEqual(NBigInt 30I).ToCondition().AttributeValueList.Count    |> should equal 1
+        LessThanOrEqual(NBigInt 30I).ToCondition().AttributeValueList.[0].N    |> should equal "30"
 
     [<Test>]
     member this.``NotNull.ToCondition should return valid ComparisonOperator and AttributeValueList`` () =
@@ -104,14 +103,14 @@ type ``Given a FilterCondition`` () =
 
     [<Test>]
     member this.``Between.ToCondition should return valid ComparisonOperator and AttributeValueList`` () =
-        Between(N 30.0, N 40.0).ToCondition().ComparisonOperator         |> should equal ComparisonOperator.BETWEEN
-        Between(N 30.0, N 40.0).ToCondition().AttributeValueList.Count   |> should equal 2
-        Between(N 30.0, N 40.0).ToCondition().AttributeValueList.[0].N   |> should equal "30"
-        Between(N 30.0, N 40.0).ToCondition().AttributeValueList.[1].N   |> should equal "40"
+        Between(NBigInt 30I, NBigInt 40I).ToCondition().ComparisonOperator         |> should equal ComparisonOperator.BETWEEN
+        Between(NBigInt 30I, NBigInt 40I).ToCondition().AttributeValueList.Count   |> should equal 2
+        Between(NBigInt 30I, NBigInt 40I).ToCondition().AttributeValueList.[0].N   |> should equal "30"
+        Between(NBigInt 30I, NBigInt 40I).ToCondition().AttributeValueList.[1].N   |> should equal "40"
 
     [<Test>]
     member this.``In.ToCondition should return valid ComparisonOperator and AttributeValueList`` () =
-        In([ N 30.0; N 40.0 ]).ToCondition().ComparisonOperator         |> should equal ComparisonOperator.IN
-        In([ N 30.0; N 40.0 ]).ToCondition().AttributeValueList.Count   |> should equal 2
-        In([ N 30.0; N 40.0 ]).ToCondition().AttributeValueList.[0].N   |> should equal "30"
-        In([ N 30.0; N 40.0 ]).ToCondition().AttributeValueList.[1].N   |> should equal "40"
+        In([ NBigInt 30I; NBigInt 40I ]).ToCondition().ComparisonOperator         |> should equal ComparisonOperator.IN
+        In([ NBigInt 30I; NBigInt 40I ]).ToCondition().AttributeValueList.Count   |> should equal 2
+        In([ NBigInt 30I; NBigInt 40I ]).ToCondition().AttributeValueList.[0].N   |> should equal "30"
+        In([ NBigInt 30I; NBigInt 40I ]).ToCondition().AttributeValueList.[1].N   |> should equal "40"
