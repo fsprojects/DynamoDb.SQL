@@ -29,7 +29,8 @@ file to start an instance of the DynamoDBLocal database for testing.
 
 *)
 
-#r @"bin\AWSSDK.dll"
+#r @"bin\AWSSDK.Core.dll"
+#r @"bin\AWSSDK.DynamoDBv2.dll"
 #r @"bin\DynamoDb.SQL.dll"
 
 #load "Common.fs"

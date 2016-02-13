@@ -1,0 +1,29 @@
+type project
+id DynamoDB.SQL
+authors Yan Cui
+
+projectUrl https://github.com/fsprojects/DynamoDb.SQL
+iconUrl https://raw.githubusercontent.com/fsprojects/DynamoDb.SQL/develop/nuget/logo.png
+licenseUrl https://github.com/fsprojects/DynamoDb.SQL/blob/develop/LICENSE
+
+summary
+  A SQL-like external DSL for querying and scanning data in Amazon DynamoDB.
+
+DESCRIPTION
+  A SQL-like external DSL for querying and scanning data in Amazon DynamoDB.
+
+  Although there exists a number of different ways to query and scan a DynamoDB table with the
+  .Net AWS SDK:
+
+  - with the low-level AmazonDynamoDBClient class
+  - with the Table helper class
+  - with the DynamoDBContext class
+
+  none of these ways of querying and scanning tables are easy to use, and an external DSL is
+  desperately needed to make it easier to express the query one would like to perform against
+  data stored in DynamoDB.
+
+  It is because of these limitations that I decided to add a SQL-like external DSL on top of
+  existing functionalities of the AWS SDK to make it easier for .Net developers to work with
+  DynamoDB, which is a great product despite the lack of built-in support for a good
+  query language.
