@@ -6,6 +6,12 @@
 *.user
 *.sln.docstates
 
+# Paket executable
+paket.exe
+
+# FAKE artifects
+.fake/
+
 # Build results
 
 [Dd]ebug/

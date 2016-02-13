@@ -1,0 +1,11 @@
+source https://www.nuget.org/api/v2
+
+nuget FAKE
+nuget FSharp.Core ~> 3.1
+nuget NUnit.Runners ~> 2.6
+nuget NuGet.CommandLine
+
+nuget AWSSDK.DynamoDBv2 ~> 3.1
+nuget FParsec ~> 1.0 framework: >= net45
+nuget FsUnit ~> 1.2 framework: >= net45
+nuget NUnit ~> 2.6 framework: >= net45
