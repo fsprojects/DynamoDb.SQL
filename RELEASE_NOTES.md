@@ -1,3 +1,6 @@
+#### 3.1.0 - Oct 25 2016
+* Relaxed restriction on FSharp.Core
+
 #### 3.0.0 - Feb 13 2016
 * Moved to AWSSDK v3 (service-specific packages)
 
